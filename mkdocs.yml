@@ -13,6 +13,7 @@ nav:
   - User Guide:
     - Percentage-Based Positioning: percentage_positioning.md
     - Auto-Alignment: auto_alignment.md
+    - Grid Layout: grid_layout.md
     - Styling and Formatting: styling.md
     - Dark Theme: dark_theme.md
     - PowerPoint Templates: templates.md

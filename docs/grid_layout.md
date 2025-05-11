@@ -196,6 +196,92 @@ dashboard.add_to_cell(
 4. **Easy Reorganization**: Makes it easy to reorganize content without recalculating positions
 5. **Complex Layouts**: Enables creation of complex layouts with minimal code
 
+## Accessing Grid Cells
+
+EasyPPTX's Grid class provides multiple ways to access and manipulate cells, similar to numpy arrays and matplotlib subplots:
+
+### 1. Using the `[row, col]` Indexing Syntax
+
+```python
+# Access a cell directly using grid[row, col]
+cell = grid[0, 1]  # Get the cell at row 0, column 1
+
+# Add content to the cell
+cell.content = slide.add_text(
+    text="Cell at [0, 1]",
+    x=cell.x,
+    y=cell.y,
+    width=cell.width,
+    height=cell.height,
+    font_size=24,
+    align="center",
+    vertical="middle",
+)
+```
+
+### 2. Using Flat Indexing
+
+```python
+# Access a cell using a flat index (row-major order)
+cell = grid[3]  # Get the cell at flat index 3 (row 1, col 1 in a 2x2 grid)
+
+# Add content to the cell
+cell.content = slide.add_text(
+    text="Cell at flat index 3",
+    x=cell.x,
+    y=cell.y,
+    width=cell.width,
+    height=cell.height,
+    font_size=24,
+    align="center",
+    vertical="middle",
+)
+```
+
+### 3. Using Iteration
+
+```python
+# Iterate through all cells in the grid
+for cell in grid:
+    # Add content to each cell
+    cell.content = slide.add_text(
+        text=f"Cell at [{cell.row}, {cell.col}]",
+        x=cell.x,
+        y=cell.y,
+        width=cell.width,
+        height=cell.height,
+        font_size=24,
+        align="center",
+        vertical="middle",
+    )
+```
+
+### 4. Using Flat Iteration (like matplotlib)
+
+```python
+# Iterate through cells in a flattened manner
+for cell in grid.flat:
+    # Check cell properties and add content conditionally
+    if cell.row == 1:  # Only add to cells in the second row
+        cell.content = slide.add_text(
+            text=f"Flat cell at [{cell.row}, {cell.col}]",
+            x=cell.x,
+            y=cell.y,
+            width=cell.width,
+            height=cell.height,
+            font_size=24,
+            align="center",
+            vertical="middle",
+        )
+```
+
+### 5. Using the Traditional Method
+
+```python
+# Get a cell using the get_cell method
+cell = grid.get_cell(row=1, col=2)
+```
+
 ## Grid Properties and Methods
 
 ### Grid Class
@@ -207,6 +293,7 @@ dashboard.add_to_cell(
 - `padding`: Padding between cells (percentage)
 - `h_align`: Horizontal alignment for responsive positioning
 - `cells`: 2D array of GridCell objects
+- `flat`: Property that returns a flat iterator for the grid (like matplotlib's subplot.flat)
 
 ### Methods
 
@@ -214,7 +301,140 @@ dashboard.add_to_cell(
 - `merge_cells(start_row, start_col, end_row, end_col)`: Merge cells in the specified range
 - `add_to_cell(row, col, content_func, **kwargs)`: Add content to a specific cell
 - `add_grid_to_cell(row, col, rows, cols, padding, h_align)`: Add a nested grid to a cell
+- `__iter__()`: Makes Grid objects iterable
+- `__getitem__(key)`: Enables accessing cells via grid[row, col] or grid[index]
 
-## Complete Example
+## Automatic Grid Layout
 
-See [grid_layout_example.py](../examples/grid_layout_example.py) for a complete example showing basic grids, merged cells, nested grids, and a dashboard layout.
+EasyPPTX can automatically arrange content in a grid:
+
+```python
+# Create content functions
+def create_text1():
+    return slide.add_text(
+        text="Content 1",
+        font_size=24,
+        align="center",
+        vertical="middle",
+    )
+
+def create_text2():
+    return slide.add_text(
+        text="Content 2",
+        font_size=24,
+        align="center",
+        vertical="middle",
+    )
+
+# More content functions...
+
+# Use add_autogrid to arrange content automatically
+content_funcs = [create_text1, create_text2, ...]
+grid = pres.add_autogrid(
+    slide=slide,
+    content_funcs=content_funcs,
+    x="5%",
+    y="20%",
+    width="90%",
+    height="75%",
+    padding=5.0,
+    title="Auto Grid Example",
+)
+```
+
+## Arranging Matplotlib Plots
+
+You can automatically arrange matplotlib plots in a grid:
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Create matplotlib figures
+fig1 = plt.figure(figsize=(4, 3))
+categories = ["A", "B", "C", "D", "E"]
+values = [23, 45, 56, 78, 32]
+plt.bar(categories, values)
+plt.title("Bar Chart")
+
+fig2 = plt.figure(figsize=(4, 3))
+x = np.random.rand(50)
+y = np.random.rand(50)
+plt.scatter(x, y)
+plt.title("Scatter Plot")
+
+# More figures...
+
+# Arrange plots in a grid
+figures = [fig1, fig2, ...]
+from easypptx.grid import Grid
+grid = Grid.autogrid_pyplot(
+    parent=slide,
+    figures=figures,
+    x="5%",
+    y="20%",
+    width="90%",
+    height="75%",
+    rows=2,
+    cols=2,
+    padding=5.0,
+    title="Matplotlib Plots in Grid",
+    title_height="5%",
+    dpi=300,
+)
+```
+
+## One-Step Grid Slide Creation
+
+For a quicker workflow, create a slide with a grid in one step:
+
+```python
+# Create a slide with a grid
+slide, grid = pres.add_grid_slide(
+    rows=3,
+    cols=3,
+    title="Grid Slide Example",
+    title_height="15%",
+    padding=3.0,
+)
+
+# Now add content to the grid cells
+for row in range(3):
+    for col in range(3):
+        grid.add_to_cell(
+            row=row,
+            col=col,
+            content_func=slide.add_text,
+            text=f"Cell [{row},{col}]",
+            font_size=18,
+            align="center",
+            vertical="middle",
+        )
+```
+
+## One-Step AutoGrid Slide Creation
+
+Similarly, create a slide with an auto-arranged grid in one step:
+
+```python
+# Content functions
+content_funcs = [create_text1, create_text2, ...]
+
+# Create a slide with auto-arranged content
+slide, grid = pres.add_autogrid_slide(
+    content_funcs=content_funcs,
+    rows=2,
+    cols=2,
+    title="Auto Grid Slide",
+    title_height="15%",
+)
+```
+
+## Complete Examples
+
+See the following examples for detailed demonstrations:
+
+- [001_basic_grid.py](../examples/grid/001_basic_grid.py): Basic grid creation and usage
+- [002_grid_indexing.py](../examples/grid/002_grid_indexing.py): Grid indexing and iteration features
+- [003_nested_grid.py](../examples/grid/003_nested_grid.py): Nested grids and cell merging
+- [004_autogrid.py](../examples/grid/004_autogrid.py): Automatic grid layout features

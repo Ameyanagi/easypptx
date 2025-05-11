@@ -251,6 +251,68 @@ pres.add_pyplot(
 
 ## Advanced Features
 
+### Grid Layout System
+
+```python
+from easypptx import Presentation
+
+# Create a presentation
+pres = Presentation()
+slide = pres.add_slide()
+
+# Create a 2x2 grid
+grid = pres.add_grid(
+    slide=slide,
+    x="5%",
+    y="15%",
+    width="90%",
+    height="75%",
+    rows=2,
+    cols=2,
+    padding=5.0
+)
+
+# Add content to a cell using grid[row, col] syntax
+grid[0, 0].content = slide.add_text(
+    text="Top Left Cell",
+    x=grid[0, 0].x,
+    y=grid[0, 0].y,
+    width=grid[0, 0].width,
+    height=grid[0, 0].height,
+    font_size=24,
+    align="center",
+    vertical="middle"
+)
+
+# Iterate through cells
+for cell in grid:
+    if cell.row == 1:  # Only second row
+        cell.content = slide.add_text(
+            text=f"Cell [{cell.row}, {cell.col}]",
+            x=cell.x,
+            y=cell.y,
+            width=cell.width,
+            height=cell.height,
+            font_size=18,
+            align="center",
+            vertical="middle"
+        )
+
+# Access cell with flat index
+grid[3].content = slide.add_text(
+    text="Bottom Right Cell",
+    x=grid[3].x,
+    y=grid[3].y,
+    width=grid[3].width,
+    height=grid[3].height,
+    font_size=24,
+    align="center",
+    vertical="middle"
+)
+```
+
+See [Grid Layout](grid_layout.md) for more details.
+
 ### Percentage-Based Positioning
 
 ```python
@@ -374,5 +436,10 @@ EasyPPTX comes with several example scripts demonstrating various features:
 - **extended_features_example.py**: Showcase of percentage-based positioning and auto-alignment
 - **plot_example.py**: Examples of using matplotlib and seaborn plots
 - **object_api_example.py**: Demonstrates the direct object APIs for slide manipulation
+- **Grid Examples**:
+  - **001_basic_grid.py**: Basic grid creation and usage
+  - **002_grid_indexing.py**: Grid indexing and iteration features
+  - **003_nested_grid.py**: Nested grids and cell merging
+  - **004_autogrid.py**: Automatic grid layout features
 
 See the [Examples](https://github.com/Ameyanagi/EasyPPTX/tree/main/examples) directory for the full source code.

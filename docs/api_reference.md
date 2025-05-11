@@ -405,3 +405,223 @@ MSO_SHAPE.ACTION_BUTTON_HOME
 ```
 
 For a complete list of shape types, refer to the [python-pptx documentation](https://python-pptx.readthedocs.io/en/latest/api/enum/MsoAutoShapeType.html).
+
+## Grid Class
+
+The `Grid` class provides a powerful layout system for organizing content on slides.
+
+```python
+class Grid:
+    def __init__(self,
+                 parent: Any,
+                 x: PositionType = "0%",
+                 y: PositionType = "0%",
+                 width: PositionType = "100%",
+                 height: PositionType = "100%",
+                 rows: int = 1,
+                 cols: int = 1,
+                 padding: float = 5.0) -> None:
+        """Initialize a Grid layout.
+
+        Args:
+            parent: The parent Slide or Grid object
+            x: X position of the grid (default: "0%")
+            y: Y position of the grid (default: "0%")
+            width: Width of the grid (default: "100%")
+            height: Height of the grid (default: "100%")
+            rows: Number of rows (default: 1)
+            cols: Number of columns (default: 1)
+            padding: Padding between cells as percentage of cell size (default: 5.0)
+        """
+    
+    def get_cell(self, row: int, col: int) -> GridCell:
+        """Get a cell at the specified row and column.
+
+        Args:
+            row: Row index (0-based)
+            col: Column index (0-based)
+
+        Returns:
+            The GridCell at the specified position
+
+        Raises:
+            OutOfBoundsError: If row or column is out of bounds
+        """
+    
+    def merge_cells(self, start_row: int, start_col: int, end_row: int, end_col: int) -> GridCell:
+        """Merge cells in the specified range.
+
+        Args:
+            start_row: Starting row index (0-based)
+            start_col: Starting column index (0-based)
+            end_row: Ending row index (0-based, inclusive)
+            end_col: Ending column index (0-based, inclusive)
+
+        Returns:
+            The merged cell
+
+        Raises:
+            OutOfBoundsError: If any row or column is out of bounds
+            CellMergeError: If the merged area overlaps with an existing merged cell
+        """
+    
+    def add_to_cell(self, row: int, col: int, content_func: Callable, **kwargs) -> Any:
+        """Add content to a specific cell in the grid.
+
+        Args:
+            row: Row index (0-based)
+            col: Column index (0-based)
+            content_func: Function to call to add content (e.g., slide.add_text)
+            **kwargs: Additional arguments to pass to the content function
+
+        Returns:
+            The object returned by the content function
+
+        Raises:
+            OutOfBoundsError: If row or column is out of bounds
+            CellMergeError: If the cell is part of a merged cell
+        """
+    
+    def add_grid_to_cell(self, row: int, col: int, rows: int = 1, cols: int = 1, padding: float = 5.0) -> "Grid":
+        """Add a nested grid to a specific cell.
+
+        Args:
+            row: Row index (0-based)
+            col: Column index (0-based)
+            rows: Number of rows in the nested grid (default: 1)
+            cols: Number of columns in the nested grid (default: 1)
+            padding: Padding between cells as percentage of cell size (default: 5.0)
+
+        Returns:
+            The nested Grid object
+
+        Raises:
+            OutOfBoundsError: If row or column is out of bounds
+            CellMergeError: If the cell is part of a merged cell
+        """
+    
+    def __iter__(self):
+        """Make Grid iterable to loop through all cells.
+
+        Returns:
+            Iterator over all grid cells
+        """
+    
+    def __getitem__(self, key):
+        """Access a cell or range of cells using indexing.
+
+        Args:
+            key: A tuple of (row, col) or a single index for flattened access
+
+        Returns:
+            The requested GridCell object or a list of cells
+
+        Raises:
+            OutOfBoundsError: If the requested cell is out of bounds
+            TypeError: If the key is not in the right format
+        """
+    
+    @property
+    def flat(self):
+        """Flat iterator for this grid, similar to matplotlib's subplot.flat.
+
+        Returns:
+            A flat iterator over all cells in the grid
+        """
+    
+    @classmethod
+    def autogrid(cls, parent: Any, content_funcs: list, rows: int | None = None, cols: int | None = None,
+                x: PositionType = "5%", y: PositionType = "5%", width: PositionType = "90%",
+                height: PositionType = "90%", padding: float = 5.0, title: str | None = None,
+                title_height: PositionType = "10%") -> "Grid":
+        """Create a grid and automatically place content into cells.
+
+        Args:
+            parent: The parent Slide object
+            content_funcs: List of content functions to place in grid cells
+            rows: Number of rows (if None, calculated automatically)
+            cols: Number of columns (if None, calculated automatically)
+            x: X position of the grid (default: "5%")
+            y: Y position of the grid (default: "5%")
+            width: Width of the grid (default: "90%")
+            height: Height of the grid (default: "90%")
+            padding: Padding between cells (default: 5.0)
+            title: Optional title for the grid (default: None)
+            title_height: Height of the title area (default: "10%")
+
+        Returns:
+            The created Grid object
+        """
+    
+    @classmethod
+    def autogrid_pyplot(cls, parent: Any, figures: list, rows: int | None = None, cols: int | None = None,
+                       x: PositionType = "5%", y: PositionType = "5%", width: PositionType = "90%",
+                       height: PositionType = "90%", padding: float = 5.0, title: str | None = None,
+                       title_height: PositionType = "10%", dpi: int = 300, file_format: str = "png") -> "Grid":
+        """Create a grid and automatically place matplotlib figures into cells.
+
+        Args:
+            parent: The parent Slide object
+            figures: List of matplotlib figures to place in grid cells
+            rows: Number of rows (if None, calculated automatically)
+            cols: Number of columns (if None, calculated automatically)
+            x: X position of the grid (default: "5%")
+            y: Y position of the grid (default: "5%")
+            width: Width of the grid (default: "90%")
+            height: Height of the grid (default: "90%")
+            padding: Padding between cells (default: 5.0)
+            title: Optional title for the grid (default: None)
+            title_height: Height of the title area (default: "10%")
+            dpi: Resolution for saved figures (default: 300)
+            file_format: Image format for saved figures (default: "png")
+
+        Returns:
+            The created Grid object
+        """
+```
+
+## GridCell Class
+
+The `GridCell` class represents a cell in a grid layout.
+
+```python
+class GridCell:
+    def __init__(self, row: int, col: int, x: str, y: str, width: str, height: str) -> None:
+        """Initialize a GridCell.
+
+        Args:
+            row: Row index of the cell
+            col: Column index of the cell
+            x: X position as percentage
+            y: Y position as percentage
+            width: Width as percentage
+            height: Height as percentage
+        """
+```
+
+## GridFlatIterator Class
+
+The `GridFlatIterator` class provides a way to iterate through grid cells in a flattened manner, similar to matplotlib's subplot.flat.
+
+```python
+class GridFlatIterator:
+    def __init__(self, grid: Grid):
+        """Initialize a flat iterator for the grid.
+
+        Args:
+            grid: The Grid object to iterate over
+        """
+    
+    def __iter__(self):
+        """Return the iterator itself."""
+    
+    def __next__(self):
+        """Get the next cell in the flattened grid.
+
+        Returns:
+            The next GridCell object
+
+        Raises:
+            StopIteration: When all cells have been iterated through
+        """
+```
