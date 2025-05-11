@@ -45,7 +45,7 @@ slide.add_image(
 
 Several methods apply responsive centering automatically when appropriate:
 
-1. Text elements with `align="center"` automatically use `h_align="center"` 
+1. Text elements with `align="center"` automatically use `h_align="center"`
 2. Images with width > 50% automatically use `h_align="center"`
 3. Shapes with width > 50% automatically use `h_align="center"`
 
@@ -109,7 +109,7 @@ Responsive positioning is compatible with all other EasyPPTX features, including
 To ensure backward compatibility, responsive positioning is applied selectively:
 
 1. **Explicitly centered elements**: When `h_align="center"` is specified
-2. **Centered text**: When `align="center"` is specified  
+2. **Centered text**: When `align="center"` is specified
 3. **Wide images/shapes**: When width > 50% and centered positioning is likely desired
 
 For other elements, standard positioning is used to maintain precise control.

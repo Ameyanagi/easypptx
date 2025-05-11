@@ -8,63 +8,63 @@ The `Presentation` class is the main entry point for creating and manipulating P
 
 ```python
 class Presentation:
-    def __init__(self, 
-                 aspect_ratio: Optional[str] = "16:9", 
-                 width_inches: Optional[float] = None, 
+    def __init__(self,
+                 aspect_ratio: Optional[str] = "16:9",
+                 width_inches: Optional[float] = None,
                  height_inches: Optional[float] = None,
                  template_path: Optional[str] = None,
                  default_bg_color: Optional[Union[str, Tuple[int, int, int]]] = None) -> None:
         """Initialize a new empty presentation.
-        
+
         Args:
             aspect_ratio: Predefined aspect ratio, one of "16:9" (default), "4:3", "16:10", "A4", "LETTER"
             width_inches: Custom width in inches (overrides aspect_ratio if specified)
             height_inches: Custom height in inches (overrides aspect_ratio if specified)
             template_path: Path to a reference PowerPoint template to use for styles (default: None)
             default_bg_color: Default background color for slides as string name or RGB tuple (default: None)
-        
+
         Raises:
             ValueError: If an invalid aspect ratio is specified
             FileNotFoundError: If the template file doesn't exist
         """
-        
+
     @classmethod
     def open(cls, file_path: Union[str, Path]) -> "Presentation":
         """Open an existing PowerPoint presentation.
-        
+
         Args:
             file_path: Path to the PowerPoint file to open
-            
+
         Returns:
             A new Presentation object with the loaded presentation
-            
+
         Raises:
             FileNotFoundError: If the specified file doesn't exist
             ValueError: If the file is not a valid PowerPoint file
         """
-        
+
     def add_slide(self, layout_index: int = None, bg_color: Optional[Union[str, Tuple[int, int, int]]] = None) -> Slide:
         """Add a new slide to the presentation.
-        
+
         Args:
             layout_index: Index of the slide layout to use (default: None uses blank layout)
             bg_color: Background color for this slide, overrides default (default: None)
-            
+
         Returns:
             A new Slide object
         """
-        
+
     @property
     def slides(self) -> List[Slide]:
         """Get a list of all slides in the presentation.
-        
+
         Returns:
             List of Slide objects
         """
-        
+
     def save(self, file_path: Union[str, Path]) -> None:
         """Save the presentation to a file.
-        
+
         Args:
             file_path: Path where the presentation should be saved
         """
@@ -82,7 +82,7 @@ class Slide:
         Args:
             pptx_slide: The python-pptx Slide object
         """
-        
+
     def add_text(
         self,
         text: str,
@@ -117,7 +117,7 @@ class Slide:
         Returns:
             The created shape object
         """
-        
+
     def add_image(
         self,
         image_path: str,
@@ -141,7 +141,7 @@ class Slide:
         Raises:
             FileNotFoundError: If the image file doesn't exist
         """
-        
+
     def add_shape(
         self,
         shape_type: MSO_SHAPE = MSO_SHAPE.RECTANGLE,
@@ -164,7 +164,7 @@ class Slide:
         Returns:
             The created shape object
         """
-        
+
     def add_multiple_objects(
         self,
         objects_data: List[dict],
@@ -176,7 +176,7 @@ class Slide:
         height: PositionType = "90%",
     ) -> List[PPTXShape]:
         """Add multiple objects to the slide with automatic alignment.
-        
+
         Args:
             objects_data: List of dictionaries containing object data
                 Each dict should have 'type' ('text', 'image', or 'shape') and type-specific parameters
@@ -186,14 +186,14 @@ class Slide:
             start_y: Starting Y position of container in inches or percentage
             width: Width of container in inches or percentage
             height: Height of container in inches or percentage
-            
+
         Returns:
             List of created shape objects
         """
-        
+
     def clear(self) -> None:
         """Remove all shapes from the slide."""
-        
+
     @property
     def title(self) -> Optional[str]:
         """Get the slide title.
@@ -201,7 +201,7 @@ class Slide:
         Returns:
             The slide title if it exists, None otherwise
         """
-        
+
     @title.setter
     def title(self, value: str) -> None:
         """Set the slide title.
@@ -209,10 +209,10 @@ class Slide:
         Args:
             value: The title text
         """
-        
+
     def set_background_color(self, color: Union[str, Tuple[int, int, int]]) -> None:
         """Set the background color of the slide.
-        
+
         Args:
             color: Background color as string name from COLORS dict or RGB tuple
         """
@@ -226,14 +226,14 @@ The `Text` class provides methods for adding and formatting text on slides.
 class Text:
     def __init__(self, slide_obj: "Slide") -> None:
         """Initialize a Text object.
-        
+
         Args:
             slide_obj: The Slide object to add text to
         """
-        
+
     def add_title(
-        self, 
-        text: str, 
+        self,
+        text: str,
         font_size: int = 44,
         font_name: str = "Meiryo",
         color: Optional[Union[str, Tuple[int, int, int]]] = "black",
@@ -244,7 +244,7 @@ class Text:
         height: PositionType = "15%",
     ) -> PPTXShape:
         """Add a title to the slide.
-        
+
         Args:
             text: The title text
             font_size: Font size in points (default: 44)
@@ -255,11 +255,11 @@ class Text:
             y: Y position in inches or percentage (default: "5%")
             width: Width in inches or percentage (default: "80%")
             height: Height in inches or percentage (default: "15%")
-            
+
         Returns:
             The created shape object
         """
-        
+
     def add_paragraph(
         self,
         text: str,
@@ -276,7 +276,7 @@ class Text:
         color: Optional[Union[str, Tuple[int, int, int]]] = "black",
     ) -> PPTXShape:
         """Add a paragraph of text to the slide.
-        
+
         Args:
             text: The paragraph text
             x: X position in inches or percentage (default: 1.0)
@@ -290,11 +290,11 @@ class Text:
             align: Text alignment, one of "left", "center", "right" (default: "left")
             vertical: Vertical alignment, one of "top", "middle", "bottom" (default: "top")
             color: Text color as string name from COLORS dict or RGB tuple (default: "black")
-            
+
         Returns:
             The created shape object
         """
-        
+
     @staticmethod
     def format_text_frame(
         text_frame: TextFrame,
@@ -307,7 +307,7 @@ class Text:
         vertical: Optional[str] = None,
     ) -> None:
         """Format an existing text frame.
-        
+
         Args:
             text_frame: The text frame to format
             font_size: Font size in points (default: None)

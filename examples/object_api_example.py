@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 from pptx.enum.shapes import MSO_SHAPE
 
-from easypptx import Presentation, Slide
+from easypptx import Presentation
 
 # Create a folder for outputs if it doesn't exist
 output_dir = Path("output")
@@ -20,24 +20,13 @@ output_dir.mkdir(exist_ok=True)
 pres = Presentation()
 
 # Create a title slide
-title_slide = pres.add_title_slide(
-    title="Object API Examples",
-    subtitle="Direct manipulation of slide elements"
-)
+title_slide = pres.add_title_slide(title="Object API Examples", subtitle="Direct manipulation of slide elements")
 
 # Slide 1: Text
 text_slide = pres.add_content_slide(title="Text Examples")
 
 # Add text directly to the slide
-pres.add_text(
-    slide=text_slide,
-    text="This is regular text",
-    x="10%",
-    y="20%",
-    width="80%",
-    height="8%",
-    font_size=18
-)
+pres.add_text(slide=text_slide, text="This is regular text", x="10%", y="20%", width="80%", height="8%", font_size=18)
 
 pres.add_text(
     slide=text_slide,
@@ -49,18 +38,11 @@ pres.add_text(
     font_size=18,
     font_bold=True,
     font_italic=True,
-    color="blue"
+    color="blue",
 )
 
 pres.add_text(
-    slide=text_slide,
-    text="Right-aligned text",
-    x="10%",
-    y="40%",
-    width="80%",
-    height="8%",
-    font_size=18,
-    align="right"
+    slide=text_slide, text="Right-aligned text", x="10%", y="40%", width="80%", height="8%", font_size=18, align="right"
 )
 
 pres.add_text(
@@ -73,7 +55,7 @@ pres.add_text(
     font_size=18,
     align="center",
     vertical="middle",
-    color=(150, 75, 0)
+    color=(150, 75, 0),
 )
 
 # Slide 2: Shapes
@@ -89,7 +71,7 @@ pres.add_shape(
     height="15%",
     fill_color="blue",
     text="Rectangle",
-    font_color="white"
+    font_color="white",
 )
 
 pres.add_shape(
@@ -103,7 +85,7 @@ pres.add_shape(
     line_color="darkgray",
     line_width=2.0,
     text="Rounded Rectangle",
-    font_color="white"
+    font_color="white",
 )
 
 pres.add_shape(
@@ -115,7 +97,7 @@ pres.add_shape(
     height="15%",
     fill_color="red",
     text="Oval",
-    font_color="white"
+    font_color="white",
 )
 
 pres.add_shape(
@@ -127,7 +109,7 @@ pres.add_shape(
     height="15%",
     fill_color="orange",
     text="Pentagon",
-    font_color="white"
+    font_color="white",
 )
 
 pres.add_shape(
@@ -139,7 +121,7 @@ pres.add_shape(
     height="15%",
     fill_color="cyan",
     text="Chevron",
-    font_color="black"
+    font_color="black",
 )
 
 pres.add_shape(
@@ -151,7 +133,7 @@ pres.add_shape(
     height="15%",
     fill_color="yellow",
     text="Star",
-    font_color="black"
+    font_color="black",
 )
 
 # Slide 3: Table
@@ -163,7 +145,7 @@ table_data = [
     ["Product A", 120, 140, 135, 150],
     ["Product B", 85, 90, 95, 110],
     ["Product C", 45, 55, 65, 70],
-    ["Product D", 30, 25, 40, 35]
+    ["Product D", 30, 25, 40, 35],
 ]
 
 # Add table to slide
@@ -176,14 +158,10 @@ pres.add_table(
     height="50%",
     has_header=True,
     style={
-        "first_row": {
-            "bold": True,
-            "bg_color": "blue",
-            "text_color": "white"
-        },
+        "first_row": {"bold": True, "bg_color": "blue", "text_color": "white"},
         "banded_rows": True,
-        "band_color": "lightgray"
-    }
+        "band_color": "lightgray",
+    },
 )
 
 # Slide 4: Chart
@@ -194,7 +172,7 @@ chart_data = pd.DataFrame({
     "Quarter": ["Q1", "Q2", "Q3", "Q4"],
     "Sales": [120, 145, 160, 180],
     "Expenses": [95, 110, 115, 130],
-    "Profit": [25, 35, 45, 50]
+    "Profit": [25, 35, 45, 50],
 })
 
 # Add chart to slide
@@ -213,7 +191,7 @@ pres.add_chart(
     has_title=True,
     chart_title="Quarterly Performance",
     has_data_labels=True,
-    gridlines=True
+    gridlines=True,
 )
 
 # Slide 5: Image
@@ -238,7 +216,7 @@ if image_dir.exists() and any(image_dir.glob("*.png")):
             width="80%",
             height="10%",
             font_size=16,
-            align="center"
+            align="center",
         )
 else:
     # Create a dummy image
@@ -251,7 +229,7 @@ else:
         width="80%",
         height="10%",
         font_size=16,
-        align="center"
+        align="center",
     )
 
 # If we have an image, add it to the slide
@@ -266,7 +244,7 @@ if sample_image:
         maintain_aspect_ratio=True,
         border=True,
         border_color="blue",
-        shadow=True
+        shadow=True,
     )
 
 # Slide 6: Combination of elements
@@ -281,7 +259,7 @@ pres.add_shape(
     width="90%",
     height="75%",
     fill_color=(240, 240, 240),
-    line_color="gray"
+    line_color="gray",
 )
 
 # Add title text
@@ -294,7 +272,7 @@ pres.add_text(
     height="10%",
     font_size=24,
     font_bold=True,
-    align="center"
+    align="center",
 )
 
 # Add a small table
@@ -302,24 +280,15 @@ table_data_small = [
     ["Metric", "Value"],
     ["Total Revenue", "$1,245,000"],
     ["Growth Rate", "+15.2%"],
-    ["Conversion", "4.8%"]
+    ["Conversion", "4.8%"],
 ]
 
 pres.add_table(
-    slide=combined_slide,
-    data=table_data_small,
-    x="10%",
-    y="35%",
-    width="35%",
-    height="20%",
-    has_header=True
+    slide=combined_slide, data=table_data_small, x="10%", y="35%", width="35%", height="20%", has_header=True
 )
 
 # Add small chart
-chart_data_small = pd.DataFrame({
-    "Month": ["Jan", "Feb", "Mar", "Apr"],
-    "Value": [42, 35, 65, 58]
-})
+chart_data_small = pd.DataFrame({"Month": ["Jan", "Feb", "Mar", "Apr"], "Value": [42, 35, 65, 58]})
 
 pres.add_chart(
     slide=combined_slide,
@@ -333,7 +302,7 @@ pres.add_chart(
     value_columns="Value",
     has_title=True,
     chart_title="Monthly Trend",
-    has_legend=False
+    has_legend=False,
 )
 
 # Add text boxes at the bottom
@@ -347,7 +316,7 @@ pres.add_shape(
     fill_color="blue",
     text="$1.24M\nTotal Revenue",
     font_color="white",
-    font_size=14
+    font_size=14,
 )
 
 pres.add_shape(
@@ -360,7 +329,7 @@ pres.add_shape(
     fill_color="green",
     text="+15.2%\nGrowth",
     font_color="white",
-    font_size=14
+    font_size=14,
 )
 
 pres.add_shape(
@@ -373,7 +342,7 @@ pres.add_shape(
     fill_color="orange",
     text="4.8%\nConversion",
     font_color="white",
-    font_size=14
+    font_size=14,
 )
 
 # Add a closing slide

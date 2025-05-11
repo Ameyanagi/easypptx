@@ -1,14 +1,18 @@
 """Text handling module for EasyPPTX."""
 
-from typing import Dict, Optional, Tuple, Union
+from typing import TYPE_CHECKING
 
 from pptx.dml.color import RGBColor
 from pptx.shapes.autoshape import Shape as PPTXShape
 from pptx.text.text import TextFrame
 from pptx.util import Pt
 
+if TYPE_CHECKING:
+    from easypptx.slide import Slide
+
 # Type for position parameters - accepts either percentage or absolute values
-PositionType = Union[float, str]
+PositionType = float | str
+RGBColorTuple = tuple[int, int, int]
 
 
 class Text:
@@ -32,7 +36,7 @@ class Text:
         ```
     """
 
-    def __init__(self, slide_obj: "Slide") -> None:  # noqa: F821
+    def __init__(self, slide_obj: "Slide") -> None:
         """Initialize a Text object.
 
         Args:
@@ -45,7 +49,7 @@ class Text:
         text: str,
         font_size: int = 44,
         font_name: str = "Meiryo",
-        color: Optional[Union[str, Tuple[int, int, int]]] = "black",
+        color: str | RGBColorTuple | None = "black",
         align: str = "center",
         x: PositionType = "10%",
         y: PositionType = "5%",
@@ -96,7 +100,7 @@ class Text:
         font_name: str = "Meiryo",
         align: str = "left",
         vertical: str = "top",
-        color: Optional[Union[str, Tuple[int, int, int]]] = "black",
+        color: str | RGBColorTuple | None = "black",
     ) -> PPTXShape:
         """Add a paragraph of text to the slide.
 
@@ -138,14 +142,14 @@ class Text:
     def add(
         slide,
         text: str,
-        position: Dict[str, PositionType],
+        position: dict[str, PositionType],
         font_name: str = "Meiryo",
         font_size: int = 18,
         font_bold: bool = False,
         font_italic: bool = False,
         align: str = "left",
         vertical_align: str = "top",
-        color: Optional[Union[str, Tuple[int, int, int]]] = "black",
+        color: str | RGBColorTuple | None = "black",
     ) -> PPTXShape:
         """Static method to add text to a slide.
 
@@ -186,13 +190,13 @@ class Text:
     @staticmethod
     def format_text_frame(
         text_frame: TextFrame,
-        font_size: Optional[int] = None,
-        font_bold: Optional[bool] = None,
-        font_italic: Optional[bool] = None,
-        font_name: Optional[str] = None,
-        color: Optional[Union[str, Tuple[int, int, int]]] = None,
-        align: Optional[str] = None,
-        vertical: Optional[str] = None,
+        font_size: int | None = None,
+        font_bold: bool | None = None,
+        font_italic: bool | None = None,
+        font_name: str | None = None,
+        color: str | RGBColorTuple | None = None,
+        align: str | None = None,
+        vertical: str | None = None,
     ) -> None:
         """Format an existing text frame.
 

@@ -6,6 +6,7 @@ to demonstrate the responsive positioning feature.
 """
 
 from pathlib import Path
+
 from easypptx import Presentation
 
 # Create output directory
@@ -17,10 +18,10 @@ aspect_ratios = ["16:9", "4:3", "16:10", "A4"]
 
 for aspect_ratio in aspect_ratios:
     print(f"Creating presentation with {aspect_ratio} aspect ratio...")
-    
+
     # Create presentation with the specific aspect ratio
     pres = Presentation(aspect_ratio=aspect_ratio)
-    
+
     # Add title slide
     slide1 = pres.add_slide()
     slide1.add_text(
@@ -44,7 +45,7 @@ for aspect_ratio in aspect_ratios:
         align="center",
         h_align="center",  # Enable responsive positioning
     )
-    
+
     # Add a slide showing standard vs. responsive positioning
     slide2 = pres.add_slide()
     slide2.add_text(
@@ -58,7 +59,7 @@ for aspect_ratio in aspect_ratios:
         align="center",
         h_align="center",  # Enable responsive positioning
     )
-    
+
     # Standard positioning (without h_align)
     slide2.add_shape(
         shape_type=1,  # Rectangle
@@ -66,7 +67,7 @@ for aspect_ratio in aspect_ratios:
         y="25%",
         width="35%",
         height="25%",
-        fill_color="red"
+        fill_color="red",
         # No h_align, so standard positioning
     )
     slide2.add_text(
@@ -76,9 +77,9 @@ for aspect_ratio in aspect_ratios:
         width="35%",
         height="10%",
         font_size=14,
-        align="center"
+        align="center",
     )
-    
+
     # Responsive positioning (with h_align)
     slide2.add_shape(
         shape_type=1,  # Rectangle
@@ -87,7 +88,7 @@ for aspect_ratio in aspect_ratios:
         width="35%",
         height="25%",
         fill_color="green",
-        h_align="center"  # Enable responsive positioning
+        h_align="center",  # Enable responsive positioning
     )
     slide2.add_text(
         text="Responsive positioning\n(maintains proper alignment)",
@@ -97,9 +98,9 @@ for aspect_ratio in aspect_ratios:
         height="10%",
         font_size=14,
         align="center",
-        h_align="center"  # Enable responsive positioning
+        h_align="center",  # Enable responsive positioning
     )
-    
+
     # Add explanation
     slide2.add_text(
         text=(
@@ -112,9 +113,9 @@ for aspect_ratio in aspect_ratios:
         height="15%",
         font_size=14,
         align="center",
-        h_align="center"  # Enable responsive positioning
+        h_align="center",  # Enable responsive positioning
     )
-    
+
     # Save the presentation with the aspect ratio in the filename
     output_path = output_dir / f"aspect_ratio_test_{aspect_ratio.replace(':', '_')}.pptx"
     pres.save(output_path)

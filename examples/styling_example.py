@@ -9,7 +9,6 @@ This example shows:
 """
 
 from pathlib import Path
-from typing import List, Tuple
 
 import pandas as pd
 
@@ -25,7 +24,7 @@ sales_data = {
     "Q1 Sales": [120, 75, 90, 110],
     "Q2 Sales": [140, 85, 95, 120],
     "Q3 Sales": [135, 90, 105, 115],
-    "Q4 Sales": [150, 100, 110, 130]
+    "Q4 Sales": [150, 100, 110, 130],
 }
 
 sales_df = pd.DataFrame(sales_data)
@@ -35,15 +34,11 @@ pres = Presentation()
 
 # 1. Add a title slide
 title_slide = pres.add_title_slide(
-    title="Styling Options in EasyPPTX",
-    subtitle="Customizing images, tables, and charts"
+    title="Styling Options in EasyPPTX", subtitle="Customizing images, tables, and charts"
 )
 
 # 2. Add a section slide for image styling
-section_slide1 = pres.add_section_slide(
-    title="Image Styling",
-    bg_color="blue"
-)
+section_slide1 = pres.add_section_slide(title="Image Styling", bg_color="blue")
 
 # 3. Add an image slide with custom styling
 image_slide = pres.add_image_slide(
@@ -56,15 +51,12 @@ image_slide = pres.add_image_slide(
         "border_width": 2,
         "shadow": True,
         "maintain_aspect_ratio": True,
-        "center": True
-    }
+        "center": True,
+    },
 )
 
 # 4. Add a section slide for table styling
-section_slide2 = pres.add_section_slide(
-    title="Table Styling",
-    bg_color="green"
-)
+section_slide2 = pres.add_section_slide(title="Table Styling", bg_color="green")
 
 # 5. Add a table slide with custom styling
 table_slide = pres.add_table_slide(
@@ -72,11 +64,7 @@ table_slide = pres.add_table_slide(
     data=sales_df,
     has_header=True,
     custom_style={
-        "first_row": {
-            "bold": True,
-            "bg_color": "blue",
-            "text_color": "white"
-        },
+        "first_row": {"bold": True, "bg_color": "blue", "text_color": "white"},
         "banded_rows": True,
         "band_color": "lightgray",
         "border_color": "black",
@@ -86,15 +74,12 @@ table_slide = pres.add_table_slide(
         "header_align": "center",
         "font_name": "Meiryo",
         "font_size": 12,
-        "header_font_size": 14
-    }
+        "header_font_size": 14,
+    },
 )
 
 # 6. Add a section slide for chart styling
-section_slide3 = pres.add_section_slide(
-    title="Chart Styling",
-    bg_color="red"
-)
+section_slide3 = pres.add_section_slide(title="Chart Styling", bg_color="red")
 
 # 7. Add a chart slide with custom styling
 chart_slide = pres.add_chart_slide(
@@ -116,8 +101,8 @@ chart_slide = pres.add_chart_slide(
             (0xED, 0x7D, 0x31),  # Orange
             (0xA5, 0xA5, 0xA5),  # Gray
             (0xFF, 0xC0, 0x00),  # Yellow
-        ]
-    }
+        ],
+    },
 )
 
 # 8. Create a custom template with styling for all elements
@@ -129,30 +114,21 @@ custom_template = {
         "font": {"name": "Meiryo", "size": 24, "bold": True},
         "align": "center",
         "vertical": "middle",
-        "color": "darkblue"
+        "color": "darkblue",
     },
     "image_style": {
         "border": True,
         "border_color": "darkblue",
         "shadow": True,
         "maintain_aspect_ratio": True,
-        "center": True
+        "center": True,
     },
     "table_style": {
-        "first_row": {
-            "bold": True,
-            "bg_color": "darkblue",
-            "text_color": "white"
-        },
+        "first_row": {"bold": True, "bg_color": "darkblue", "text_color": "white"},
         "banded_rows": True,
-        "band_color": "lightblue"
+        "band_color": "lightblue",
     },
-    "chart_style": {
-        "chart_type": "pie",
-        "has_legend": True,
-        "legend_position": "right",
-        "has_data_labels": True
-    }
+    "chart_style": {"chart_type": "pie", "has_legend": True, "legend_position": "right", "has_data_labels": True},
 }
 
 # 9. Add a slide using the custom template
@@ -162,7 +138,7 @@ custom_slide.add_text(
     position={"x": "10%", "y": "20%", "width": "80%", "height": "70%"},
     font_size=16,
     align="center",
-    vertical="middle"
+    vertical="middle",
 )
 
 # 10. Add a "thank you" slide

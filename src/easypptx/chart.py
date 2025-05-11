@@ -1,6 +1,6 @@
 """Chart handling module for EasyPPTX."""
 
-from typing import Any, List, Optional, Union
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pandas as pd
 from pptx.chart.chart import Chart as PPTXChart
@@ -8,8 +8,11 @@ from pptx.chart.data import CategoryChartData
 from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
 from pptx.util import Inches
 
+if TYPE_CHECKING:
+    from easypptx.slide import Slide
+
 # Type for position parameters - accepts either percentage or absolute values
-PositionType = Union[float, str]
+PositionType = float | str
 
 
 class Chart:
@@ -36,7 +39,7 @@ class Chart:
         ```
     """
 
-    CHART_TYPES = {
+    CHART_TYPES: ClassVar = {
         "column": XL_CHART_TYPE.COLUMN_CLUSTERED,
         "bar": XL_CHART_TYPE.BAR_CLUSTERED,
         "line": XL_CHART_TYPE.LINE,
@@ -45,7 +48,7 @@ class Chart:
         "scatter": XL_CHART_TYPE.XY_SCATTER,
     }
 
-    LEGEND_POSITIONS = {
+    LEGEND_POSITIONS: ClassVar = {
         "right": XL_LEGEND_POSITION.RIGHT,
         "left": XL_LEGEND_POSITION.LEFT,
         "top": XL_LEGEND_POSITION.TOP,
@@ -53,7 +56,7 @@ class Chart:
         "corner": XL_LEGEND_POSITION.CORNER,
     }
 
-    def __init__(self, slide_obj: "Slide") -> None:  # noqa: F821
+    def __init__(self, slide_obj: "Slide") -> None:
         """Initialize a Chart object.
 
         Args:
@@ -64,13 +67,13 @@ class Chart:
     def add(
         self,
         chart_type: str,
-        categories: List[str],
-        values: List[Union[int, float]],
+        categories: list,
+        values: list,
         x: PositionType = 1.0,
         y: PositionType = 1.0,
         width: PositionType = 6.0,
         height: PositionType = 4.5,
-        title: Optional[str] = None,
+        title: str | None = None,
         has_legend: bool = True,
         **kwargs: Any,
     ) -> PPTXChart:
@@ -145,13 +148,13 @@ class Chart:
 
     def add_bar(
         self,
-        categories: List[str],
-        values: List[Union[int, float]],
+        categories: list,
+        values: list,
         x: PositionType = 1.0,
         y: PositionType = 1.0,
         width: PositionType = 6.0,
         height: PositionType = 4.5,
-        title: Optional[str] = None,
+        title: str | None = None,
         **kwargs: Any,
     ) -> PPTXChart:
         """Add a bar chart to the slide.
@@ -183,13 +186,13 @@ class Chart:
 
     def add_column(
         self,
-        categories: List[str],
-        values: List[Union[int, float]],
+        categories: list,
+        values: list,
         x: PositionType = 1.0,
         y: PositionType = 1.0,
         width: PositionType = 6.0,
         height: PositionType = 4.5,
-        title: Optional[str] = None,
+        title: str | None = None,
         **kwargs: Any,
     ) -> PPTXChart:
         """Add a column chart to the slide.
@@ -221,13 +224,13 @@ class Chart:
 
     def add_pie(
         self,
-        categories: List[str],
-        values: List[Union[int, float]],
+        categories: list,
+        values: list,
         x: PositionType = 1.0,
         y: PositionType = 1.0,
         width: PositionType = 6.0,
         height: PositionType = 4.5,
-        title: Optional[str] = None,
+        title: str | None = None,
         **kwargs: Any,
     ) -> PPTXChart:
         """Add a pie chart to the slide.
@@ -267,7 +270,7 @@ class Chart:
         y: PositionType = 1.0,
         width: PositionType = 6.0,
         height: PositionType = 4.5,
-        title: Optional[str] = None,
+        title: str | None = None,
         has_legend: bool = True,
         **kwargs: Any,
     ) -> PPTXChart:

@@ -12,10 +12,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from easypptx import Presentation, Template
+from easypptx import Presentation
 
 # Create a folder for outputs if it doesn't exist
-output_dir = Path("outputs")
+output_dir = Path("output")
 output_dir.mkdir(exist_ok=True)
 
 # Create a new presentation
@@ -23,15 +23,11 @@ pres = Presentation()
 
 # 1. Add a title slide
 title_slide = pres.add_title_slide(
-    title="EasyPPTX Template System",
-    subtitle="Creating professional presentations with ease"
+    title="EasyPPTX Template System", subtitle="Creating professional presentations with ease"
 )
 
 # 2. Add a content slide with a horizontal bar
-content_slide = pres.add_content_slide(
-    title="Template Features",
-    use_bar=True
-)
+content_slide = pres.add_content_slide(title="Template Features", use_bar=True)
 
 # Add bullet points to the content slide
 content_slide.add_text(
@@ -42,30 +38,31 @@ content_slide.add_text(
         "• Smart image placement with auto-centering\n"
         "• Easy table creation with DataFrame support"
     ),
-    position={"x": "10%", "y": "15%", "width": "80%", "height": "70%"},
-    font_size=18
+    x="10%",
+    y="15%",
+    width="80%",
+    height="70%",
+    font_size=18,
 )
 
 # 3. Add a section slide with blue background
-section_slide = pres.add_section_slide(
-    title="Image Examples",
-    bg_color="blue"
-)
+section_slide = pres.add_section_slide(title="Image Examples", bg_color="blue")
 
-# 4. Add an image slide with a caption
-image_slide = pres.add_image_slide(
-    title="Image with Auto-Centering",
-    image_path="examples/assets/sample_image.jpg",  # Replace with your image path
-    label="Sample image with caption"
-)
+# 4. Skip the image slide as we don't have sample images available
+# Comment out the image slide code for now
+# image_slide = pres.add_image_slide(
+#     title="Image with Auto-Centering",
+#     image_path="examples/assets/sample_image.jpg",  # Replace with your image path
+#     label="Sample image with caption",
+# )
 
 # 5. Add a comparison slide with two columns
 comparison_slide = pres.add_comparison_slide(
     title="Feature Comparison",
     content_texts=[
         "Traditional PowerPoint:\n• Manual positioning\n• Inconsistent styling\n• Tedious repetitive work",
-        "EasyPPTX Templates:\n• Percentage-based positioning\n• Consistent preset styles\n• Quick slide creation"
-    ]
+        "EasyPPTX Templates:\n• Percentage-based positioning\n• Consistent preset styles\n• Quick slide creation",
+    ],
 )
 
 # 6. Add a table slide with DataFrame data
@@ -75,9 +72,9 @@ sample_data = {
         "Pre-defined slide layouts",
         "Percentage-based coordinates",
         "Auto-centering and labels",
-        "Styled with headers and borders"
+        "Styled with headers and borders",
     ],
-    "Status": ["✓", "✓", "✓", "✓"]
+    "Status": ["✓", "✓", "✓", "✓"],
 }
 
 df = pd.DataFrame(sample_data)
@@ -86,11 +83,11 @@ table_slide = pres.add_table_slide(
     title="Template Features",
     data=df,
     has_header=True,
-    style={
+    custom_style={
         "first_row": {"bold": True, "bg_color": "blue", "text_color": "white"},
         "banded_rows": True,
-        "band_color": "lightgray"
-    }
+        "band_color": "lightgray",
+    },
 )
 
 # 7. Create a custom template and use it
@@ -102,25 +99,26 @@ custom_template = {
         "font": {"name": "Meiryo", "size": 36, "bold": True},
         "align": "center",
         "vertical": "middle",
-        "color": "white"
+        "color": "white",
     },
-    "content_area": {
-        "position": {"x": "10%", "y": "30%", "width": "80%", "height": "60%"}
-    }
+    "content_area": {"position": {"x": "10%", "y": "30%", "width": "80%", "height": "60%"}},
 }
 
 custom_slide = pres.add_slide_from_template(custom_template)
 custom_slide.add_text(
     text="This slide uses a custom template with orange background",
-    position={"x": "10%", "y": "30%", "width": "80%", "height": "60%"},
+    x="10%",
+    y="30%",
+    width="80%",
+    height="60%",
     font_size=24,
     align="center",
-    vertical_align="middle",
-    color="white"
+    vertical="middle",
+    color="white",
 )
 
-# 8. Add a "thank you" slide
-thank_you_slide = pres.add_slide_from_template("thank_you_slide")
+# 8. Add a "thank you" slide using section_slide template
+thank_you_slide = pres.add_section_slide(title="Thank You!", bg_color="green")
 
 # Save the presentation
 pres.save(output_dir / "template_example.pptx")

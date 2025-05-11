@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from easypptx import Chart, Image, Presentation, Table, Text
+from easypptx import Chart, Presentation, Table
 
 # Create output directory
 output_dir = Path("output")
@@ -62,7 +62,9 @@ slide2.add_text(
 slide2.add_text(text="Regular text", x="10%", y="25%", width="80%", height="8%")
 slide2.add_text(text="Bold text", x="10%", y="35%", width="80%", height="8%", font_bold=True)
 slide2.add_text(text="Italic text", x="10%", y="45%", width="80%", height="8%", font_italic=True)
-slide2.add_text(text="Bold and italic text", x="10%", y="55%", width="80%", height="8%", font_bold=True, font_italic=True)
+slide2.add_text(
+    text="Bold and italic text", x="10%", y="55%", width="80%", height="8%", font_bold=True, font_italic=True
+)
 slide2.add_text(text="Colored text (Red)", x="10%", y="65%", width="80%", height="8%", color=(255, 0, 0))
 slide2.add_text(text="Large text", x="10%", y="75%", width="80%", height="10%", font_size=28)
 
@@ -89,14 +91,7 @@ table_data = [
     ["Doohickeys", "$6,500", "$7,000", "$7,500", "$8,000"],
 ]
 table = Table(slide3)
-table.add(
-    table_data,
-    x="10%",
-    y="25%", 
-    width="80%",
-    height="25%",
-    first_row_header=True
-)
+table.add(table_data, x="10%", y="25%", width="80%", height="25%", first_row_header=True)
 
 # Create a DataFrame and add it as a table with percentage-based positioning
 df = pd.DataFrame({
@@ -105,14 +100,7 @@ df = pd.DataFrame({
     "Cost": [2500, 4000, 5500],
     "Profit": [2500, 3500, 4500],
 })
-table.from_dataframe(
-    df,
-    x="10%",
-    y="60%",
-    width="80%",
-    height="25%",
-    first_row_header=True
-)
+table.from_dataframe(df, x="10%", y="60%", width="80%", height="25%", first_row_header=True)
 
 # Slide 4: Charts with responsive centered title
 slide4 = pres.add_slide()
@@ -136,27 +124,13 @@ values = [10, 15, 13, 18, 20]
 
 # Add a column chart on the left
 chart.add_column(
-    categories=categories,
-    values=values,
-    x="15%",
-    y="25%",
-    width="30%",
-    height="30%",
-    title="Monthly Sales"
+    categories=categories, values=values, x="15%", y="25%", width="30%", height="30%", title="Monthly Sales"
 )
 
 # Add a pie chart on the right
 categories = ["Product A", "Product B", "Product C", "Product D"]
 values = [25, 30, 20, 25]
-chart.add_pie(
-    categories=categories,
-    values=values,
-    x="55%",
-    y="25%",
-    width="30%",
-    height="30%",
-    title="Market Share"
-)
+chart.add_pie(categories=categories, values=values, x="55%", y="25%", width="30%", height="30%", title="Market Share")
 
 # Add a bar chart from DataFrame centered at the bottom
 sales_data = pd.DataFrame({
@@ -172,7 +146,7 @@ chart.from_dataframe(
     y="60%",
     width="30%",
     height="30%",
-    title="Sales by Product"
+    title="Sales by Product",
 )
 
 # Slide 5: Responsive positioning demonstration
@@ -194,7 +168,7 @@ slide5.add_text(
 slide5.add_text(
     text=(
         "EasyPPTX supports responsive positioning that adapts to different aspect ratios. "
-        "Elements with h_align=\"center\" automatically adjust their position based on the "
+        'Elements with h_align="center" automatically adjust their position based on the '
         "aspect ratio, ensuring your content looks great in any format (16:9, 4:3, etc)."
     ),
     x="50%",

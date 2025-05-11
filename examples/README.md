@@ -14,6 +14,24 @@ pip install -e .  # If you're in the project root
 
 ## Available Examples
 
+### Grid Layout Examples
+
+The `grid/` directory contains examples that demonstrate the Grid layout capabilities:
+
+- **001_basic_grid.py**: Basic grid creation and usage
+- **002_grid_indexing.py**: Different ways to access grid cells (tuple indexing, flat indexing, iteration)
+- **003_nested_grid.py**: Creating nested grids and merging cells
+- **004_autogrid.py**: Automatic grid layout and arrangement of matplotlib plots
+
+```bash
+python examples/grid/001_basic_grid.py
+python examples/grid/002_grid_indexing.py
+python examples/grid/003_nested_grid.py
+python examples/grid/004_autogrid.py
+```
+
+See [grid/README.md](grid/README.md) for more details.
+
 ### 1. quick_start.py
 
 A simple introduction to EasyPPTX basics. This example demonstrates:

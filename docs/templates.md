@@ -2,11 +2,63 @@
 
 EasyPPTX provides several ways to work with templates:
 
-1. **File-based templates**: Using existing PowerPoint files as templates
-2. **Template Presets**: Using the built-in template system with predefined slide layouts
-3. **TOML/JSON Template Files**: Saving and loading templates as TOML or JSON files
+1. **Reference Templates**: Automatic built-in templates based on aspect ratio
+2. **File-based templates**: Using existing PowerPoint files as templates
+3. **Template Presets**: Using the built-in template system with predefined slide layouts
+4. **TOML/JSON Template Files**: Saving and loading templates as TOML or JSON files
 
-## Part 1: File-based Templates
+## Part 1: Reference Templates
+
+EasyPPTX automatically uses built-in reference templates for standard aspect ratios, ensuring your presentations have a consistent, professional look without requiring any additional configuration.
+
+### Built-in Reference Templates
+
+The library includes the following reference templates:
+
+- `reference_16x9.pptx`: Used automatically for 16:9 (widescreen) presentations
+- `reference_4x3.pptx`: Used automatically for 4:3 (standard) presentations
+
+These templates provide well-designed slide masters, layouts, and theme elements appropriate for each aspect ratio.
+
+### Automatic Template Selection
+
+The reference templates are automatically applied based on the aspect ratio:
+
+```python
+from easypptx import Presentation
+
+# Creates a presentation with 16:9 aspect ratio
+# Automatically uses reference_16x9.pptx as the template
+presentation = Presentation()  # Default is 16:9
+
+# Creates a presentation with 4:3 aspect ratio
+# Automatically uses reference_4x3.pptx as the template
+presentation = Presentation(aspect_ratio="4:3")
+```
+
+### When Reference Templates Are Not Used
+
+In certain cases, the reference templates will not be applied:
+
+1. When a custom template is specified:
+   ```python
+   presentation = Presentation(template_path="custom_template.pptx")
+   ```
+
+2. When custom dimensions are provided:
+   ```python
+   presentation = Presentation(width_inches=13.33, height_inches=7.5)
+   ```
+
+3. For aspect ratios without reference templates:
+   ```python
+   presentation = Presentation(aspect_ratio="16:10")
+   presentation = Presentation(aspect_ratio="A4")
+   ```
+
+In these cases, EasyPPTX will create a blank presentation and apply the specified dimensions or use the custom template.
+
+## Part 2: File-based Templates
 
 EasyPPTX supports using existing PowerPoint files as templates for your presentations. This allows you to leverage pre-designed slides, themes, master layouts, and styles.
 
@@ -85,7 +137,7 @@ The available layouts depend on the template file. Most PowerPoint templates inc
 - Title only layout (index 5)
 - Blank layout (index 6)
 
-## Part 2: Template Presets
+## Part 3: Template Presets
 
 The EasyPPTX template preset system allows you to create consistent and professional-looking presentations with minimal code. It provides pre-defined templates for common slide types and layouts that can be customized to your needs.
 
@@ -248,7 +300,7 @@ pres = Presentation()
 
 # Add a title slide
 title_slide = pres.add_title_slide(
-    title="My Presentation", 
+    title="My Presentation",
     subtitle="Created with EasyPPTX"
 )
 
@@ -261,7 +313,7 @@ content_slide.add_text(
 
 # Add a section slide
 section_slide = pres.add_section_slide(
-    title="New Section", 
+    title="New Section",
     bg_color="blue"
 )
 
@@ -334,7 +386,7 @@ A template is a dictionary with the following structure:
 ```python
 {
     "bg_color": "color_name_or_rgb_tuple",  # Optional background color
-    
+
     "title": {  # Optional title element
         "text": "Default title text",
         "position": {"x": "10%", "y": "5%", "width": "80%", "height": "10%"},
@@ -343,11 +395,11 @@ A template is a dictionary with the following structure:
         "vertical": "middle",  # "top", "middle", or "bottom"
         "color": "black"
     },
-    
+
     "subtitle": {  # Optional subtitle element (similar to title)
         # Same properties as title
     },
-    
+
     "bar": {  # Optional decorative bar
         "position": {"x": "0%", "y": "10%", "width": "100%", "height": "2%"},
         "gradient": {  # Optional gradient fill
@@ -356,11 +408,11 @@ A template is a dictionary with the following structure:
             "angle": 0  # 0 for horizontal, 90 for vertical
         }
     },
-    
+
     "content_area": {  # Optional content area
         "position": {"x": "5%", "y": "15%", "width": "90%", "height": "80%"}
     },
-    
+
     # Styling for images
     "image_style": {
         "border": True,  # Whether the image should have a border
@@ -373,7 +425,7 @@ A template is a dictionary with the following structure:
         "brightness": 0,  # Brightness adjustment (-1.0 to 1.0)
         "contrast": 0  # Contrast adjustment (-1.0 to 1.0)
     },
-    
+
     # Styling for tables
     "table_style": {
         "first_row": {  # Styling for the header row
@@ -392,7 +444,7 @@ A template is a dictionary with the following structure:
         "font_size": 12,  # Font size for table text
         "header_font_size": 14  # Font size for header text
     },
-    
+
     # Styling for charts
     "chart_style": {
         "chart_type": "column",  # Type of chart (column, bar, line, pie, scatter, area)
@@ -413,7 +465,7 @@ A template is a dictionary with the following structure:
         "has_border": True,  # Whether to show chart border
         "border_color": "black"  # Color of chart border
     },
-    
+
     # Other optional elements like image_area, table_area, chart_area,
     # left_content, right_content, etc.
 }
@@ -427,12 +479,14 @@ All positioning in templates uses percentages of the slide dimensions, making th
 position = {"x": "10%", "y": "20%", "width": "80%", "height": "60%"}
 ```
 
-## Combining Both Template Systems
+## Combining Multiple Template Systems
 
-You can combine both template systems by:
+You can combine multiple template systems for maximum flexibility:
 
-1. Using a PowerPoint template file as a base for your presentation
-2. Adding slides using template presets for consistent layout and content
+1. Starting with a reference template for your chosen aspect ratio
+2. Using a custom PowerPoint template file for specific design needs
+3. Adding slides using template presets for consistent layout and content
+4. Saving your custom templates as TOML/JSON files for reuse
 
 ```python
 from easypptx import Presentation
@@ -613,7 +667,7 @@ Each advanced template comes with specific elements designed for its purpose:
 - `step_colors`: List of colors for timeline steps
 - `connector_color`: Color for connecting lines
 
-## Part 3: TOML/JSON Template Files
+## Part 4: TOML/JSON Template Files
 
 EasyPPTX allows you to save and load templates as TOML or JSON files. TOML (Tom's Obvious Minimal Language) is a user-friendly configuration file format that is more readable than JSON, while maintaining full compatibility with the template system.
 

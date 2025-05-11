@@ -15,13 +15,12 @@ The presentation is organized as a business presentation with real-world
 examples of how to use EasyPPTX in various scenarios.
 """
 
-import os
+from datetime import date
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
-from easypptx import Chart, Image, Presentation, Slide, Table, Text
+from easypptx import Chart, Image, Presentation, Table
 
 # -----------------------------------------------------------------------------
 # Setup
@@ -35,30 +34,34 @@ output_dir.mkdir(exist_ok=True)
 image_dir = output_dir / "images"
 image_dir.mkdir(exist_ok=True)
 
+
 # Create sample images if they don't exist
 def create_sample_image(name, size=(800, 600), color=(200, 200, 200)):
     """Create a sample image for the example."""
     try:
-        from PIL import Image as PILImage, ImageDraw, ImageFont
-        
-        img = PILImage.new('RGB', size, color=color)
+        from PIL import Image as PILImage
+        from PIL import ImageDraw, ImageFont
+
+        img = PILImage.new("RGB", size, color=color)
         draw = ImageDraw.Draw(img)
-        
+
         # Add text to the image
         try:
             font = ImageFont.truetype("arial.ttf", 32)
-        except IOError:
+        except OSError:
             font = ImageFont.load_default()
-            
-        draw.text((size[0]//3, size[1]//2), name, fill=(0, 0, 0), font=font)
-        
+
+        draw.text((size[0] // 3, size[1] // 2), name, fill=(0, 0, 0), font=font)
+
         # Save the image
         img_path = image_dir / f"{name}.png"
         img.save(img_path)
-        return img_path
     except ImportError:
         print("PIL not installed. Using placeholder paths.")
         return f"images/{name}.png"
+
+    return img_path
+
 
 # Create some sample images
 logo_path = create_sample_image("company_logo", (400, 100), (255, 255, 255))
@@ -68,17 +71,16 @@ graph_image_path = create_sample_image("graph_image", (600, 400), (240, 255, 240
 
 # Create sample data for charts and tables
 # Monthly sales data
-months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 sales_values = [42, 85, 53, 62, 75, 92, 98, 87, 76, 83, 95, 110]
 
 # Product data
 products = ["Product A", "Product B", "Product C", "Product D", "Product E"]
 prices = [199, 149, 299, 99, 249]
 units_sold = [120, 250, 75, 360, 90]
-revenue = [p * u for p, u in zip(prices, units_sold)]
-costs = [p * 0.6 * u for p, u in zip(prices, units_sold)]
-profits = [r - c for r, c in zip(revenue, costs)]
+revenue = [p * u for p, u in zip(prices, units_sold, strict=False)]
+costs = [p * 0.6 * u for p, u in zip(prices, units_sold, strict=False)]
+profits = [r - c for r, c in zip(revenue, costs, strict=False)]
 
 # Customer satisfaction data
 satisfaction_categories = ["Very Satisfied", "Satisfied", "Neutral", "Unsatisfied", "Very Unsatisfied"]
@@ -95,23 +97,14 @@ product_df = pd.DataFrame({
     "Units Sold": units_sold,
     "Revenue": revenue,
     "Cost": costs,
-    "Profit": profits
+    "Profit": profits,
 })
 
-monthly_sales_df = pd.DataFrame({
-    "Month": months,
-    "Sales": sales_values
-})
+monthly_sales_df = pd.DataFrame({"Month": months, "Sales": sales_values})
 
-regional_df = pd.DataFrame({
-    "Region": regions,
-    "Sales": region_sales
-})
+regional_df = pd.DataFrame({"Region": regions, "Sales": region_sales})
 
-satisfaction_df = pd.DataFrame({
-    "Category": satisfaction_categories,
-    "Percentage": satisfaction_values
-})
+satisfaction_df = pd.DataFrame({"Category": satisfaction_categories, "Percentage": satisfaction_values})
 
 # -----------------------------------------------------------------------------
 # Create the presentation
@@ -162,7 +155,6 @@ img = Image(slide1)
 img.add(str(logo_path), x="80%", y="10%", width="15%", h_align="center")
 
 # Add date
-from datetime import date
 today = date.today().strftime("%B %d, %Y")
 slide1.add_text(f"Date: {today}", x="80%", y="85%", width="15%", height="5%", font_size=10, align="right")
 
@@ -191,18 +183,11 @@ agenda_items = [
     "Product Analysis",
     "Regional Breakdown",
     "Customer Satisfaction",
-    "Future Outlook"
+    "Future Outlook",
 ]
 
 for i, item in enumerate(agenda_items):
-    slide2.add_text(
-        text=f"• {item}", 
-        x="30%", 
-        y=f"{25 + (i * 10)}%", 
-        width="60%", 
-        height="8%", 
-        font_size=24
-    )
+    slide2.add_text(text=f"• {item}", x="30%", y=f"{25 + (i * 10)}%", width="60%", height="8%", font_size=24)
 
 # -----------------------------------------------------------------------------
 # Slide 3: Company Overview
@@ -231,12 +216,12 @@ metrics = [
     ("Employees", "250+"),
     ("Revenue", "$36.5M"),
     ("Growth", "+15% YoY"),
-    ("Locations", "12 Countries")
+    ("Locations", "12 Countries"),
 ]
 
 # Create a simple table for metrics
 table = Table(slide3)
-table_data = [["Metric", "Value"]] + metrics
+table_data = [["Metric", "Value"], *metrics]
 table.add(table_data, x=1, y=4.5, width=8, first_row_header=True)
 
 # -----------------------------------------------------------------------------
@@ -266,30 +251,30 @@ chart.add(
     y=1.5,
     width=8,
     height=4,
-    title="Monthly Sales (in $1,000s)"
+    title="Monthly Sales (in $1,000s)",
 )
 
 # Add summary text
 total_sales = sum(sales_values)
 avg_sales = total_sales / len(sales_values)
 slide4.add_text(
-    text=f"Total Annual Sales: ${total_sales}k", 
-    x="25%", 
-    y="80%", 
-    width="40%", 
+    text=f"Total Annual Sales: ${total_sales}k",
+    x="25%",
+    y="80%",
+    width="40%",
     height="10%",
-    font_size=18, 
-    font_bold=True, 
-    align="center"
+    font_size=18,
+    font_bold=True,
+    align="center",
 )
 slide4.add_text(
-    text=f"Average Monthly Sales: ${avg_sales:.1f}k", 
-    x="75%", 
-    y="80%", 
-    width="40%", 
+    text=f"Average Monthly Sales: ${avg_sales:.1f}k",
+    x="75%",
+    y="80%",
+    width="40%",
     height="10%",
-    font_size=18, 
-    align="center"
+    font_size=18,
+    align="center",
 )
 
 # -----------------------------------------------------------------------------
@@ -311,13 +296,7 @@ slide5.add_text(
 
 # Convert the DataFrame to a table
 table = Table(slide5)
-table.from_dataframe(
-    product_df,
-    x=0.5,
-    y=1.5,
-    width=9,
-    first_row_header=True
-)
+table.from_dataframe(product_df, x=0.5, y=1.5, width=9, first_row_header=True)
 
 # Add a product image
 img = Image(slide5)
@@ -351,7 +330,7 @@ chart.from_dataframe(
     y=1.5,
     width=4.5,
     height=3,
-    title="Revenue by Product"
+    title="Revenue by Product",
 )
 
 # Add a column chart for product profitability
@@ -364,22 +343,22 @@ chart.from_dataframe(
     y=1.5,
     width=4,
     height=3,
-    title="Profit by Product"
+    title="Profit by Product",
 )
 
 # Add insight text
 most_profitable = product_df.loc[product_df["Profit"].idxmax()]["Product"]
 slide6.add_text(
-    text=f"Key Insight: {most_profitable} is our most profitable product.", 
-    x="50%", 
-    y="80%", 
-    width="80%", 
+    text=f"Key Insight: {most_profitable} is our most profitable product.",
+    x="50%",
+    y="80%",
+    width="80%",
     height="10%",
-    font_size=16, 
-    font_bold=True, 
+    font_size=16,
+    font_bold=True,
     color=(0, 100, 0),  # Dark green
-    align="center", 
-    h_align="center"
+    align="center",
+    h_align="center",
 )
 
 # -----------------------------------------------------------------------------
@@ -410,7 +389,7 @@ chart.from_dataframe(
     y=1.5,
     width=6,
     height=4,
-    title="Sales by Region"
+    title="Sales by Region",
 )
 
 # Calculate percentages
@@ -420,20 +399,10 @@ region_percentages = [round((s / total_regional) * 100, 1) for s in region_sales
 # Create a table with percentages
 percentage_data = [["Region", "Sales", "Percentage"]]
 for i, region in enumerate(regions):
-    percentage_data.append([
-        region, 
-        f"${region_sales[i]:,}", 
-        f"{region_percentages[i]}%"
-    ])
+    percentage_data.append([region, f"${region_sales[i]:,}", f"{region_percentages[i]}%"])
 
 table = Table(slide7)
-table.add(
-    percentage_data,
-    x=1.5,
-    y=5.5,
-    width=7,
-    first_row_header=True
-)
+table.add(percentage_data, x=1.5, y=5.5, width=7, first_row_header=True)
 
 # -----------------------------------------------------------------------------
 # Slide 8: Customer Satisfaction
@@ -463,11 +432,11 @@ chart.from_dataframe(
     y=1.5,
     width=7,
     height=3.5,
-    title="Customer Satisfaction Survey Results (%)"
+    title="Customer Satisfaction Survey Results (%)",
 )
 
 # Calculate the satisfaction score
-score = sum([satisfaction_values[i] * (5-i) for i in range(5)]) / sum(satisfaction_values)
+score = sum([satisfaction_values[i] * (5 - i) for i in range(5)]) / sum(satisfaction_values)
 
 # Add summary text
 slide8.add_text(
@@ -479,7 +448,7 @@ slide8.add_text(
     font_size=20,
     font_bold=True,
     align="center",
-    h_align="center"  # Enable responsive positioning
+    h_align="center",  # Enable responsive positioning
 )
 
 # Add interpretation
@@ -502,7 +471,7 @@ slide8.add_text(
     font_size=20,
     color=color,
     align="center",
-    h_align="center"  # Enable responsive positioning
+    h_align="center",  # Enable responsive positioning
 )
 
 # -----------------------------------------------------------------------------
@@ -528,18 +497,11 @@ future_plans = [
     "Launch 3 new product lines in Q2 2024",
     "Improve customer satisfaction score to 4.5+",
     "Increase operational efficiency by 12%",
-    "Invest in employee training and development"
+    "Invest in employee training and development",
 ]
 
 for i, plan in enumerate(future_plans):
-    slide9.add_text(
-        text=f"• {plan}", 
-        x="30%", 
-        y=f"{25 + (i * 10)}%", 
-        width="60%", 
-        height="8%", 
-        font_size=18
-    )
+    slide9.add_text(text=f"• {plan}", x="30%", y=f"{25 + (i * 10)}%", width="60%", height="8%", font_size=18)
 
 # Add projection chart - projecting future sales based on current growth
 # Generate projected sales with 15% annual growth
@@ -547,7 +509,7 @@ current_yearly_sales = sum(sales_values)
 projected_years = ["2023", "2024", "2025", "2026", "2027"]
 projected_sales = [current_yearly_sales]
 
-for i in range(4):
+for _ in range(4):
     projected_sales.append(projected_sales[-1] * 1.15)  # 15% growth
 
 chart = Chart(slide9)
@@ -559,7 +521,7 @@ chart.add(
     y=2,
     width=4,
     height=3,
-    title="Projected Annual Sales ($k)"
+    title="Projected Annual Sales ($k)",
 )
 
 # -----------------------------------------------------------------------------

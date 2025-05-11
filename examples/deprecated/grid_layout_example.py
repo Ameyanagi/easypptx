@@ -6,6 +6,7 @@ including nested grids and merged cells.
 """
 
 from pathlib import Path
+
 from easypptx import Presentation
 from easypptx.grid import Grid
 
@@ -118,11 +119,7 @@ grid = Grid(
 )
 
 # Add shapes with different colors to each cell
-colors = [
-    "red", "green", "blue",
-    "yellow", "orange", "purple",
-    "cyan", "magenta", "gray"
-]
+colors = ["red", "green", "blue", "yellow", "orange", "purple", "cyan", "magenta", "gray"]
 
 for row in range(3):
     for col in range(3):
@@ -134,7 +131,7 @@ for row in range(3):
             shape_type=1,  # Rectangle
             fill_color=colors[index],
         )
-        
+
         # Add cell labels
         grid.add_to_cell(
             row=row,
@@ -320,7 +317,7 @@ for row in range(2):
             shape_type=1,  # Rectangle
             fill_color="blue",
         )
-        
+
         nested_grid1.add_to_cell(
             row=row,
             col=col,
@@ -351,7 +348,7 @@ for row in range(3):
             shape_type=1,  # Rectangle
             fill_color="green",
         )
-        
+
         nested_grid2.add_to_cell(
             row=row,
             col=col,
@@ -390,7 +387,7 @@ for row in range(2):
             shape_type=1,  # Rectangle
             fill_color="red",
         )
-        
+
         double_nested.add_to_cell(
             row=row,
             col=col,
@@ -405,10 +402,10 @@ for row in range(2):
 # Add content to other cells of nested_grid3
 labels = ["Double\nNested", "Cell\n0,1", "Cell\n1,0", "Cell\n1,1"]
 colors = ["purple", "orange", "cyan", "magenta"]
-pos = [(0,0), (0,1), (1,0), (1,1)]
+positions = [(0, 0), (0, 1), (1, 0), (1, 1)]
 
-for i, (pos, label, color) in enumerate(zip(pos[1:], labels[1:], colors[1:])):
-    row, col = pos
+for _, (position, label, color) in enumerate(zip(positions[1:], labels[1:], colors[1:], strict=False)):
+    row, col = position
     nested_grid3.add_to_cell(
         row=row,
         col=col,
@@ -416,7 +413,7 @@ for i, (pos, label, color) in enumerate(zip(pos[1:], labels[1:], colors[1:])):
         shape_type=1,  # Rectangle
         fill_color=color,
     )
-    
+
     nested_grid3.add_to_cell(
         row=row,
         col=col,
@@ -541,8 +538,9 @@ dashboard.add_to_cell(
 regions = ["East", "West", "Central"]
 perf = ["$1.2M", "$1.5M", "$1.5M"]
 colors = ["purple", "magenta", "cyan"]
+performance = perf  # Rename to avoid variable shadowing
 
-for i, (region, perf, color) in enumerate(zip(regions, perf, colors)):
+for i, (region, _, color) in enumerate(zip(regions, performance, colors, strict=False)):
     col = i + 1
     dashboard.add_to_cell(
         row=2,
@@ -551,7 +549,7 @@ for i, (region, perf, color) in enumerate(zip(regions, perf, colors)):
         shape_type=1,  # Rectangle
         fill_color=color,
     )
-    
+
     dashboard.add_to_cell(
         row=2,
         col=col,

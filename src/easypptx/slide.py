@@ -1,6 +1,6 @@
 """Slide module for EasyPPTX."""
 
-from typing import List, Optional, Tuple, Union
+from typing import Any
 
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
@@ -9,7 +9,7 @@ from pptx.slide import Slide as PPTXSlide
 from pptx.util import Inches, Pt
 
 # Type for position parameters - accepts either percentage or absolute values
-PositionType = Union[float, str]
+PositionType = float | str
 
 
 class Slide:
@@ -44,15 +44,13 @@ class Slide:
             pptx_slide: The python-pptx Slide object
         """
         self.pptx_slide = pptx_slide
-        self.user_data = {}
+        self.user_data: dict[str, Any] = {}
 
         # Cache slide dimensions to avoid recalculating them
         self._slide_width = self._get_slide_width()
         self._slide_height = self._get_slide_height()
 
-    def _convert_position(
-        self, value: PositionType, slide_dimension: int, is_width: bool = True, h_align: str = None
-    ) -> float:
+    def _convert_position(self, value: PositionType, slide_dimension: int, is_width: bool = True) -> float:
         """Convert a position value to inches.
 
         This method supports two types of positioning:
@@ -66,7 +64,6 @@ class Slide:
             value: Position value (percentage string like "20%" or absolute inches)
             slide_dimension: The total slide dimension (width or height) in EMUs
             is_width: Whether this value is for width calculation (for aspect ratio adaptation)
-            h_align: Horizontal alignment hint ('center', 'left', 'right') for responsive positioning
 
         Returns:
             Position value in inches
@@ -77,43 +74,22 @@ class Slide:
 
             # Use absolute positioning (returns the same value)
             x_inches = slide._convert_position(2.5, slide_width)  # Returns 2.5
-
-            # Convert with horizontal centering
-            x_inches = slide._convert_position("10%", slide_width, h_align="center")
         """
+        # Convert EMUs to inches for calculations
+        dimension_inches = slide_dimension / 914400
+
         if isinstance(value, str) and value.endswith("%"):
-            # Convert percentage to inches
+            # Convert percentage to inches - proper conversion based on slide dimensions
             percent = float(value.strip("%"))
 
-            # Special handling for horizontal alignment
-            if h_align == "center" and is_width:
-                # For center alignment, we adjust the x position to center the element
-                # First calculate the standard position
-                position_inches = (percent / 100) * (slide_dimension / 914400)
+            # Ensure accurate percentage calculation by limiting to valid range (0-100%)
+            percent = max(0, min(100, percent))
 
-                # Get the aspect ratio from cached slide dimensions
-                try:
-                    # Use the cached slide dimensions
-                    current_ratio = self._slide_width / self._slide_height
-                    standard_ratio = 16 / 9  # Standard ratio templates are designed for
-
-                    # Check if this is a non-standard aspect ratio
-                    # Only apply adjustments when the ratio is significantly different
-                    if abs(current_ratio - standard_ratio) > 0.01:
-                        # Calculate the adjustment factor based on ratio difference
-                        adjustment = (current_ratio / standard_ratio - 1) * 0.5
-                        # Apply adjustment to center the element
-                        position_inches = position_inches * (1 + adjustment)
-
-                    return position_inches
-                except:
-                    # If any error occurs, fall back to standard calculation
-                    return (percent / 100) * (slide_dimension / 914400)
-            else:
-                # Standard percentage calculation
-                return (percent / 100) * (slide_dimension / 914400)  # Convert EMUs to inches
+            # Calculate the position in inches
+            position_inches = (percent / 100) * dimension_inches
+            return position_inches
         else:
-            # Return absolute position in inches
+            # Return absolute position in inches, ensuring it's a float
             return float(value)
 
     def _get_slide_width(self) -> int:
@@ -125,17 +101,34 @@ class Slide:
         Returns:
             The slide width in English Metric Units (EMUs)
         """
+        # Method 1: Try accessing through the presentation pack directly
         try:
-            # First try to get it directly from the slide
-            return self.pptx_slide.slide_width
-        except AttributeError:
-            # If not available directly, get it from the presentation
-            try:
+            if hasattr(self.pptx_slide, "part") and hasattr(self.pptx_slide.part, "package"):
+                package = self.pptx_slide.part.package
+                if hasattr(package, "presentation_part") and hasattr(package.presentation_part, "presentation"):
+                    return package.presentation_part.presentation.slide_width
+        except (AttributeError, TypeError):
+            pass
+
+        # Method 2: Try accessing through the presentation directly
+        try:
+            if hasattr(self.pptx_slide, "part") and hasattr(self.pptx_slide.part, "package"):
                 presentation = self.pptx_slide.part.package.presentation
-                return presentation.slide_width
-            except AttributeError:
-                # Default value if we can't get it (equivalent to 10 inches)
-                return 9144000  # 10 inches in EMUs
+                if hasattr(presentation, "slide_width"):
+                    return presentation.slide_width
+        except (AttributeError, TypeError):
+            pass
+
+        # Method 3: Try through parent-child relationship of Parts
+        try:
+            parent = self.pptx_slide.part.parent
+            if parent and hasattr(parent, "presentation"):
+                return parent.presentation.slide_width
+        except (AttributeError, TypeError):
+            pass
+
+        # Default value - standard 16:9 presentation (13.33 x 7.5 inches)
+        return 12192768  # 13.33 inches = 914400 EMUs per inch * 13.33
 
     def _get_slide_height(self) -> int:
         """Get the slide height in EMUs.
@@ -146,17 +139,34 @@ class Slide:
         Returns:
             The slide height in English Metric Units (EMUs)
         """
+        # Method 1: Try accessing through the presentation pack directly
         try:
-            # First try to get it directly from the slide
-            return self.pptx_slide.slide_height
-        except AttributeError:
-            # If not available directly, get it from the presentation
-            try:
+            if hasattr(self.pptx_slide, "part") and hasattr(self.pptx_slide.part, "package"):
+                package = self.pptx_slide.part.package
+                if hasattr(package, "presentation_part") and hasattr(package.presentation_part, "presentation"):
+                    return package.presentation_part.presentation.slide_height
+        except (AttributeError, TypeError):
+            pass
+
+        # Method 2: Try accessing through the presentation directly
+        try:
+            if hasattr(self.pptx_slide, "part") and hasattr(self.pptx_slide.part, "package"):
                 presentation = self.pptx_slide.part.package.presentation
-                return presentation.slide_height
-            except AttributeError:
-                # Default value if we can't get it (equivalent to 7.5 inches)
-                return 6858000  # 7.5 inches in EMUs
+                if hasattr(presentation, "slide_height"):
+                    return presentation.slide_height
+        except (AttributeError, TypeError):
+            pass
+
+        # Method 3: Try through parent-child relationship of Parts
+        try:
+            parent = self.pptx_slide.part.parent
+            if parent and hasattr(parent, "presentation"):
+                return parent.presentation.slide_height
+        except (AttributeError, TypeError):
+            pass
+
+        # Default value - standard 16:9 presentation (13.33 x 7.5 inches)
+        return 6858000  # 7.5 inches = 914400 EMUs per inch
 
     def add_text(
         self,
@@ -171,8 +181,7 @@ class Slide:
         font_name: str = "Meiryo",
         align: str = "left",
         vertical: str = "top",
-        color: Optional[Union[str, Tuple[int, int, int]]] = None,
-        h_align: str = None,
+        color: str | tuple[int, int, int] | None = None,
     ) -> PPTXShape:
         """Add a text box to the slide.
 
@@ -189,7 +198,6 @@ class Slide:
             align: Text alignment, one of "left", "center", "right" (default: "left")
             vertical: Vertical alignment, one of "top", "middle", "bottom" (default: "top")
             color: Text color as string name from COLORS dict or RGB tuple (default: None)
-            h_align: Horizontal alignment for responsive positioning (default: None)
 
         Returns:
             The created shape object
@@ -198,12 +206,8 @@ class Slide:
         slide_width = self._slide_width
         slide_height = self._slide_height
 
-        # Use h_align from align parameter if not explicitly provided
-        if h_align is None and align == "center":
-            h_align = "center"
-
         # Convert position values to inches
-        x_inches = self._convert_position(x, slide_width, is_width=True, h_align=h_align)
+        x_inches = self._convert_position(x, slide_width, is_width=True)
         y_inches = self._convert_position(y, slide_height, is_width=False)
         width_inches = self._convert_position(width, slide_width, is_width=True)
         height_inches = self._convert_position(height, slide_height, is_width=False)
@@ -214,6 +218,18 @@ class Slide:
         )
         text_frame = text_box.text_frame
         text_frame.text = text
+        text_frame.word_wrap = True  # Enable word wrap for better text display
+
+        # Set auto-size based on available properties in python-pptx
+        if hasattr(text_frame, "auto_size"):
+            # In newer versions of python-pptx
+            try:
+                from pptx.enum.text import MSO_AUTO_SIZE
+
+                text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+            except (ImportError, AttributeError):
+                # Fallback for older versions
+                text_frame.auto_size = True
 
         # Set vertical alignment
         if vertical in ["top", "middle", "bottom"]:
@@ -250,9 +266,8 @@ class Slide:
         image_path: str,
         x: PositionType = 1.0,
         y: PositionType = 1.0,
-        width: Optional[PositionType] = None,
-        height: Optional[PositionType] = None,
-        h_align: str = None,
+        width: PositionType | None = None,
+        height: PositionType | None = None,
     ) -> PPTXShape:
         """Add an image to the slide.
 
@@ -262,7 +277,6 @@ class Slide:
             y: Y position in inches or percentage (default: 1.0)
             width: Width in inches or percentage (default: None, maintains aspect ratio)
             height: Height in inches or percentage (default: None, maintains aspect ratio)
-            h_align: Horizontal alignment for responsive positioning (default: None)
 
         Returns:
             The created picture shape
@@ -274,12 +288,8 @@ class Slide:
         slide_width = self._slide_width
         slide_height = self._slide_height
 
-        # For centered images, use center alignment by default
-        if h_align is None and isinstance(x, str) and "%" in x and int(x.strip("%")) > 20:
-            h_align = "center"
-
         # Convert position values to inches
-        x_inches = self._convert_position(x, slide_width, is_width=True, h_align=h_align)
+        x_inches = self._convert_position(x, slide_width, is_width=True)
         y_inches = self._convert_position(y, slide_height, is_width=False)
 
         # Convert size values to inches if provided
@@ -296,13 +306,13 @@ class Slide:
         )
 
     @property
-    def shapes(self) -> List[PPTXShape]:
+    def shapes(self) -> list[PPTXShape]:
         """Get all shapes on the slide.
 
         Returns:
             List of shape objects
         """
-        return [shape for shape in self.pptx_slide.shapes]
+        return list(self.pptx_slide.shapes)
 
     def clear(self) -> None:
         """Remove all shapes from the slide."""
@@ -316,8 +326,7 @@ class Slide:
         y: PositionType = 1.0,
         width: PositionType = 5.0,
         height: PositionType = 1.0,
-        fill_color: Optional[Union[str, Tuple[int, int, int]]] = None,
-        h_align: str = None,
+        fill_color: str | tuple[int, int, int] | None = None,
     ) -> PPTXShape:
         """Add a shape to the slide.
 
@@ -328,7 +337,6 @@ class Slide:
             width: Width in inches or percentage (default: 5.0)
             height: Height in inches or percentage (default: 1.0)
             fill_color: Fill color as string name from COLORS dict or RGB tuple (default: None)
-            h_align: Horizontal alignment for responsive positioning (default: None)
 
         Returns:
             The created shape object
@@ -337,12 +345,8 @@ class Slide:
         slide_width = self._slide_width
         slide_height = self._slide_height
 
-        # For full-width elements, use center alignment by default
-        if h_align is None and isinstance(width, str) and "%" in width and int(width.strip("%")) > 50:
-            h_align = "center"
-
         # Convert position values to inches
-        x_inches = self._convert_position(x, slide_width, is_width=True, h_align=h_align)
+        x_inches = self._convert_position(x, slide_width, is_width=True)
         y_inches = self._convert_position(y, slide_height, is_width=False)
         width_inches = self._convert_position(width, slide_width, is_width=True)
         height_inches = self._convert_position(height, slide_height, is_width=False)
@@ -367,14 +371,14 @@ class Slide:
 
     def add_multiple_objects(
         self,
-        objects_data: List[dict],
+        objects_data: list[dict[str, Any]],
         layout: str = "grid",
         padding_percent: float = 5.0,
         start_x: PositionType = "5%",
         start_y: PositionType = "5%",
         width: PositionType = "90%",
         height: PositionType = "90%",
-    ) -> List[PPTXShape]:
+    ) -> list[PPTXShape]:
         """Add multiple objects to the slide with automatic alignment.
 
         Args:
@@ -485,7 +489,7 @@ class Slide:
         return created_objects
 
     @property
-    def title(self) -> Optional[str]:
+    def title(self) -> str | None:
         """Get the slide title.
 
         Returns:
@@ -505,7 +509,7 @@ class Slide:
         if self.pptx_slide.shapes.title:
             self.pptx_slide.shapes.title.text = value
 
-    def set_background_color(self, color: Union[str, Tuple[int, int, int]]) -> None:
+    def set_background_color(self, color: str | tuple[int, int, int]) -> None:
         """Set the background color of the slide.
 
         Args:

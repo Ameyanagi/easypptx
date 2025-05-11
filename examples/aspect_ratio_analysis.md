@@ -41,12 +41,12 @@ Add a compensation factor in the `_convert_position` method that adjusts positio
 ```python
 def _convert_position(self, value: PositionType, slide_dimension: int, is_width: bool = True) -> float:
     """Convert a position value to inches with aspect ratio compensation.
-    
+
     Args:
         value: Position value (percentage string like "20%" or absolute inches)
         slide_dimension: The total slide dimension (width or height) in EMUs
         is_width: Whether this is a width calculation (True) or height (False)
-        
+
     Returns:
         Position value in inches
     """
@@ -56,12 +56,12 @@ def _convert_position(self, value: PositionType, slide_dimension: int, is_width:
             pres = self.pptx_slide.part.package.presentation
             aspect_ratio = pres.slide_width / pres.slide_height
             standard_ratio = 16.0 / 9.0  # The ratio templates were designed for
-            
+
             # Compensation factor based on aspect ratio difference
             compensation = 1.0
             if is_width and abs(aspect_ratio - standard_ratio) > 0.01:
                 compensation = standard_ratio / aspect_ratio
-                
+
             # Apply compensation to horizontal percentage
             percent = float(value.strip("%"))
             if is_width:
@@ -100,7 +100,7 @@ else:
 Define aspect-ratio-specific versions of templates for critical slides:
 
 ```python
-"content_slide_4_3": { 
+"content_slide_4_3": {
     # 4:3 specific positioning
 },
 "content_slide_16_9": {
@@ -114,10 +114,10 @@ Then, in the code that selects templates:
 def get_appropriate_template(self, template_name: str) -> Dict:
     """Get a template appropriate for the current aspect ratio."""
     # Determine current aspect ratio
-    slide_width = self.pptx_presentation.slide_width 
+    slide_width = self.pptx_presentation.slide_width
     slide_height = self.pptx_presentation.slide_height
     ratio = slide_width / slide_height
-    
+
     # Select appropriate template
     if 1.3 <= ratio < 1.5:  # Close to 4:3
         specific_template = f"{template_name}_4_3"
@@ -125,7 +125,7 @@ def get_appropriate_template(self, template_name: str) -> Dict:
         specific_template = f"{template_name}_16_9"
     else:
         specific_template = template_name
-        
+
     # Try to get aspect-ratio-specific template
     try:
         return self.template_manager.get(specific_template)

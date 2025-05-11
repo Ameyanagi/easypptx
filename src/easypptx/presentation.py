@@ -1,8 +1,11 @@
 """Core presentation module for EasyPPTX."""
 
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from __future__ import annotations
 
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, ClassVar
+
+import pandas as pd
 from pptx import Presentation as PPTXPresentation
 from pptx.chart.chart import Chart as PPTXChart
 from pptx.dml.color import RGBColor
@@ -18,6 +21,13 @@ from easypptx.table import Table
 from easypptx.template import Template, TemplateManager
 from easypptx.text import Text
 
+# Use TYPE_CHECKING to avoid circular imports at runtime
+if TYPE_CHECKING:
+    from easypptx.grid import Grid
+else:
+    # Import at top level for runtime but avoid circular imports
+    from easypptx.grid import Grid
+
 
 class Presentation:
     """Main presentation class for creating and manipulating PowerPoint presentations.
@@ -25,19 +35,29 @@ class Presentation:
     This class provides a simplified interface for working with PowerPoint presentations,
     making it easy to create, modify, and save PPTX files.
 
+    For standard aspect ratios (16:9 and 4:3), reference templates are automatically used
+    when no specific template is provided, ensuring consistent and attractive presentations.
+
     Attributes:
         pptx_presentation: The underlying python-pptx Presentation object
 
     Examples:
         ```python
         # Create a new presentation with default 16:9 aspect ratio
+        # (automatically uses the reference_16x9.pptx template)
         presentation = Presentation()
 
         # Create a presentation with 4:3 aspect ratio
+        # (automatically uses the reference_4x3.pptx template)
         presentation = Presentation(aspect_ratio="4:3")
 
         # Create a presentation with custom dimensions
+        # (doesn't use reference templates)
         presentation = Presentation(width_inches=13.33, height_inches=7.5)
+
+        # Create a presentation with a custom template
+        # (overrides the reference templates)
+        presentation = Presentation(template_path="my_template.pptx")
 
         # Open an existing presentation
         presentation = Presentation.open("example.pptx")
@@ -51,7 +71,7 @@ class Presentation:
     """
 
     # Standard aspect ratios in width:height format
-    ASPECT_RATIOS = {
+    ASPECT_RATIOS: ClassVar[dict[str, tuple[float, float]]] = {
         "16:9": (13.33, 7.5),  # Widescreen (default)
         "4:3": (10, 7.5),  # Standard
         "16:10": (13.33, 8.33),  # Widescreen alternative
@@ -60,7 +80,7 @@ class Presentation:
     }
 
     # Default colors dictionary
-    COLORS = {
+    COLORS: ClassVar[dict[str, RGBColor]] = {
         "black": RGBColor(0x10, 0x10, 0x10),
         "darkgray": RGBColor(0x40, 0x40, 0x40),
         "gray": RGBColor(0x80, 0x80, 0x80),
@@ -76,21 +96,25 @@ class Presentation:
     }
 
     # Text alignment dictionary
-    ALIGN = {"left": PP_ALIGN.LEFT, "center": PP_ALIGN.CENTER, "right": PP_ALIGN.RIGHT}
+    ALIGN: ClassVar[dict[str, PP_ALIGN]] = {"left": PP_ALIGN.LEFT, "center": PP_ALIGN.CENTER, "right": PP_ALIGN.RIGHT}
 
     # Vertical alignment dictionary
-    VERTICAL = {"top": MSO_ANCHOR.TOP, "middle": MSO_ANCHOR.MIDDLE, "bottom": MSO_ANCHOR.BOTTOM}
+    VERTICAL: ClassVar[dict[str, MSO_ANCHOR]] = {
+        "top": MSO_ANCHOR.TOP,
+        "middle": MSO_ANCHOR.MIDDLE,
+        "bottom": MSO_ANCHOR.BOTTOM,
+    }
 
     # Default font settings
     DEFAULT_FONT = "Meiryo"
 
     def __init__(
         self,
-        aspect_ratio: Optional[str] = "16:9",
-        width_inches: Optional[float] = None,
-        height_inches: Optional[float] = None,
-        template_path: Optional[str] = None,
-        default_bg_color: Optional[Union[str, Tuple[int, int, int]]] = None,
+        aspect_ratio: str | None = "16:9",
+        width_inches: float | None = None,
+        height_inches: float | None = None,
+        template_path: str | None = None,
+        default_bg_color: str | tuple[int, int, int] | None = None,
     ) -> None:
         """Initialize a new empty presentation.
 
@@ -116,10 +140,25 @@ class Presentation:
             try:
                 self.pptx_presentation = PPTXPresentation(template_path)
             except Exception as e:
-                raise FileNotFoundError(f"Template file not found or invalid: {e}")
+                raise FileNotFoundError(f"Template file not found or invalid: {e}") from e
         else:
-            # Create a new presentation
-            self.pptx_presentation = PPTXPresentation()
+            # Check if we should use a reference template based on aspect ratio
+            reference_template = None
+
+            # Only use reference templates for the specific aspect ratios we have templates for
+            if aspect_ratio == "16:9" and width_inches is None and height_inches is None:
+                # Use 16:9 reference template
+                reference_template = Path(__file__).parent / "reference_16x9.pptx"
+            elif aspect_ratio == "4:3" and width_inches is None and height_inches is None:
+                # Use 4:3 reference template
+                reference_template = Path(__file__).parent / "reference_4x3.pptx"
+
+            if reference_template and reference_template.exists():
+                # Use the appropriate reference template
+                self.pptx_presentation = PPTXPresentation(str(reference_template))
+            else:
+                # Create a new presentation without a template
+                self.pptx_presentation = PPTXPresentation()
 
             # Set slide dimensions based on inputs
             if width_inches is not None and height_inches is not None:
@@ -148,7 +187,7 @@ class Presentation:
         self.pptx_presentation.slide_height = int(Inches(height_inches))
 
     @classmethod
-    def open(cls, file_path: Union[str, Path]) -> "Presentation":
+    def open(cls, file_path: str | Path) -> Presentation:
         """Open an existing PowerPoint presentation.
 
         Args:
@@ -175,7 +214,7 @@ class Presentation:
         presentation.pptx_presentation = pptx_presentation
         return presentation
 
-    def add_slide(self, layout_index: int = None, bg_color: Optional[Union[str, Tuple[int, int, int]]] = None) -> Slide:
+    def add_slide(self, layout_index: int | None = None, bg_color: str | tuple[int, int, int] | None = None) -> Slide:
         """Add a new slide to the presentation.
 
         Args:
@@ -186,10 +225,7 @@ class Presentation:
             A new Slide object
         """
         # Use blank layout by default, or specified layout if provided
-        if layout_index is None:
-            slide_layout = self.blank_layout
-        else:
-            slide_layout = self.pptx_presentation.slide_layouts[layout_index]
+        slide_layout = self.blank_layout if layout_index is None else self.pptx_presentation.slide_layouts[layout_index]
 
         pptx_slide = self.pptx_presentation.slides.add_slide(slide_layout)
         slide = Slide(pptx_slide)
@@ -202,7 +238,7 @@ class Presentation:
         return slide
 
     @property
-    def slides(self) -> List[Slide]:
+    def slides(self) -> list[Slide]:
         """Get a list of all slides in the presentation.
 
         Returns:
@@ -210,7 +246,7 @@ class Presentation:
         """
         return [Slide(slide) for slide in self.pptx_presentation.slides]
 
-    def save(self, file_path: Union[str, Path]) -> None:
+    def save(self, file_path: str | Path) -> None:
         """Save the presentation to a file.
 
         Args:
@@ -218,7 +254,7 @@ class Presentation:
         """
         self.pptx_presentation.save(file_path)
 
-    def add_slide_from_template(self, template_data: Union[str, Dict]) -> Slide:
+    def add_slide_from_template(self, template_data: str | dict) -> Slide:
         """Add a slide using a template preset.
 
         Args:
@@ -343,7 +379,7 @@ class Presentation:
 
         return slide
 
-    def add_title_slide(self, title: str, subtitle: str = None) -> Slide:
+    def add_title_slide(self, title: str, subtitle: str | None = None) -> Slide:
         """Add a title slide with title and optional subtitle.
 
         Args:
@@ -452,7 +488,9 @@ class Presentation:
 
         return slide
 
-    def add_image_slide(self, title: str, image_path: str, label: str = None, custom_style: Dict = None) -> Slide:
+    def add_image_slide(
+        self, title: str, image_path: str, label: str | None = None, custom_style: dict | None = None
+    ) -> Slide:
         """Add a slide with a title and a centered image.
 
         Args:
@@ -486,14 +524,15 @@ class Presentation:
         if custom_style:
             image_style.update(custom_style)
 
-        # Add the image with styling
-        image_shape = Image.add(
-            slide=slide,
+        # Create an Image object and call its add method
+        img = Image(slide)
+        image_shape = img.add(
             image_path=image_path,
-            position=image_area,
-            crop=False,
+            x=image_area.get("x", "10%"),
+            y=image_area.get("y", "20%"),
+            width=image_area.get("width", "80%"),
+            height=image_area.get("height", "70%"),
             maintain_aspect_ratio=image_style.get("maintain_aspect_ratio", True),
-            center=image_style.get("center", True),
         )
 
         # Apply styling to the image
@@ -542,7 +581,7 @@ class Presentation:
 
         return slide
 
-    def add_comparison_slide(self, title: str, content_texts: List[str]) -> Slide:
+    def add_comparison_slide(self, title: str, content_texts: list[str]) -> Slide:
         """Add a slide with title and two or more content areas for comparison.
 
         Args:
@@ -602,9 +641,9 @@ class Presentation:
     def add_table_slide(
         self,
         title: str,
-        data: Union[List[List[Any]], "pandas.DataFrame"],
+        data: list[list[Any]] | pd.DataFrame,
         has_header: bool = True,
-        custom_style: Dict = None,
+        custom_style: dict | None = None,
     ) -> Slide:
         """Add a slide with a title and a table.
 
@@ -645,18 +684,44 @@ class Presentation:
                     table_style[key] = value
 
         # Add the table with styling
-        table = Table.add(slide=slide, data=data, position=table_position, has_header=has_header, style=table_style)
+        table = Table(slide)
+
+        # Extract position values
+        x = table_position.get("x", "10%")
+        y = table_position.get("y", "20%")
+        width = table_position.get("width", "80%")
+        height = table_position.get("height", "60%")
+
+        # Convert pandas DataFrame to list if needed
+        table_data: list[list[Any]] = []
+        if hasattr(data, "to_dict") and callable(getattr(data, "to_dict", None)) and isinstance(data, pd.DataFrame):
+            # It's a pandas DataFrame
+            table_data = [list(data.columns), *data.values.tolist()]
+        else:
+            # It's already a list of lists
+            table_data = data  # type: ignore[assignment]
+
+        # Add the table
+        table.add(
+            data=table_data,
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            first_row_header=has_header,
+            style=1 if table_style else None,
+        )
 
         return slide
 
     def add_chart_slide(
         self,
         title: str,
-        data: Union[List[List[Any]], "pandas.DataFrame"],
-        chart_type: str = None,
-        category_column: str = None,
-        value_columns: Union[str, List[str]] = None,
-        custom_style: Dict = None,
+        data: list[list[Any]] | pd.DataFrame,
+        chart_type: str | None = None,
+        category_column: str | None = None,
+        value_columns: str | list[str] | None = None,
+        custom_style: dict | None = None,
     ) -> Slide:
         """Add a slide with a title and a chart.
 
@@ -698,20 +763,53 @@ class Presentation:
         # Import Chart class here to avoid circular import
         from easypptx.chart import Chart
 
-        # Add the chart with styling
-        chart = Chart.add(
-            slide=slide,
-            data=data,
+        # Create a Chart object and add the chart
+        chart_obj = Chart(slide)
+
+        # Extract chart data from data parameter
+        categories: list[Any] = []
+        values: list[Any] = []
+
+        # Simple extraction of categories and values for the example
+        if hasattr(data, "to_dict") and callable(getattr(data, "to_dict", None)) and isinstance(data, pd.DataFrame):
+            # It's a pandas DataFrame
+            df_data: pd.DataFrame = data  # Create a properly typed reference
+            if category_column is not None and category_column in df_data.columns:
+                categories = df_data[category_column].tolist()
+            else:
+                categories = df_data.iloc[:, 0].tolist()
+
+            if value_columns is not None:
+                if isinstance(value_columns, str) and value_columns in df_data.columns:
+                    values = df_data[value_columns].tolist()
+                elif isinstance(value_columns, list) and len(value_columns) > 0 and value_columns[0] in df_data.columns:
+                    values = df_data[value_columns[0]].tolist()
+                else:
+                    values = df_data.iloc[:, 1].tolist()
+            else:
+                values = df_data.iloc[:, 1].tolist()
+        else:
+            # It's a list of lists
+            if data and len(data) > 1:
+                categories = [row[0] for row in data[1:]]
+                values = [row[1] for row in data[1:]]
+
+        # Extract position values
+        x = chart_position.get("x", "10%")
+        y = chart_position.get("y", "20%")
+        width = chart_position.get("width", "80%")
+        height = chart_position.get("height", "70%")
+
+        chart = chart_obj.add(
             chart_type=chart_style.get("chart_type", "column"),
-            position=chart_position,
+            categories=categories,
+            values=values,
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=title,
             has_legend=chart_style.get("has_legend", True),
-            legend_position=chart_style.get("legend_position", "bottom"),
-            category_column=category_column,
-            value_columns=value_columns,
-            has_title=chart_style.get("has_title", True),
-            chart_title=title,
-            has_data_labels=chart_style.get("has_data_labels", False),
-            gridlines=chart_style.get("gridlines", True),
         )
 
         # Apply additional styling if applicable
@@ -730,7 +828,13 @@ class Presentation:
         return slide
 
     def add_matplotlib_slide(
-        self, title: str, figure, label: str = None, dpi: int = 300, format: str = "png", custom_style: Dict = None
+        self,
+        title: str,
+        figure,
+        label: str | None = None,
+        dpi: int = 300,
+        file_format: str = "png",
+        custom_style: dict | None = None,
     ) -> Slide:
         """Add a slide with a title and a matplotlib figure.
 
@@ -739,7 +843,7 @@ class Presentation:
             figure: Matplotlib figure object (plt.figure() or plt.gcf())
             label: Optional caption for the figure (default: None)
             dpi: Resolution for the figure (default: 300)
-            format: Image format ("png" or "jpg") (default: "png")
+            file_format: Image format ("png" or "jpg") (default: "png")
             custom_style: Optional custom styling for the image (default: None)
 
         Returns:
@@ -783,7 +887,7 @@ class Presentation:
             image_style.update(custom_style)
 
         # Add the matplotlib figure
-        Pyplot.add(slide=slide, figure=figure, position=image_area, dpi=dpi, format=format, style=image_style)
+        Pyplot.add(slide=slide, figure=figure, position=image_area, dpi=dpi, file_format=file_format, style=image_style)
 
         # Add label if specified
         if label:
@@ -814,10 +918,10 @@ class Presentation:
         self,
         title: str,
         seaborn_plot,
-        label: str = None,
+        label: str | None = None,
         dpi: int = 300,
-        format: str = "png",
-        custom_style: Dict = None,
+        file_format: str = "png",
+        custom_style: dict | None = None,
     ) -> Slide:
         """Add a slide with a title and a seaborn plot.
 
@@ -826,7 +930,7 @@ class Presentation:
             seaborn_plot: Seaborn plot object (sns.barplot, sns.heatmap, etc.)
             label: Optional caption for the figure (default: None)
             dpi: Resolution for the figure (default: 300)
-            format: Image format ("png" or "jpg") (default: "png")
+            file_format: Image format ("png" or "jpg") (default: "png")
             custom_style: Optional custom styling for the image (default: None)
 
         Returns:
@@ -860,11 +964,11 @@ class Presentation:
 
         # Use the matplotlib slide method
         return self.add_matplotlib_slide(
-            title=title, figure=figure, label=label, dpi=dpi, format=format, custom_style=custom_style
+            title=title, figure=figure, label=label, dpi=dpi, file_format=file_format, custom_style=custom_style
         )
 
     def add_plot(
-        self, title: str, plot=None, data=None, plot_type: str = "matplotlib", label: str = None, **kwargs
+        self, title: str, plot=None, data=None, plot_type: str = "matplotlib", label: str | None = None, **kwargs
     ) -> Slide:
         """Universal method to add various types of plots to a slide.
 
@@ -925,7 +1029,7 @@ class Presentation:
                 figure=plot,
                 label=label,
                 dpi=kwargs.get("dpi", 300),
-                format=kwargs.get("format", "png"),
+                file_format=kwargs.get("file_format", "png"),
                 custom_style=kwargs.get("custom_style"),
             )
 
@@ -938,7 +1042,7 @@ class Presentation:
                 seaborn_plot=plot,
                 label=label,
                 dpi=kwargs.get("dpi", 300),
-                format=kwargs.get("format", "png"),
+                file_format=kwargs.get("file_format", "png"),
                 custom_style=kwargs.get("custom_style"),
             )
 
@@ -964,18 +1068,17 @@ class Presentation:
         self,
         slide: Slide,
         text: str,
-        x: Union[float, str] = 1.0,
-        y: Union[float, str] = 1.0,
-        width: Union[float, str] = 8.0,
-        height: Union[float, str] = 1.0,
+        x: float | str = 1.0,
+        y: float | str = 1.0,
+        width: float | str = 8.0,
+        height: float | str = 1.0,
         font_size: int = 18,
         font_bold: bool = False,
         font_italic: bool = False,
-        font_name: str = None,
+        font_name: str | None = None,
         align: str = "left",
         vertical: str = "top",
-        color: Optional[Union[str, Tuple[int, int, int]]] = "black",
-        h_align: str = None,
+        color: str | tuple[int, int, int] | None = "black",
     ) -> PPTXShape:
         """Add text directly to a slide.
 
@@ -993,8 +1096,6 @@ class Presentation:
             align: Text alignment, one of "left", "center", "right" (default: "left")
             vertical: Vertical alignment, one of "top", "middle", "bottom" (default: "top")
             color: Text color as string name from COLORS dict or RGB tuple (default: "black")
-            h_align: Horizontal alignment for responsive positioning (default: None)
-
         Returns:
             The created text shape
 
@@ -1003,14 +1104,14 @@ class Presentation:
             slide = pres.add_slide()
             pres.add_text(slide, "Hello World", x="10%", y="20%", font_size=24)
 
-            # For responsive centering that adapts to different aspect ratios
-            pres.add_text(slide, "Centered Title", x="50%", y="5%", align="center", h_align="center")
+            # For centering text
+            pres.add_text(slide, "Centered Title", x="50%", y="5%", align="center")
             ```
         """
         if font_name is None:
             font_name = self.DEFAULT_FONT
 
-        # Forward all parameters including h_align to add_text
+        # Forward all parameters to add_text
         return slide.add_text(
             text=text,
             x=x,
@@ -1024,17 +1125,16 @@ class Presentation:
             align=align,
             vertical=vertical,
             color=color,
-            h_align=h_align,
         )
 
     def add_image(
         self,
         slide: Slide,
-        image_path: Union[str, Path],
-        x: Union[float, str] = 1.0,
-        y: Union[float, str] = 1.0,
-        width: Optional[Union[float, str]] = None,
-        height: Optional[Union[float, str]] = None,
+        image_path: str,
+        x: float | str = 1.0,
+        y: float | str = 1.0,
+        width: float | str | None = None,
+        height: float | str | None = None,
         crop: bool = False,
         maintain_aspect_ratio: bool = True,
         center: bool = True,
@@ -1042,7 +1142,6 @@ class Presentation:
         border_color: str = "black",
         border_width: int = 1,
         shadow: bool = False,
-        h_align: str = None,
     ) -> PPTXShape:
         """Add an image directly to a slide.
 
@@ -1060,8 +1159,6 @@ class Presentation:
             border_color: Border color (default: "black")
             border_width: Border width in points (default: 1)
             shadow: Whether to add a shadow to the image (default: False)
-            h_align: Horizontal alignment for responsive positioning (default: None)
-
         Returns:
             The created image shape
 
@@ -1070,12 +1167,12 @@ class Presentation:
             slide = pres.add_slide()
             pres.add_image(slide, "path/to/image.jpg", x="10%", y="20%", width="60%")
 
-            # For responsive centering that adapts to different aspect ratios
-            pres.add_image(slide, "path/to/image.jpg", x="50%", y="30%", width="80%", h_align="center")
+            # For centering an image
+            pres.add_image(slide, "path/to/image.jpg", x="50%", y="30%", width="80%", center=True)
             ```
         """
-        # Use the slide's native add_image method which supports h_align
-        image_shape = slide.add_image(image_path=image_path, x=x, y=y, width=width, height=height, h_align=h_align)
+        # Use the slide's native add_image method
+        image_shape = slide.add_image(image_path=image_path, x=x, y=y, width=width, height=height)
 
         # Apply styling
         if border:
@@ -1095,21 +1192,20 @@ class Presentation:
         self,
         slide: Slide,
         shape_type: int = MSO_SHAPE.RECTANGLE,
-        x: Union[float, str] = 1.0,
-        y: Union[float, str] = 1.0,
-        width: Union[float, str] = 2.0,
-        height: Union[float, str] = 1.0,
-        fill_color: Optional[Union[str, Tuple[int, int, int]]] = None,
-        line_color: Optional[Union[str, Tuple[int, int, int]]] = None,
+        x: float | str = 1.0,
+        y: float | str = 1.0,
+        width: float | str = 2.0,
+        height: float | str = 1.0,
+        fill_color: str | tuple[int, int, int] | None = None,
+        line_color: str | tuple[int, int, int] | None = None,
         line_width: float = 1.0,
-        text: str = None,
+        text: str | None = None,
         font_size: int = 14,
-        font_name: str = None,
+        font_name: str | None = None,
         font_bold: bool = False,
-        font_color: Optional[Union[str, Tuple[int, int, int]]] = "black",
+        font_color: str | tuple[int, int, int] | None = "black",
         text_align: str = "center",
         text_vertical: str = "middle",
-        h_align: str = None,
     ) -> PPTXShape:
         """Add a shape directly to a slide.
 
@@ -1130,8 +1226,6 @@ class Presentation:
             font_color: Text color (default: "black")
             text_align: Text alignment (default: "center")
             text_vertical: Vertical text alignment (default: "middle")
-            h_align: Horizontal alignment for responsive positioning (default: None)
-
         Returns:
             The created shape
 
@@ -1150,7 +1244,7 @@ class Presentation:
                 font_color="white"
             )
 
-            # For responsive centering that adapts to different aspect ratios
+            # For centered shape
             pres.add_shape(
                 slide,
                 x="50%",
@@ -1158,14 +1252,12 @@ class Presentation:
                 width="80%",
                 height="30%",
                 fill_color="blue",
-                h_align="center"
+                text_align="center"
             )
             ```
         """
-        # Use the slide's native add_shape method which supports h_align
-        shape = slide.add_shape(
-            shape_type=shape_type, x=x, y=y, width=width, height=height, fill_color=fill_color, h_align=h_align
-        )
+        # Use the slide's native add_shape method
+        shape = slide.add_shape(shape_type=shape_type, x=x, y=y, width=width, height=height, fill_color=fill_color)
 
         # Apply line color if specified
         if line_color is not None:
@@ -1208,13 +1300,13 @@ class Presentation:
     def add_table(
         self,
         slide: Slide,
-        data: Union[List[List[Any]], "pandas.DataFrame"],
-        x: Union[float, str] = 1.0,
-        y: Union[float, str] = 1.0,
-        width: Union[float, str] = 8.0,
-        height: Union[float, str] = 4.0,
+        data: list[list[Any]] | pd.DataFrame,
+        x: float | str = 1.0,
+        y: float | str = 1.0,
+        width: float | str = 8.0,
+        height: float | str = 4.0,
         has_header: bool = True,
-        style: Optional[Dict] = None,
+        style: dict | None = None,
     ) -> PPTXShape:
         """Add a table directly to a slide.
 
@@ -1246,23 +1338,39 @@ class Presentation:
         if style is None:
             style = self.template.default_table_style.copy()
 
-        return table_obj.add(data=data, x=x, y=y, width=width, height=height, first_row_header=has_header, style=style)
+        # Convert the style parameter to int for table.add compatibility
+        table_style_id = None
+        if isinstance(style, dict) and "style_id" in style:
+            table_style_id = style.get("style_id")
+
+        # Convert pandas DataFrame to list if needed
+        table_data: list[list[Any]] = []
+        if hasattr(data, "to_dict") and callable(getattr(data, "to_dict", None)) and isinstance(data, pd.DataFrame):
+            # It's a pandas DataFrame
+            table_data = [list(data.columns), *data.values.tolist()]
+        else:
+            # It's already a list of lists
+            table_data = data  # type: ignore[assignment]
+
+        return table_obj.add(
+            data=table_data, x=x, y=y, width=width, height=height, first_row_header=has_header, style=table_style_id
+        )
 
     def add_chart(
         self,
         slide: Slide,
-        data: Union[List[List[Any]], "pandas.DataFrame"],
+        data: list[list[Any]] | pd.DataFrame,
         chart_type: str = "column",
-        x: Union[float, str] = 1.0,
-        y: Union[float, str] = 1.0,
-        width: Union[float, str] = 8.0,
-        height: Union[float, str] = 4.0,
+        x: float | str = 1.0,
+        y: float | str = 1.0,
+        width: float | str = 8.0,
+        height: float | str = 4.0,
         has_legend: bool = True,
         legend_position: str = "bottom",
-        category_column: Optional[Union[str, int]] = None,
-        value_columns: Optional[Union[str, List[str], int, List[int]]] = None,
+        category_column: str | int | None = None,
+        value_columns: str | list[str] | int | list[int] | None = None,
         has_title: bool = True,
-        chart_title: Optional[str] = None,
+        chart_title: str | None = None,
         has_data_labels: bool = False,
         gridlines: bool = True,
     ) -> PPTXChart:
@@ -1312,25 +1420,37 @@ class Presentation:
         if hasattr(data, "to_dict") and callable(getattr(data, "to_dict", None)):
             # Use from_dataframe method
             # Handle multi-column case for pandas DataFrames
-            if isinstance(value_columns, list):
-                # Get the first column for the chart - we'll need to implement multi-series charts in the future
-                first_value_column = value_columns[0]
-            else:
-                first_value_column = value_columns
+            # Get the first column for the chart - we'll need to implement multi-series charts in the future
+            first_value_column = value_columns[0] if isinstance(value_columns, list) else value_columns
 
-            if category_column is None:
+            if category_column is None and hasattr(data, "columns"):
                 # Use the first column as the category column
-                category_column = data.columns[0]
+                # Only for pandas DataFrames
+                category_column = str(data.columns[0])
 
-            if first_value_column is None:
+            if first_value_column is None and hasattr(data, "columns"):
                 # Use the second column as the value column
+                # Only for pandas DataFrames
                 if len(data.columns) > 1:
-                    first_value_column = data.columns[1]
+                    first_value_column = str(data.columns[1])
                 else:
                     raise ValueError("DataFrame must have at least two columns for automatic value extraction")
 
+            # Convert category_column and value_column to strings for type compatibility
+            if category_column is not None:
+                category_column = str(category_column)
+            if first_value_column is not None:
+                first_value_column = str(first_value_column)
+
+            # Make sure we're working with a proper pandas DataFrame
+            # Import pandas locally to avoid circular import
+            import pandas as pd
+
+            # Convert data to DataFrame if it's not already using ternary operator
+            df = pd.DataFrame(data) if not isinstance(data, pd.DataFrame) else data
+
             return chart_obj.from_dataframe(
-                df=data,
+                df=df,
                 chart_type=chart_type,
                 category_column=category_column,
                 value_column=first_value_column,
@@ -1359,14 +1479,14 @@ class Presentation:
                             col_idx = header.index(category_column)
                             categories = [row[col_idx] for row in data[1:]]
                         except ValueError:
-                            raise ValueError(f"Category column '{category_column}' not found in header")
+                            raise ValueError(f"Category column '{category_column}' not found in header") from None
                 else:
                     # Default to first column
                     categories = [row[0] for row in data[1:]]
 
                 if value_columns is not None:
                     # Extract values from the specified column(s)
-                    if isinstance(value_columns, (int, str)):
+                    if isinstance(value_columns, int | str):
                         # Single column
                         if isinstance(value_columns, int):
                             values = [row[value_columns] for row in data[1:]]
@@ -1377,7 +1497,7 @@ class Presentation:
                                 col_idx = header.index(value_columns)
                                 values = [row[col_idx] for row in data[1:]]
                             except ValueError:
-                                raise ValueError(f"Value column '{value_columns}' not found in header")
+                                raise ValueError(f"Value column '{value_columns}' not found in header") from None
                     else:
                         # Multiple columns not supported in simple list format
                         raise ValueError(
@@ -1402,16 +1522,330 @@ class Presentation:
                 has_legend=has_legend,
             )
 
+    def add_grid(
+        self,
+        slide: Slide,
+        x: float | str = "0%",
+        y: float | str = "0%",
+        width: float | str = "100%",
+        height: float | str = "100%",
+        rows: int = 1,
+        cols: int = 1,
+        padding: float = 5.0,
+    ) -> Grid:
+        """Add a grid layout to a slide.
+
+        Args:
+            slide: The slide to add the grid to
+            x: X position in inches or percentage (default: "0%")
+            y: Y position in inches or percentage (default: "0%")
+            width: Width in inches or percentage (default: "100%")
+            height: Height in inches or percentage (default: "100%")
+            rows: Number of rows in the grid (default: 1)
+            cols: Number of columns in the grid (default: 1)
+            padding: Padding between cells as percentage of cell size (default: 5.0)
+
+        Returns:
+            The created Grid object
+
+        Example:
+            ```python
+            slide = pres.add_slide()
+            grid = pres.add_grid(slide, rows=2, cols=2)
+
+            grid.add_to_cell(
+                row=0,
+                col=0,
+                content_func=slide.add_text,
+                text="Top Left",
+                font_size=24,
+                align="center",
+                vertical="middle",
+            )
+            ```
+        """
+        from easypptx.grid import Grid
+
+        # Create the grid
+        grid = Grid(
+            parent=slide,
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            rows=rows,
+            cols=cols,
+            padding=padding,
+        )
+
+        return grid
+
+    def add_grid_slide(
+        self,
+        rows: int = 1,
+        cols: int = 1,
+        title: str | None = None,
+        title_height: float | str = "10%",
+        padding: float = 5.0,
+        bg_color: str | tuple[int, int, int] | None = None,
+    ) -> tuple[Slide, Grid]:
+        """Add a slide with a grid layout.
+
+        The grid will fill the entire slide, except for the title area if a title is provided.
+
+        Args:
+            rows: Number of rows in the grid (default: 1)
+            cols: Number of columns in the grid (default: 1)
+            title: Optional title for the slide (default: None)
+            title_height: Height of the title area (default: "10%")
+            padding: Padding between cells as percentage of cell size (default: 5.0)
+            bg_color: Background color for the slide (default: None)
+
+        Returns:
+            A tuple containing (Slide, Grid)
+
+        Example:
+            ```python
+            slide, grid = pres.add_grid_slide(rows=2, cols=3, title="My Grid Slide")
+
+            grid.add_to_cell(
+                row=0,
+                col=0,
+                content_func=slide.add_text,
+                text="Top Left",
+                font_size=24,
+                align="center",
+                vertical="middle",
+            )
+            ```
+        """
+        # Create a new slide
+        slide = self.add_slide(bg_color=bg_color)
+
+        # Add title if specified
+        if title:
+            slide.add_text(
+                text=title,
+                x="0%",
+                y="0%",
+                width="100%",
+                height=title_height,
+                font_size=24,
+                font_bold=True,
+                align="center",
+                vertical="middle",
+            )
+
+            # Adjust grid position and height to account for title
+            grid_y = title_height
+
+            # Calculate grid height by subtracting title height
+            if isinstance(title_height, str) and title_height.endswith("%"):
+                title_height_value = float(title_height.strip("%"))
+                grid_height = f"{100 - title_height_value}%"
+            else:
+                grid_height = f"{100 - float(title_height)}%"
+
+            # Create the grid
+            grid = self.add_grid(
+                slide=slide,
+                x="0%",
+                y=grid_y,
+                width="100%",
+                height=grid_height,
+                rows=rows,
+                cols=cols,
+                padding=padding,
+            )
+        else:
+            # Create the grid with full slide dimensions
+            grid = self.add_grid(
+                slide=slide,
+                x="0%",
+                y="0%",
+                width="100%",
+                height="100%",
+                rows=rows,
+                cols=cols,
+                padding=padding,
+            )
+
+        return slide, grid
+
+    def add_autogrid(
+        self,
+        slide: Slide,
+        content_funcs: list,
+        rows: int | None = None,
+        cols: int | None = None,
+        x: float | str = "0%",
+        y: float | str = "0%",
+        width: float | str = "100%",
+        height: float | str = "100%",
+        padding: float = 5.0,
+        title: str | None = None,
+        title_height: float | str = "10%",
+    ) -> Grid:
+        """Add an autogrid layout to a slide.
+
+        This method automatically places the provided content functions into a grid.
+
+        Args:
+            slide: The slide to add the autogrid to
+            content_funcs: List of functions that add content to the slide
+            rows: Number of rows (default: None, calculated automatically)
+            cols: Number of columns (default: None, calculated automatically)
+            x: X position in inches or percentage (default: "0%")
+            y: Y position in inches or percentage (default: "0%")
+            width: Width in inches or percentage (default: "100%")
+            height: Height in inches or percentage (default: "100%")
+            padding: Padding between cells as percentage of cell size (default: 5.0)
+            title: Optional title for the grid (default: None)
+            title_height: Height of the title area (default: "10%")
+
+        Returns:
+            The created Grid object
+
+        Example:
+            ```python
+            slide = pres.add_slide()
+
+            def create_text1():
+                return slide.add_text("Text 1")
+
+            def create_text2():
+                return slide.add_text("Text 2")
+
+            content_funcs = [create_text1, create_text2]
+            pres.add_autogrid(slide, content_funcs, title="Auto Grid Example")
+            ```
+        """
+        from easypptx.grid import Grid
+
+        # Use the Grid.autogrid method
+        grid = Grid.autogrid(
+            parent=slide,
+            content_funcs=content_funcs,
+            rows=rows,
+            cols=cols,
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            padding=padding,
+            title=title,
+            title_height=title_height,
+        )
+
+        return grid
+
+    def add_autogrid_slide(
+        self,
+        content_funcs: list,
+        rows: int | None = None,
+        cols: int | None = None,
+        title: str | None = None,
+        title_height: float | str = "10%",
+        padding: float = 5.0,
+        bg_color: str | tuple[int, int, int] | None = None,
+    ) -> tuple[Slide, Grid]:
+        """Add a slide with an autogrid layout.
+
+        This method creates a new slide and automatically places the provided
+        content functions into a grid.
+
+        Args:
+            content_funcs: List of functions that add content to the slide
+            rows: Number of rows (default: None, calculated automatically)
+            cols: Number of columns (default: None, calculated automatically)
+            title: Optional title for the slide (default: None)
+            title_height: Height of the title area (default: "10%")
+            padding: Padding between cells as percentage of cell size (default: 5.0)
+            bg_color: Background color for the slide (default: None)
+
+        Returns:
+            A tuple containing (Slide, Grid)
+
+        Example:
+            ```python
+            def create_text1():
+                return slide.add_text("Text 1")
+
+            def create_text2():
+                return slide.add_text("Text 2")
+
+            content_funcs = [create_text1, create_text2]
+            slide, grid = pres.add_autogrid_slide(content_funcs, title="Auto Grid Slide")
+            ```
+        """
+        # Create a new slide
+        slide = self.add_slide(bg_color=bg_color)
+
+        # Create the autogrid (without title, we'll add it separately to the slide)
+        if title:
+            # Add the title to the slide
+            slide.add_text(
+                text=title,
+                x="0%",
+                y="0%",
+                width="100%",
+                height=title_height,
+                font_size=24,
+                font_bold=True,
+                align="center",
+                vertical="middle",
+            )
+
+            # Calculate grid dimensions
+            grid_y = title_height
+
+            # Calculate grid height by subtracting title height
+            if isinstance(title_height, str) and title_height.endswith("%"):
+                title_height_value = float(title_height.strip("%"))
+                grid_height = f"{100 - title_height_value}%"
+            else:
+                grid_height = f"{100 - float(title_height)}%"
+
+            # Create the autogrid without its own title (we already added it)
+            grid = self.add_autogrid(
+                slide=slide,
+                content_funcs=content_funcs,
+                rows=rows,
+                cols=cols,
+                x="0%",
+                y=grid_y,
+                width="100%",
+                height=grid_height,
+                padding=padding,
+                title=None,  # No separate title for the grid
+            )
+        else:
+            # Create the autogrid with full slide dimensions
+            grid = self.add_autogrid(
+                slide=slide,
+                content_funcs=content_funcs,
+                rows=rows,
+                cols=cols,
+                x="0%",
+                y="0%",
+                width="100%",
+                height="100%",
+                padding=padding,
+                title=None,  # No title
+            )
+
+        return slide, grid
+
     def add_pyplot(
         self,
         slide: Slide,
         figure,
-        x: Union[float, str] = 1.0,
-        y: Union[float, str] = 1.0,
-        width: Union[float, str] = 8.0,
-        height: Union[float, str] = 4.0,
+        x: float | str = 1.0,
+        y: float | str = 1.0,
+        width: float | str = 8.0,
+        height: float | str = 4.0,
         dpi: int = 300,
-        format: str = "png",
+        file_format: str = "png",
         border: bool = False,
         border_color: str = "black",
         border_width: int = 1,
@@ -1429,7 +1863,7 @@ class Presentation:
             width: Width in inches or percentage (default: 8.0)
             height: Height in inches or percentage (default: 4.0)
             dpi: Resolution for the figure (default: 300)
-            format: Image format ("png" or "jpg") (default: "png")
+            file_format: Image format ("png" or "jpg") (default: "png")
             border: Whether to add a border to the image (default: False)
             border_color: Border color (default: "black")
             border_width: Border width in points (default: 1)
@@ -1473,4 +1907,7 @@ class Presentation:
             "center": center,
         }
 
-        return Pyplot.add(slide=slide, figure=figure, position=position, dpi=dpi, format=format, style=style)
+        return Pyplot.add(slide=slide, figure=figure, position=position, dpi=dpi, file_format=file_format, style=style)
+
+
+# The Grid class is now imported properly at the top of the file

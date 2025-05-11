@@ -1,13 +1,16 @@
 """Table handling module for EasyPPTX."""
 
-from typing import Any, List, Optional, Union
+from typing import TYPE_CHECKING
 
 import pandas as pd
 from pptx.table import Table as PPTXTable
 from pptx.util import Inches, Pt
 
+if TYPE_CHECKING:
+    from easypptx.slide import Slide
+
 # Type for position parameters - accepts either percentage or absolute values
-PositionType = Union[float, str]
+PositionType = float | str
 
 
 class Table:
@@ -30,7 +33,7 @@ class Table:
         ```
     """
 
-    def __init__(self, slide_obj: "Slide") -> None:  # noqa: F821
+    def __init__(self, slide_obj: "Slide") -> None:
         """Initialize a Table object.
 
         Args:
@@ -40,13 +43,13 @@ class Table:
 
     def add(
         self,
-        data: List[List[Any]],
+        data: list,
         x: PositionType = 1.0,
         y: PositionType = 1.0,
-        width: Optional[PositionType] = None,
-        height: Optional[PositionType] = None,
+        width: PositionType | None = None,
+        height: PositionType | None = None,
         first_row_header: bool = True,
-        style: Optional[int] = None,
+        style: int | None = None,
     ) -> PPTXTable:
         """Add a table to the slide.
 
@@ -82,17 +85,11 @@ class Table:
         y_inches = self.slide._convert_position(y, slide_height)
 
         # Create table shape
-        if width is None:
-            # Default width based on columns
-            width_inches = cols * 2.0
-        else:
-            width_inches = self.slide._convert_position(width, slide_width)
+        # Default width based on columns if None, otherwise convert from position
+        width_inches = cols * 2.0 if width is None else self.slide._convert_position(width, slide_width)
 
-        if height is None:
-            # Default height based on rows
-            height_inches = rows * 0.5
-        else:
-            height_inches = self.slide._convert_position(height, slide_height)
+        # Default height based on rows if None, otherwise convert from position
+        height_inches = rows * 0.5 if height is None else self.slide._convert_position(height, slide_height)
 
         table_shape = self.slide.pptx_slide.shapes.add_table(
             rows, cols, Inches(x_inches), Inches(y_inches), Inches(width_inches), Inches(height_inches)
@@ -122,11 +119,11 @@ class Table:
         df: "pd.DataFrame",
         x: PositionType = 1.0,
         y: PositionType = 1.0,
-        width: Optional[PositionType] = None,
-        height: Optional[PositionType] = None,
+        width: PositionType | None = None,
+        height: PositionType | None = None,
         include_index: bool = False,
         first_row_header: bool = True,
-        style: Optional[int] = None,
+        style: int | None = None,
     ) -> PPTXTable:
         """Add a table from a pandas DataFrame.
 
@@ -147,9 +144,9 @@ class Table:
         if include_index:
             data = [list(df.columns)]
             for idx, row in df.iterrows():
-                data.append([idx] + list(row))
+                data.append([str(idx), *list(row)])
         else:
-            data = [list(df.columns)] + df.values.tolist()
+            data = [list(df.columns), *df.values.tolist()]
 
         return self.add(
             data=data,

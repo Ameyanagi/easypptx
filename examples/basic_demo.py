@@ -28,8 +28,7 @@ slide1.add_text(
     height="15%",
     font_size=44,
     font_bold=True,
-    align="center",
-    h_align="center",  # Enable responsive positioning
+    align="center",  # Center text alignment
 )
 slide1.add_text(
     text="A simple demo of EasyPPTX capabilities",
@@ -38,23 +37,21 @@ slide1.add_text(
     width="60%",
     height="10%",
     font_size=24,
-    align="center",
-    h_align="center",  # Enable responsive positioning
+    align="center",  # Center text alignment
 )
 
 # Add content slide with text formatting
 slide2 = pres.add_slide()
 # Centered title with responsive positioning
 slide2.add_text(
-    text="Text Formatting",
-    x="50%",
+    text="Text;lksdja;sd",
+    x="0%",
     y="10%",
-    width="80%",
+    width="100%",
     height="15%",
     font_size=32,
     font_bold=True,
-    align="center",
-    h_align="center",  # Enable responsive positioning
+    align="center",  # Center text alignment
 )
 # Regular text examples (left-aligned)
 slide2.add_text(text="Regular text", x="10%", y="30%", width="80%", height="10%")
@@ -74,8 +71,7 @@ slide3.add_text(
     height="15%",
     font_size=32,
     font_bold=True,
-    align="center",
-    h_align="center",  # Enable responsive positioning
+    align="center",  # Center text alignment
 )
 
 # Add a centered table
@@ -100,8 +96,7 @@ slide4.add_text(
     height="15%",
     font_size=32,
     font_bold=True,
-    align="center",
-    h_align="center",  # Enable responsive positioning
+    align="center",  # Center text alignment
 )
 
 chart = Chart(slide4)
@@ -147,8 +142,7 @@ slide5.add_text(
     height="15%",
     font_size=32,
     font_bold=True,
-    align="center",
-    h_align="center",  # Enable responsive positioning
+    align="center",  # Center text alignment
 )
 
 # Create a DataFrame

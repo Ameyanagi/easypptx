@@ -5,14 +5,11 @@ description = "A Python library for easily creating and manipulating PowerPoint 
 authors = [{ name = "Ameyanagi", email = "contact@ameyanagi.com" }]
 readme = "README.md"
 keywords = ['python']
-requires-python = ">=3.9,<4.0"
+requires-python = ">=3.12,<4.0"
 classifiers = [
     "Intended Audience :: Developers",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -21,6 +18,7 @@ dependencies = [
     "matplotlib>=3.9.4",
     "pandas>=2.2.3",
     "python-pptx>=1.0.2",
+    "seaborn>=0.13.2",
     "tomli>=2.0.0",
     "tomli-w>=1.0.0",
 ]
@@ -51,20 +49,32 @@ build-backend = "hatchling.build"
 
 
 [tool.mypy]
-files = ["src"]
-disallow_untyped_defs = true
-disallow_any_unimported = true
-no_implicit_optional = true
-check_untyped_defs = true
+python_version = "3.12"
 warn_return_any = true
-warn_unused_ignores = true
-show_error_codes = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+strict_optional = true
+# Allow modern union syntax
+allow_redefinition = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+check_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = "*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py312"
 line-length = 120
 fix = true
 
@@ -110,6 +120,8 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
+"src/*" = ["TRY003", "C901", "TRY300"]
+"examples/*" = ["S311"]
 
 [tool.ruff.format]
 preview = true
@@ -120,3 +132,6 @@ skip_empty = true
 [tool.coverage.run]
 branch = true
 source = ["src"]
+
+[tool.deptry]
+ignore = ["DEP003"]

@@ -33,18 +33,18 @@ text.add_title("Centered Title", x="10%", y="5%", width="80%", height="15%")
 # Add paragraphs using percentage positioning
 text.add_paragraph(
     "This text is positioned at 20% from the left and 30% from the top.",
-    x="20%", 
-    y="30%", 
-    width="60%", 
+    x="20%",
+    y="30%",
+    width="60%",
     height="10%"
 )
 
 # Mix percentages with absolute values
 text.add_paragraph(
-    "This text uses absolute x (2 inches) and percentage y (70%).", 
-    x=2.0, 
-    y="70%", 
-    width="50%", 
+    "This text uses absolute x (2 inches) and percentage y (70%).",
+    x=2.0,
+    y="70%",
+    width="50%",
     height=1.0
 )
 
@@ -65,8 +65,8 @@ img = Image(slide)
 # Add image at 10% from left, 30% from top, with 80% width
 img.add(
     "logo.png",
-    x="10%", 
-    y="30%", 
+    x="10%",
+    y="30%",
     width="80%"
 )
 ```
@@ -84,9 +84,9 @@ slide = pres.add_slide()
 # Add a rectangle shape using percentage positioning
 slide.add_shape(
     shape_type=MSO_SHAPE.RECTANGLE,
-    x="25%", 
-    y="60%", 
-    width="50%", 
+    x="25%",
+    y="60%",
+    width="50%",
     height="10%",
     fill_color="blue"
 )

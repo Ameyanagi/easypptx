@@ -3,14 +3,12 @@
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, cast
 
 import tomli
 import tomli_w
 from pptx.dml.color import RGBColor
-from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
-from pptx.util import Inches, Pt
 
 
 class Template:
@@ -221,7 +219,7 @@ class Template:
             },
         }
 
-    def get_preset(self, preset_name: str) -> Dict:
+    def get_preset(self, preset_name: str) -> dict:
         """Get a preset template by name.
 
         Args:
@@ -237,14 +235,14 @@ class Template:
             valid_presets = ", ".join(self.presets.keys())
             raise ValueError(f"Unknown preset: {preset_name}. Valid presets are: {valid_presets}")
 
-        return self.presets[preset_name]
+        return cast(dict, self.presets[preset_name])
 
-    def create_custom_preset(self, **kwargs) -> Dict:
+    def create_custom_preset(self, **kwargs) -> dict:
         """Create a custom preset with specified parameters."""
         # Implementation here
         return {}
 
-    def get_image_style(self, preset: Dict) -> Dict:
+    def get_image_style(self, preset: dict) -> dict:
         """Get image styling from a preset.
 
         Args:
@@ -262,54 +260,56 @@ class Template:
 
         return style
 
-    def get_table_style(self, preset: Dict) -> Dict:
+    def get_table_style(self, preset: dict) -> dict:
         """Get table styling from a preset.
-        
+
         Args:
             preset: Template preset dictionary
-            
+
         Returns:
             Dictionary of table styling options
         """
         # Start with default styling
         style = self.default_table_style.copy()
-        
+
         # Update with style from preset if available
         if "table_style" in preset:
             # Handle nested dictionaries by updating them separately
-            if "first_row" in preset["table_style"] and "first_row" in style:
-                style["first_row"].update(preset["table_style"].get("first_row", {}))
-                
+            table_style = cast(dict, preset.get("table_style", {}))
+            if "first_row" in table_style and "first_row" in style:
+                first_row_style = cast(dict, style.get("first_row", {}))
+                first_row_style.update(table_style.get("first_row", {}))
+
             # Update all other keys
-            for key, value in preset["table_style"].items():
+            for key, value in table_style.items():
                 if key != "first_row":
                     style[key] = value
-        
+
         return style
 
-    def get_chart_style(self, preset: Dict) -> Dict:
+    def get_chart_style(self, preset: dict) -> dict:
         """Get chart styling from a preset.
-        
+
         Args:
             preset: Template preset dictionary
-            
+
         Returns:
             Dictionary of chart styling options
         """
         # Start with default styling
         style = self.default_chart_style.copy()
-        
+
         # Update with style from preset if available
         if "chart_style" in preset:
             style.update(preset["chart_style"])
-        
+
         return style
 
 
 class TemplateManager:
     """Class for managing templates, providing easy save/load functionality."""
 
-    def __init__(self, template_dir: Optional[str] = None):
+    def __init__(self, template_dir: str | None = None):
         """Initialize a TemplateManager.
 
         Args:
@@ -319,7 +319,7 @@ class TemplateManager:
         self.template = Template()
 
         # Dictionary for additional registered templates
-        self.registered_templates = {}
+        self.registered_templates: dict[str, dict[str, Any]] = {}
 
         # Set the template directory
         self.template_dir = template_dir
@@ -330,7 +330,7 @@ class TemplateManager:
         # Create the template directory if it doesn't exist
         os.makedirs(self.template_dir, exist_ok=True)
 
-    def get(self, template_name: str) -> Dict:
+    def get(self, template_name: str) -> dict:
         """Get a template by name.
 
         Args:
@@ -344,27 +344,27 @@ class TemplateManager:
         """
         # First check registered templates
         if template_name in self.registered_templates:
-            return self.registered_templates[template_name]
+            return cast(dict, self.registered_templates[template_name])
 
         # Then check built-in templates
         if template_name in self.template.presets:
-            return self.template.presets[template_name]
+            return cast(dict, self.template.presets[template_name])
 
         # If not found, raise an error
         raise ValueError(
             f"Template '{template_name}' not found. Available templates: " + ", ".join(self.list_templates())
         )
 
-    def register(self, name: str, template: Dict) -> None:
+    def register(self, name: str, template: dict) -> None:
         """Register a custom template.
-        
+
         Args:
             name: Name for the template
             template: Template dictionary
         """
         self.registered_templates[name] = template
 
-    def list_templates(self) -> List[str]:
+    def list_templates(self) -> list:
         """List all available templates.
 
         Returns:
@@ -373,58 +373,58 @@ class TemplateManager:
         # Combine built-in and registered templates
         return list(self.template.presets.keys()) + list(self.registered_templates.keys())
 
-    def save(self, template_name: str, file_path: Optional[str] = None, format: str = "toml") -> str:
+    def save(self, template_name: str, file_path: str | None = None, file_format: str = "toml") -> str:
         """Save a template to a file.
-        
+
         Args:
             template_name: Name of the template to save
             file_path: Path to save the template (default: None, uses name in template_dir)
             format: File format to use, 'toml' or 'json' (default: 'toml')
-            
+
         Returns:
             Path where the template was saved
-            
+
         Raises:
             ValueError: If the template is not found or format is invalid
         """
         # Get the template
         template = self.get(template_name)
-        
+
         # Determine the file path
         if file_path is None:
-            extension = ".toml" if format.lower() == "toml" else ".json"
+            extension = ".toml" if file_format.lower() == "toml" else ".json"
             file_path = os.path.join(self.template_dir, f"{template_name}{extension}")
-        
+
         # Create the directory if it doesn't exist
         os.makedirs(os.path.dirname(os.path.abspath(file_path)), exist_ok=True)
-        
+
         # Convert RGBColor objects to serializable values
         template_serializable = self._prepare_for_serialization(template)
-        
+
         # Save the template to the file
-        if format.lower() == "toml":
+        if file_format.lower() == "toml":
             # Convert to TOML and save
-            with open(file_path, 'wb') as f:
+            with open(file_path, "wb") as f:
                 tomli_w.dump(template_serializable, f)
-        elif format.lower() == "json":
+        elif file_format.lower() == "json":
             # Convert to JSON and save
-            with open(file_path, 'w') as f:
+            with open(file_path, "w") as f:
                 json.dump(template_serializable, f, indent=2)
         else:
-            raise ValueError(f"Unsupported format: {format}. Use 'toml' or 'json'")
-        
+            raise ValueError(f"Unsupported format: {file_format}. Use 'toml' or 'json'")
+
         return file_path
 
-    def load(self, file_path: str, template_name: Optional[str] = None) -> str:
+    def load(self, file_path: str, template_name: str | None = None) -> str:
         """Load a template from a file.
-        
+
         Args:
             file_path: Path to the template file
             template_name: Name to register the template as (default: None, uses filename)
-            
+
         Returns:
             The name the template was registered as
-            
+
         Raises:
             FileNotFoundError: If the template file is not found
             ValueError: If the file format is invalid
@@ -432,40 +432,40 @@ class TemplateManager:
         # Check if the file exists
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Template file not found: {file_path}")
-        
+
         # Determine the template name
         if template_name is None:
             template_name = os.path.splitext(os.path.basename(file_path))[0]
-        
+
         # Determine the file format from extension
         file_extension = os.path.splitext(file_path)[1].lower()
-        
+
         # Load the template from the file based on format
-        if file_extension == '.toml':
+        if file_extension == ".toml":
             # Load TOML
-            with open(file_path, 'rb') as f:
+            with open(file_path, "rb") as f:
                 template = tomli.load(f)
-        elif file_extension == '.json':
+        elif file_extension == ".json":
             # Load JSON
-            with open(file_path, 'r') as f:
+            with open(file_path) as f:
                 template = json.load(f)
         else:
             raise ValueError(f"Unsupported file format: {file_extension}. Supported formats: .toml, .json")
-        
+
         # Convert serialized color values back to RGBColor objects
         template = self._process_after_deserialization(template)
-        
+
         # Register the template
         self.register(template_name, template)
-        
+
         return template_name
 
     def _prepare_for_serialization(self, obj: Any) -> Any:
         """Convert RGBColor objects to serializable values.
-        
+
         Args:
             obj: Object to prepare for serialization
-            
+
         Returns:
             Serializable version of the object
         """
@@ -484,10 +484,10 @@ class TemplateManager:
 
     def _process_after_deserialization(self, obj: Any) -> Any:
         """Convert serialized color values back to RGBColor objects.
-        
+
         Args:
             obj: Object after deserialization
-            
+
         Returns:
             Processed object with RGBColor objects
         """

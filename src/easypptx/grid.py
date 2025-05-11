@@ -1,6 +1,7 @@
 """Grid layout module for EasyPPTX."""
 
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 from easypptx.slide import PositionType
 
@@ -21,15 +22,7 @@ class GridCell:
         content: The content placed in this cell (if any)
     """
 
-    def __init__(
-        self,
-        row: int,
-        col: int,
-        x: str,
-        y: str,
-        width: str,
-        height: str
-    ) -> None:
+    def __init__(self, row: int, col: int, x: str, y: str, width: str, height: str) -> None:
         """Initialize a GridCell.
 
         Args:
@@ -46,15 +39,17 @@ class GridCell:
         self.y = y
         self.width = width
         self.height = height
-        self.content = None
+        self.content: Any = None
         self.span_rows = 1
         self.span_cols = 1
         self.is_spanned = False  # Whether this cell is part of another cell's span
 
     def __repr__(self) -> str:
         """Return string representation of the cell."""
-        return (f"GridCell(row={self.row}, col={self.col}, x={self.x}, "
-                f"y={self.y}, width={self.width}, height={self.height})")
+        return (
+            f"GridCell(row={self.row}, col={self.col}, x={self.x}, "
+            f"y={self.y}, width={self.width}, height={self.height})"
+        )
 
 
 class OutOfBoundsError(IndexError):
@@ -69,7 +64,8 @@ class Grid:
     """Class for creating grid layouts in PowerPoint slides.
 
     This class provides methods for creating grid layouts and adding content
-    to specific cells within the grid.
+    to specific cells within the grid. The Grid is iterable and indexable like
+    a numpy ndarray or matplotlib subplot grid.
 
     Attributes:
         parent: The parent Slide or Grid object
@@ -80,8 +76,21 @@ class Grid:
         rows: Number of rows in the grid
         cols: Number of columns in the grid
         padding: Padding between cells as percentage of cell size
-        h_align: Horizontal alignment for responsive positioning
         cells: 2D array of GridCell objects
+
+    Examples:
+        ```python
+        # Access a cell with grid[row, col]
+        cell = grid[0, 1]  # Get cell at row 0, column 1
+
+        # Loop through all cells
+        for cell in grid:
+            print(cell)
+
+        # Loop through cells linearly (flattened)
+        for cell in grid.flat:
+            print(cell.row, cell.col)
+        ```
     """
 
     def __init__(
@@ -94,7 +103,6 @@ class Grid:
         rows: int = 1,
         cols: int = 1,
         padding: float = 5.0,
-        h_align: Optional[str] = "center",
     ) -> None:
         """Initialize a Grid layout.
 
@@ -107,7 +115,6 @@ class Grid:
             rows: Number of rows (default: 1)
             cols: Number of columns (default: 1)
             padding: Padding between cells as percentage of cell size (default: 5.0)
-            h_align: Horizontal alignment for responsive positioning (default: "center")
         """
         self.parent = parent
         self.x = x
@@ -117,12 +124,45 @@ class Grid:
         self.rows = rows
         self.cols = cols
         self.padding = padding
-        self.h_align = h_align
+
+        # Store slide dimensions for percentage calculations
+        self._slide_width = self._get_slide_width()
+        self._slide_height = self._get_slide_height()
 
         # Calculate cell dimensions
         self.cells = self._create_cells()
 
-    def _create_cells(self) -> list[list[GridCell]]:
+    def _get_slide_width(self) -> int:
+        """Get the slide width in EMUs from the parent.
+
+        Returns:
+            The slide width in English Metric Units (EMUs)
+        """
+        # If parent is a Slide object, use its slide width
+        if hasattr(self.parent, "_slide_width"):
+            return self.parent._slide_width
+        # If parent is another Grid, use its slide width
+        elif hasattr(self.parent, "_get_slide_width"):
+            return self.parent._get_slide_width()
+        # Default value if we can't get it (equivalent to 10 inches)
+        return 9144000  # 10 inches in EMUs
+
+    def _get_slide_height(self) -> int:
+        """Get the slide height in EMUs from the parent.
+
+        Returns:
+            The slide height in English Metric Units (EMUs)
+        """
+        # If parent is a Slide object, use its slide height
+        if hasattr(self.parent, "_slide_height"):
+            return self.parent._slide_height
+        # If parent is another Grid, use its slide height
+        elif hasattr(self.parent, "_get_slide_height"):
+            return self.parent._get_slide_height()
+        # Default value if we can't get it (equivalent to 7.5 inches)
+        return 6858000  # 7.5 inches in EMUs
+
+    def _create_cells(self) -> list:
         """Create the grid cells based on the layout.
 
         Returns:
@@ -202,10 +242,16 @@ class Grid:
             CellMergeError: If the merged area overlaps with an existing merged cell
         """
         # Validate bounds
-        if (start_row < 0 or start_row >= self.rows or
-                start_col < 0 or start_col >= self.cols or
-                end_row < 0 or end_row >= self.rows or
-                end_col < 0 or end_col >= self.cols):
+        if (
+            start_row < 0
+            or start_row >= self.rows
+            or start_col < 0
+            or start_col >= self.cols
+            or end_row < 0
+            or end_row >= self.rows
+            or end_col < 0
+            or end_col >= self.cols
+        ):
             raise OutOfBoundsError("Merge area is out of bounds")
 
         # Make sure start coordinates are less than or equal to end coordinates
@@ -253,13 +299,7 @@ class Grid:
 
         return first_cell
 
-    def add_to_cell(
-        self,
-        row: int,
-        col: int,
-        content_func: Callable,
-        **kwargs
-    ) -> Any:
+    def add_to_cell(self, row: int, col: int, content_func: Callable, **kwargs) -> Any:
         """Add content to a specific cell in the grid.
 
         Args:
@@ -287,30 +327,38 @@ class Grid:
         if isinstance(self.x, str) and self.x.endswith("%"):
             grid_x_percent = float(self.x.strip("%"))
         else:
-            # Assume it's a float representing inches, convert to percentage based on slide width
-            # For simplicity in this implementation, we'll use 10 inches as the slide width
-            grid_x_percent = float(self.x) * 10
+            # Convert inches to percentage based on actual slide width
+            slide_width_inches = self._slide_width / 914400  # Convert EMUs to inches
+            grid_x_percent = (float(self.x) / slide_width_inches) * 100
 
         if isinstance(self.y, str) and self.y.endswith("%"):
             grid_y_percent = float(self.y.strip("%"))
         else:
-            # Assume it's a float representing inches, convert to percentage based on slide height
-            # For simplicity, we'll use 7.5 inches as the slide height
-            grid_y_percent = float(self.y) * 13.333
+            # Convert inches to percentage based on actual slide height
+            slide_height_inches = self._slide_height / 914400  # Convert EMUs to inches
+            grid_y_percent = (float(self.y) / slide_height_inches) * 100
 
         # Calculate absolute position
         cell_x_percent = float(cell.x.strip("%"))
         cell_y_percent = float(cell.y.strip("%"))
 
-        abs_x_percent = grid_x_percent + (cell_x_percent * float(self.width.strip("%")) / 100)
-        abs_y_percent = grid_y_percent + (cell_y_percent * float(self.height.strip("%")) / 100)
+        # Handle the width/height values to correctly handle both string and float types
+        width_value = (
+            float(self.width.strip("%")) if isinstance(self.width, str) and "%" in self.width else float(self.width)
+        )
+        height_value = (
+            float(self.height.strip("%")) if isinstance(self.height, str) and "%" in self.height else float(self.height)
+        )
+
+        abs_x_percent = grid_x_percent + (cell_x_percent * width_value / 100)
+        abs_y_percent = grid_y_percent + (cell_y_percent * height_value / 100)
 
         # Calculate absolute width and height
         cell_width_percent = float(cell.width.strip("%"))
         cell_height_percent = float(cell.height.strip("%"))
 
-        abs_width_percent = (cell_width_percent * float(self.width.strip("%")) / 100)
-        abs_height_percent = (cell_height_percent * float(self.height.strip("%")) / 100)
+        abs_width_percent = cell_width_percent * width_value / 100
+        abs_height_percent = cell_height_percent * height_value / 100
 
         # Format as percentage strings
         kwargs["x"] = f"{abs_x_percent:.2f}%"
@@ -318,9 +366,8 @@ class Grid:
         kwargs["width"] = f"{abs_width_percent:.2f}%"
         kwargs["height"] = f"{abs_height_percent:.2f}%"
 
-        # Add h_align for responsive positioning if not already specified
-        if "h_align" not in kwargs and self.h_align:
-            kwargs["h_align"] = self.h_align
+        # We previously were going to set word_wrap, but slide.add_text doesn't accept this parameter
+        # The word_wrap flag is now set internally in the add_text method
 
         # Call the content function with the calculated position
         content = content_func(**kwargs)
@@ -337,7 +384,6 @@ class Grid:
         rows: int = 1,
         cols: int = 1,
         padding: float = 5.0,
-        h_align: Optional[str] = None,
     ) -> "Grid":
         """Add a nested grid to a specific cell.
 
@@ -347,7 +393,6 @@ class Grid:
             rows: Number of rows in the nested grid (default: 1)
             cols: Number of columns in the nested grid (default: 1)
             padding: Padding between cells as percentage of cell size (default: 5.0)
-            h_align: Horizontal alignment for responsive positioning (default: None)
 
         Returns:
             The nested Grid object
@@ -367,26 +412,38 @@ class Grid:
         if isinstance(self.x, str) and self.x.endswith("%"):
             grid_x_percent = float(self.x.strip("%"))
         else:
-            grid_x_percent = float(self.x) * 10
+            # Convert inches to percentage based on actual slide width
+            slide_width_inches = self._slide_width / 914400  # Convert EMUs to inches
+            grid_x_percent = (float(self.x) / slide_width_inches) * 100
 
         if isinstance(self.y, str) and self.y.endswith("%"):
             grid_y_percent = float(self.y.strip("%"))
         else:
-            grid_y_percent = float(self.y) * 13.333
+            # Convert inches to percentage based on actual slide height
+            slide_height_inches = self._slide_height / 914400  # Convert EMUs to inches
+            grid_y_percent = (float(self.y) / slide_height_inches) * 100
 
         # Calculate absolute position
         cell_x_percent = float(cell.x.strip("%"))
         cell_y_percent = float(cell.y.strip("%"))
 
-        abs_x_percent = grid_x_percent + (cell_x_percent * float(self.width.strip("%")) / 100)
-        abs_y_percent = grid_y_percent + (cell_y_percent * float(self.height.strip("%")) / 100)
+        # Handle the width/height values to correctly handle both string and float types
+        width_value = (
+            float(self.width.strip("%")) if isinstance(self.width, str) and "%" in self.width else float(self.width)
+        )
+        height_value = (
+            float(self.height.strip("%")) if isinstance(self.height, str) and "%" in self.height else float(self.height)
+        )
+
+        abs_x_percent = grid_x_percent + (cell_x_percent * width_value / 100)
+        abs_y_percent = grid_y_percent + (cell_y_percent * height_value / 100)
 
         # Calculate absolute width and height
         cell_width_percent = float(cell.width.strip("%"))
         cell_height_percent = float(cell.height.strip("%"))
 
-        abs_width_percent = (cell_width_percent * float(self.width.strip("%")) / 100)
-        abs_height_percent = (cell_height_percent * float(self.height.strip("%")) / 100)
+        abs_width_percent = cell_width_percent * width_value / 100
+        abs_height_percent = cell_height_percent * height_value / 100
 
         # Create the nested grid
         nested_grid = Grid(
@@ -398,28 +455,74 @@ class Grid:
             rows=rows,
             cols=cols,
             padding=padding,
-            h_align=h_align if h_align is not None else self.h_align,
         )
 
         # Store the nested grid in the cell
-        cell.content = nested_grid
+        # Store the nested grid in the cell's content
+        if hasattr(cell, "content"):
+            cell.content = nested_grid
 
         return nested_grid
-        
+
+    def __iter__(self):
+        """Make Grid iterable to loop through all cells.
+
+        Returns:
+            Iterator over all grid cells
+        """
+        for row in range(self.rows):
+            for col in range(self.cols):
+                yield self.cells[row][col]
+
+    def __getitem__(self, key):
+        """Access a cell or range of cells using indexing.
+
+        Args:
+            key: A tuple of (row, col) or a single index for flattened access
+
+        Returns:
+            The requested GridCell object or a list of cells
+
+        Raises:
+            OutOfBoundsError: If the requested cell is out of bounds
+            TypeError: If the key is not in the right format
+        """
+        if isinstance(key, tuple) and len(key) == 2:
+            # Access as grid[row, col]
+            row, col = key
+            return self.get_cell(row, col)
+        elif isinstance(key, int):
+            # Access as grid[flat_index]
+            if key < 0 or key >= self.rows * self.cols:
+                raise OutOfBoundsError(f"Flat index {key} is out of bounds")
+            row = key // self.cols
+            col = key % self.cols
+            return self.cells[row][col]
+        else:
+            raise TypeError("Grid indices must be integers or tuples of the form (row, col)")
+
+    @property
+    def flat(self):
+        """Flat iterator for this grid, similar to matplotlib's subplot.flat.
+
+        Returns:
+            A flat iterator over all cells in the grid
+        """
+        return GridFlatIterator(self)
+
     @classmethod
     def autogrid(
         cls,
         parent: Any,
-        content_funcs: list[Callable],
-        rows: Optional[int] = None,
-        cols: Optional[int] = None,
+        content_funcs: list,
+        rows: int | None = None,
+        cols: int | None = None,
         x: PositionType = "5%",
         y: PositionType = "5%",
         width: PositionType = "90%",
         height: PositionType = "90%",
         padding: float = 5.0,
-        h_align: str = "center",
-        title: Optional[str] = None,
+        title: str | None = None,
         title_height: PositionType = "10%",
     ) -> "Grid":
         """Create a grid and automatically place content into cells.
@@ -437,7 +540,6 @@ class Grid:
             width: Width of the grid (default: "90%")
             height: Height of the grid (default: "90%")
             padding: Padding between cells (default: 5.0)
-            h_align: Horizontal alignment (default: "center")
             title: Optional title for the grid (default: None)
             title_height: Height of the title area (default: "10%")
 
@@ -451,7 +553,7 @@ class Grid:
 
         if rows is None and cols is None:
             # Determine optimal grid dimensions
-            cols = max(1, int(num_items ** 0.5))
+            cols = max(1, int(num_items**0.5))
             rows = (num_items + cols - 1) // cols
         elif rows is None:
             rows = (num_items + cols - 1) // cols
@@ -461,22 +563,20 @@ class Grid:
         # Adjust grid position and dimensions if a title is provided
         adjusted_y = y
         adjusted_height = height
-        
-        if title:
-            # Extract numeric value from y percentage
-            if isinstance(y, str) and y.endswith("%"):
-                y_percent = float(y.strip("%"))
-                title_height_percent = float(str(title_height).strip("%"))
-                # Adjust y position and height for the grid
-                adjusted_y = f"{y_percent:.2f}%"
-                title_y = adjusted_y
-                adjusted_y = f"{(y_percent + title_height_percent):.2f}%"
-                
-                # Adjust height to account for title
-                if isinstance(height, str) and height.endswith("%"):
-                    height_percent = float(height.strip("%"))
-                    adjusted_height = f"{(height_percent - title_height_percent):.2f}%"
-            
+
+        if title and isinstance(y, str) and y.endswith("%"):
+            y_percent = float(y.strip("%"))
+            title_height_percent = float(str(title_height).strip("%"))
+            # Adjust y position and height for the grid
+            adjusted_y = f"{y_percent:.2f}%"
+            title_y = adjusted_y
+            adjusted_y = f"{(y_percent + title_height_percent):.2f}%"
+
+            # Adjust height to account for title
+            if isinstance(height, str) and height.endswith("%"):
+                height_percent = float(height.strip("%"))
+                adjusted_height = f"{(height_percent - title_height_percent):.2f}%"
+
         # Create the grid
         grid = cls(
             parent=parent,
@@ -487,9 +587,8 @@ class Grid:
             rows=rows,
             cols=cols,
             padding=padding,
-            h_align=h_align,
         )
-        
+
         # Add title if provided
         if title:
             parent.add_text(
@@ -501,54 +600,58 @@ class Grid:
                 font_size=24,
                 font_bold=True,
                 align="center",
-                h_align=h_align,
             )
-        
+
         # Place content into grid cells
         row_idx = 0
         col_idx = 0
-        
+
         for func in content_funcs:
-            # Create a wrapper function that ignores the grid cell position args
-            def position_agnostic_wrapper(**kwargs):
-                return func()
-                
+            # Create a wrapper function factory to properly capture the current func
+            def create_wrapper(content_func):
+                def position_agnostic_wrapper(**kwargs):
+                    return content_func()
+
+                return position_agnostic_wrapper
+
+            # Create a wrapper specifically for this function
+            wrapper = create_wrapper(func)
+
             # Add content to the current cell using the wrapper
             grid.add_to_cell(
                 row=row_idx,
                 col=col_idx,
-                content_func=position_agnostic_wrapper,
+                content_func=wrapper,
             )
-            
+
             # Move to next cell
             col_idx += 1
             if col_idx >= cols:
                 col_idx = 0
                 row_idx += 1
-                
+
             # Stop if we've filled the grid
             if row_idx >= rows:
                 break
-                
+
         return grid
-        
+
     @classmethod
     def autogrid_pyplot(
         cls,
         parent: Any,
         figures: list,
-        rows: Optional[int] = None,
-        cols: Optional[int] = None,
+        rows: int | None = None,
+        cols: int | None = None,
         x: PositionType = "5%",
         y: PositionType = "5%",
         width: PositionType = "90%",
         height: PositionType = "90%",
         padding: float = 5.0,
-        h_align: str = "center",
-        title: Optional[str] = None,
+        title: str | None = None,
         title_height: PositionType = "10%",
         dpi: int = 300,
-        format: str = "png",
+        file_format: str = "png",
     ) -> "Grid":
         """Create a grid and automatically place matplotlib figures into cells.
 
@@ -565,48 +668,47 @@ class Grid:
             width: Width of the grid (default: "90%")
             height: Height of the grid (default: "90%")
             padding: Padding between cells (default: 5.0)
-            h_align: Horizontal alignment (default: "center")
             title: Optional title for the grid (default: None)
             title_height: Height of the title area (default: "10%")
             dpi: Resolution for saved figures (default: 300)
-            format: Image format for saved figures (default: "png")
+            file_format: Image format for saved figures (default: "png")
 
         Returns:
             The created Grid object
         """
-        import tempfile
         import os
-        
+        import tempfile
+
         # Create content functions from matplotlib figures
         content_funcs = []
-        
+
         # Save each figure to a temporary file and create content functions
         temp_files = []
         for fig in figures:
-            # Create a temporary file
-            temp_file = tempfile.NamedTemporaryFile(suffix=f".{format}", delete=False)
-            temp_path = temp_file.name
-            temp_file.close()
-            temp_files.append(temp_path)
-            
+            # Create a temporary file using context manager
+            with tempfile.NamedTemporaryFile(suffix=f".{file_format}", delete=False) as temp_file:
+                temp_path = temp_file.name
+                temp_files.append(temp_path)
+
             # Save the figure to the temporary file
-            fig.savefig(temp_path, dpi=dpi, format=format, bbox_inches="tight")
-            
-            # Create a closure to capture the current temp_path
-            def create_content_func(path):
+            fig.savefig(temp_path, dpi=dpi, format=file_format, bbox_inches="tight")
+
+            # Create a closure with an explicit parameter to avoid loop variable capture issues
+            def create_content_func(image_path):
                 def add_image_func(**kwargs):
                     return parent.add_image(
-                        image_path=path,
+                        image_path=image_path,
                         x=kwargs.get("x", "10%"),
                         y=kwargs.get("y", "10%"),
                         width=kwargs.get("width", "80%"),
-                        height=kwargs.get("height", "80%")
+                        height=kwargs.get("height", "80%"),
                     )
+
                 return add_image_func
-            
-            # Add the content function to the list
-            content_funcs.append(create_content_func(temp_path))
-        
+
+            # Add the content function to the list with temp_path bound to a parameter
+            content_funcs.append(create_content_func(image_path=temp_path))
+
         # Create the grid
         try:
             grid = cls.autogrid(
@@ -619,17 +721,63 @@ class Grid:
                 width=width,
                 height=height,
                 padding=padding,
-                h_align=h_align,
                 title=title,
-                title_height=title_height
+                title_height=title_height,
             )
         finally:
             # Clean up temporary files
-            for temp_file in temp_files:
+            for temp_file_path in temp_files:
                 try:
-                    if os.path.exists(temp_file):
-                        os.unlink(temp_file)
-                except:
-                    pass
-        
+                    if os.path.exists(temp_file_path):
+                        os.unlink(temp_file_path)
+                except OSError as e:
+                    import logging
+
+                    logging.warning(f"Failed to remove temporary file {temp_file_path}: {e}")
+
         return grid
+
+
+class GridFlatIterator:
+    """Flat iterator for a Grid, like matplotlib's subplot.flat.
+
+    This iterator provides a way to loop through all cells in a grid in a flattened manner,
+    regardless of their row and column positions.
+
+    Attributes:
+        grid: The Grid object to iterate over
+        current_index: The current index in the flattened grid
+        total_cells: The total number of cells in the grid
+    """
+
+    def __init__(self, grid: Grid):
+        """Initialize a flat iterator for the grid.
+
+        Args:
+            grid: The Grid object to iterate over
+        """
+        self.grid = grid
+        self.current_index = 0
+        self.total_cells = grid.rows * grid.cols
+
+    def __iter__(self):
+        """Return the iterator itself."""
+        return self
+
+    def __next__(self):
+        """Get the next cell in the flattened grid.
+
+        Returns:
+            The next GridCell object
+
+        Raises:
+            StopIteration: When all cells have been iterated through
+        """
+        if self.current_index >= self.total_cells:
+            raise StopIteration
+
+        row = self.current_index // self.grid.cols
+        col = self.current_index % self.grid.cols
+        self.current_index += 1
+
+        return self.grid.cells[row][col]

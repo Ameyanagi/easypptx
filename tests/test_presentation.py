@@ -34,7 +34,7 @@ def test_presentation_save():
     pres = Presentation()
 
     # Add a slide
-    slide = pres.add_slide()
+    pres.add_slide()
 
     # Save to a temporary file
     with tempfile.NamedTemporaryFile(suffix=".pptx") as tmp:

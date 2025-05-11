@@ -3,7 +3,7 @@
 EasyPPTX provides several ways to add data visualizations to your presentations:
 
 1. **Built-in PowerPoint charts** - Using the `Chart` class with tabular data
-2. **Matplotlib figures** - Embedding matplotlib plots directly  
+2. **Matplotlib figures** - Embedding matplotlib plots directly
 3. **Seaborn plots** - Adding seaborn visualizations seamlessly
 
 ## PowerPoint Native Charts

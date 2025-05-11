@@ -79,7 +79,7 @@ table.from_dataframe(df)
 
 # Create a chart from DataFrame
 chart = Chart(slide)
-chart.from_dataframe(df, chart_type="bar", 
+chart.from_dataframe(df, chart_type="bar",
                    category_column="A", value_column="B")
 ```
 
@@ -89,9 +89,9 @@ Components support extensive formatting options:
 
 ```python
 # Add formatted text
-text.add_paragraph("Formatted text", 
-                 font_size=24, 
-                 font_bold=True, 
+text.add_paragraph("Formatted text",
+                 font_size=24,
+                 font_bold=True,
                  font_italic=True,
                  font_name="Meiryo",
                  color="red",     # Named color

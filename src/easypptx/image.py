@@ -1,10 +1,13 @@
 """Image handling module for EasyPPTX."""
 
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import TYPE_CHECKING
 
 from PIL import Image as PILImage
 from pptx.shapes.autoshape import Shape as PPTXShape
+
+if TYPE_CHECKING:
+    from easypptx.slide import Slide
 
 
 class Image:
@@ -25,7 +28,7 @@ class Image:
         ```
     """
 
-    def __init__(self, slide_obj: "Slide") -> None:  # noqa: F821
+    def __init__(self, slide_obj: "Slide") -> None:
         """Initialize an Image object.
 
         Args:
@@ -35,13 +38,12 @@ class Image:
 
     def add(
         self,
-        image_path: Union[str, Path],
-        x: Union[float, str] = 1.0,
-        y: Union[float, str] = 1.0,
-        width: Optional[Union[float, str]] = None,
-        height: Optional[Union[float, str]] = None,
+        image_path: str | Path,
+        x: float | str = 1.0,
+        y: float | str = 1.0,
+        width: float | str | None = None,
+        height: float | str | None = None,
         maintain_aspect_ratio: bool = True,
-        h_align: str = None,
     ) -> PPTXShape:
         """Add an image to the slide.
 
@@ -53,7 +55,6 @@ class Image:
             height: Height in inches or percentage (default: None, uses image's height)
             maintain_aspect_ratio: Whether to maintain aspect ratio when only one
                                   dimension is specified (default: True)
-            h_align: Horizontal alignment for responsive positioning (default: None)
 
         Returns:
             The created picture shape
@@ -86,15 +87,11 @@ class Image:
                     else:
                         width = float(height) * aspect_ratio
 
-        # For centered images, use center alignment by default if not specified
-        if h_align is None and isinstance(x, str) and "%" in x and int(x.strip("%")) > 20:
-            h_align = "center"
-
         # Pass positional arguments for compatibility with tests
-        return self.slide.add_image(str(image_path_obj), x, y, width, height, h_align)
+        return self.slide.add_image(str(image_path_obj), x, y, width, height)
 
     @staticmethod
-    def get_image_dimensions(image_path: Union[str, Path]) -> Tuple[int, int]:
+    def get_image_dimensions(image_path: str | Path) -> tuple:
         """Get the dimensions of an image file.
 
         Args:
