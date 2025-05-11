@@ -1,0 +1,7 @@
+Initial EasyPPTX commit
+
+- Create project structure using cookiecutter-uv
+- Implement core PowerPoint manipulation modules
+- Add simple API for slides, text, images, tables, and charts
+- Create examples and tests
+- Add project documentation and specifications
