@@ -715,7 +715,7 @@ class Grid:
                 yield self.cells[row][col]
 
     @overload
-    def __getitem__(self, key: int) -> GridRowProxy | GridCellProxy: ...
+    def __getitem__(self, key: int) -> GridCellProxy: ...
 
     @overload
     def __getitem__(self, key: tuple[int, int]) -> GridCellProxy: ...
@@ -724,25 +724,24 @@ class Grid:
         """Access a cell or range of cells using enhanced indexing with auto-expansion.
 
         This method supports three types of indexing:
-        - grid[row] for row-based operations (returns GridRowProxy)
         - grid[idx] for flat access to cells by index (returns GridCellProxy)
         - grid[row, col] for cell-specific operations (returns GridCellProxy)
+        - grid.row(row_idx) for row-based operations (returns GridRowProxy)
 
         For flat indexing, cells are ordered row-wise (0 is top-left, then across the row,
         then to the next row).
 
-        If the requested cell is out of bounds, the grid will automatically expand
-        to accommodate the request (unless the index is negative).
+        If the requested cell is out of bounds, the grid will raise an OutOfBoundsError.
 
         Args:
-            key: An int for row or flat access, or a tuple of (row, col) for cell access
+            key: An int for flat access, or a tuple of (row, col) for cell access
 
         Returns:
-            - GridRowProxy if key is a row index
-            - GridCellProxy if key is a flat index or tuple of (row, col)
+            - GridCellProxy if key is a flat index
+            - GridCellProxy if key is a tuple of (row, col)
 
         Raises:
-            OutOfBoundsError: If the requested cell or row is out of bounds with a negative index
+            OutOfBoundsError: If the requested cell is out of bounds
             TypeError: If the key is not in the right format
 
         Examples:
@@ -750,16 +749,12 @@ class Grid:
             # Access a specific cell by row, col
             grid[0, 1].add_text("Cell 0,1")
 
-            # Access a row (adds content to the next available cell)
-            grid[1].add_image("image.png")
-
             # Access a cell using flat indexing (0-based)
             grid[0].add_text("First cell (top-left)")
             grid[3].add_text("Fourth cell")
 
-            # Auto-expansion - these will automatically expand the grid
-            grid[5, 5].add_text("This expands the grid to include row 5, col 5")
-            grid[20].add_text("This expands the grid to include at least 21 cells")
+            # Access a row (for backwards compatibility, use the row method)
+            grid.row(1).add_image("image.png")
             ```
         """
         if isinstance(key, tuple) and len(key) == 2:
@@ -770,22 +765,12 @@ class Grid:
                 raise OutOfBoundsError(f"Cell position ({row}, {col}) is out of bounds")
             return GridCellProxy(self, row, col)
         elif isinstance(key, int):
-            # Check if this is a flat index access or row access
+            # Always interpret integer keys as flat indices
             if 0 <= key < self.rows * self.cols:
-                # This could be either a flat index or a row index
-                # If key is a valid row index and the grid has multiple rows, interpret as row access
-                if key < self.rows:
-                    # This is both a valid row and a valid flat index
-                    # We need to distinguish between the two
-
-                    # Default to row access for backwards compatibility
-                    # Return a GridRowProxy
-                    return GridRowProxy(self, key)
-                else:
-                    # This is definitely a flat index (not a valid row)
-                    row = key // self.cols
-                    col = key % self.cols
-                    return GridCellProxy(self, row, col)
+                # This is a valid flat index
+                row = key // self.cols
+                col = key % self.cols
+                return GridCellProxy(self, row, col)
             elif key < 0:
                 # Negative index handling for flat access
                 total_cells = self.rows * self.cols
@@ -800,12 +785,38 @@ class Grid:
                 col = actual_idx % self.cols
                 return GridCellProxy(self, row, col)
             else:
-                # This must be an out of bounds row index
-                raise OutOfBoundsError(f"Row index {key} is out of bounds")
+                # This is an out of bounds index
+                raise OutOfBoundsError(f"Flat index {key} is out of bounds")
         else:
             raise TypeError(
-                "Grid indices must be integers (for rows or flat access) or tuples of the form (row, col) for cell access"
+                "Grid indices must be integers (for flat access) or tuples of the form (row, col) for cell access"
             )
+
+    def row(self, row_idx: int) -> GridRowProxy:
+        """Access a row by index.
+
+        Args:
+            row_idx: The row index (0-based)
+
+        Returns:
+            A GridRowProxy for sequential access to cells in the row
+
+        Raises:
+            OutOfBoundsError: If the row index is out of bounds
+
+        Examples:
+            ```python
+            # Add content to the next available cell in row 0
+            grid.row(0).add_text("First cell in row 0")
+            grid.row(0).add_text("Second cell in row 0")
+
+            # Add content to the next available cell in row 1
+            grid.row(1).add_text("First cell in row 1")
+            ```
+        """
+        if row_idx < 0 or row_idx >= self.rows:
+            raise OutOfBoundsError(f"Row index {row_idx} is out of bounds")
+        return GridRowProxy(self, row_idx)
 
     @property
     def flat(self):
