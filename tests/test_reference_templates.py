@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 class TestReferenceTemplates(unittest.TestCase):
     """Test the usage of reference templates based on aspect ratio."""
 
-    @patch('src.easypptx.presentation.PPTXPresentation')
+    @patch("src.easypptx.presentation.PPTXPresentation")
     def test_uses_reference_template_for_16x9(self, mock_pptx):
         """Test that a 16:9 presentation uses the reference_16x9.pptx template by default."""
         # Setup mock
@@ -30,7 +30,7 @@ class TestReferenceTemplates(unittest.TestCase):
         template_path = args[0]
         self.assertIn("reference_16x9.pptx", template_path)
 
-    @patch('src.easypptx.presentation.PPTXPresentation')
+    @patch("src.easypptx.presentation.PPTXPresentation")
     def test_uses_reference_template_for_4x3(self, mock_pptx):
         """Test that a 4:3 presentation uses the reference_4x3.pptx template by default."""
         # Setup mock
@@ -48,8 +48,8 @@ class TestReferenceTemplates(unittest.TestCase):
         template_path = args[0]
         self.assertIn("reference_4x3.pptx", template_path)
 
-    @patch('src.easypptx.presentation.Path.exists')
-    @patch('src.easypptx.presentation.PPTXPresentation')
+    @patch("src.easypptx.presentation.Path.exists")
+    @patch("src.easypptx.presentation.PPTXPresentation")
     def test_custom_template_overrides_reference(self, mock_pptx, mock_exists):
         """Test that providing a custom template overrides the reference template."""
         # Setup mocks
@@ -68,8 +68,8 @@ class TestReferenceTemplates(unittest.TestCase):
         template_path = args[0]
         self.assertEqual(template_path, "custom_template.pptx")
 
-    @patch('src.easypptx.presentation.Path.exists')
-    @patch('src.easypptx.presentation.PPTXPresentation')
+    @patch("src.easypptx.presentation.Path.exists")
+    @patch("src.easypptx.presentation.PPTXPresentation")
     def test_custom_dimensions_skip_reference_template(self, mock_pptx, mock_exists):
         """Test that custom dimensions don't use reference templates."""
         # Setup mocks
@@ -86,8 +86,8 @@ class TestReferenceTemplates(unittest.TestCase):
         args, _ = mock_pptx.call_args
         self.assertEqual(args, ())
 
-    @patch('src.easypptx.presentation.Path.exists')
-    @patch('src.easypptx.presentation.PPTXPresentation')
+    @patch("src.easypptx.presentation.Path.exists")
+    @patch("src.easypptx.presentation.PPTXPresentation")
     def test_other_aspect_ratios_skip_reference_template(self, mock_pptx, mock_exists):
         """Test that other aspect ratios don't use reference templates."""
         # Setup mocks

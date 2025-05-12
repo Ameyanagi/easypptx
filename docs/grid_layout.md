@@ -304,6 +304,35 @@ cell = grid.get_cell(row=1, col=2)
 - `__iter__()`: Makes Grid objects iterable
 - `__getitem__(key)`: Enables accessing cells via grid[row, col] or grid[index]
 
+### Convenience Methods
+
+The Grid class provides convenient methods for adding common elements directly:
+
+- `add_textbox(row, col, text, **kwargs)`: Add a text box to a specific cell
+- `add_image(row, col, image_path, **kwargs)`: Add an image to a specific cell
+- `add_pyplot(row, col, figure, **kwargs)`: Add a matplotlib figure to a specific cell
+- `add_table(row, col, data, **kwargs)`: Add a table to a specific cell
+
+Example usage:
+
+```python
+# Add text directly to a cell
+grid.add_textbox(0, 0, "Hello World", font_size=24, align="center")
+
+# Add an image to a cell
+grid.add_image(0, 1, "path/to/image.jpg", maintain_aspect_ratio=True)
+
+# Add a matplotlib figure to a cell
+import matplotlib.pyplot as plt
+fig = plt.figure()
+plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
+grid.add_pyplot(1, 0, fig, dpi=300)
+
+# Add a table to a cell
+data = [["Name", "Value"], ["Item 1", 100], ["Item 2", 200]]
+grid.add_table(1, 1, data, has_header=True)
+```
+
 ## Automatic Grid Layout
 
 EasyPPTX can automatically arrange content in a grid:
@@ -341,6 +370,33 @@ grid = pres.add_autogrid(
     title="Auto Grid Example",
 )
 ```
+
+### Creating Empty Grids with add_autogrid
+
+You can also create an empty grid using add_autogrid by passing None for content_funcs, and then populate it later using the convenience methods:
+
+```python
+# Create an empty 2x2 grid
+grid = pres.add_autogrid(
+    slide=slide,
+    content_funcs=None,  # This creates an empty grid
+    rows=2,              # Must specify rows and cols when content_funcs is None
+    cols=2,
+    x="10%",
+    y="20%",
+    width="80%",
+    height="70%",
+    padding=5.0,
+)
+
+# Add content to specific cells using convenience methods
+grid.add_textbox(0, 0, "Top Left Cell", font_size=18, align="center")
+grid.add_image(0, 1, "path/to/image.jpg")
+grid.add_pyplot(1, 0, matplotlib_figure, dpi=150)
+grid.add_table(1, 1, data=[["A", "B"], [1, 2]])
+```
+
+This approach gives you the ability to create an empty grid layout first and then selectively add different types of content to specific cells. It's particularly useful for creating dashboards and complex layouts.
 
 ## Arranging Matplotlib Plots
 
@@ -438,3 +494,4 @@ See the following examples for detailed demonstrations:
 - [002_grid_indexing.py](../examples/grid/002_grid_indexing.py): Grid indexing and iteration features
 - [003_nested_grid.py](../examples/grid/003_nested_grid.py): Nested grids and cell merging
 - [004_autogrid.py](../examples/grid/004_autogrid.py): Automatic grid layout features
+- [005_enhanced_grid.py](../examples/grid/005_enhanced_grid.py): Empty grids and convenience methods

@@ -90,6 +90,10 @@ class Grid:
         # Loop through cells linearly (flattened)
         for cell in grid.flat:
             print(cell.row, cell.col)
+
+        # Add content directly to a cell
+        grid.add_textbox(0, 1, text="Cell 0,1", font_size=24)
+        grid.add_image(1, 0, image_path="image.png")
         ```
     """
 
@@ -509,6 +513,197 @@ class Grid:
             A flat iterator over all cells in the grid
         """
         return GridFlatIterator(self)
+
+    def add_textbox(self, row: int, col: int, text: str, **kwargs) -> Any:
+        """Add a text box to a specific cell in the grid.
+
+        This is a convenience method that calls add_to_cell with the parent's
+        add_text method.
+
+        Args:
+            row: Row index (0-based)
+            col: Column index (0-based)
+            text: The text content to add
+            **kwargs: Additional arguments to pass to the parent's add_text method
+                     (font_size, font_bold, align, etc.)
+
+        Returns:
+            The created text shape
+
+        Raises:
+            OutOfBoundsError: If row or column is out of bounds
+            CellMergeError: If the cell is part of a merged cell
+
+        Example:
+            ```python
+            # Add text to a specific cell
+            grid.add_textbox(0, 1, "Hello World", font_size=24, align="center")
+            ```
+        """
+        # Add the text parameter to kwargs
+        kwargs["text"] = text
+
+        # Call add_to_cell with the parent's add_text method
+        return self.add_to_cell(row, col, self.parent.add_text, **kwargs)
+
+    def add_image(self, row: int, col: int, image_path: str, **kwargs) -> Any:
+        """Add an image to a specific cell in the grid.
+
+        This is a convenience method that calls add_to_cell with the parent's
+        add_image method.
+
+        Args:
+            row: Row index (0-based)
+            col: Column index (0-based)
+            image_path: Path to the image file
+            **kwargs: Additional arguments to pass to the parent's add_image method
+                     (maintain_aspect_ratio, border, shadow, etc.)
+
+        Returns:
+            The created image shape
+
+        Raises:
+            OutOfBoundsError: If row or column is out of bounds
+            CellMergeError: If the cell is part of a merged cell
+
+        Example:
+            ```python
+            # Add image to a specific cell
+            grid.add_image(1, 0, "path/to/image.jpg", maintain_aspect_ratio=True)
+            ```
+        """
+        # Add the image_path parameter to kwargs
+        kwargs["image_path"] = image_path
+
+        # Call add_to_cell with the parent's add_image method
+        return self.add_to_cell(row, col, self.parent.add_image, **kwargs)
+
+    def add_pyplot(self, row: int, col: int, figure, **kwargs) -> Any:
+        """Add a matplotlib figure to a specific cell in the grid.
+
+        This is a convenience method that creates a temporary file for the figure
+        and then adds it as an image to the cell.
+
+        Args:
+            row: Row index (0-based)
+            col: Column index (0-based)
+            figure: Matplotlib figure object (plt.figure() or plt.gcf())
+            **kwargs: Additional arguments for the figure
+                     (dpi, file_format, etc.)
+
+        Returns:
+            The created image shape
+
+        Raises:
+            OutOfBoundsError: If row or column is out of bounds
+            CellMergeError: If the cell is part of a merged cell
+
+        Example:
+            ```python
+            import matplotlib.pyplot as plt
+
+            # Create a matplotlib figure
+            plt.figure()
+            plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
+            plt.title('Sample Plot')
+
+            # Add plot to a specific cell
+            grid.add_pyplot(0, 1, plt.gcf(), dpi=300)
+            ```
+        """
+        import os
+        import tempfile
+
+        # Set default values
+        dpi = kwargs.pop("dpi", 300)
+        file_format = kwargs.pop("file_format", "png")
+
+        # Create a temporary file for the figure
+        with tempfile.NamedTemporaryFile(suffix=f".{file_format}", delete=False) as temp_file:
+            temp_path = temp_file.name
+
+        # Save the figure to the temporary file
+        figure.savefig(temp_path, dpi=dpi, format=file_format, bbox_inches="tight")
+
+        try:
+            # Add the image to the cell
+            image_shape = self.add_image(row, col, image_path=temp_path, **kwargs)
+            return image_shape
+        finally:
+            # Clean up the temporary file
+            try:
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+            except OSError:
+                pass
+
+    def add_table(self, row: int, col: int, data, **kwargs) -> Any:
+        """Add a table to a specific cell in the grid.
+
+        This is a convenience method that creates a Table object and adds it to the cell.
+
+        Args:
+            row: Row index (0-based)
+            col: Column index (0-based)
+            data: Table data as a list of lists or pandas DataFrame
+            **kwargs: Additional arguments for the table
+                     (has_header, style, etc.)
+
+        Returns:
+            The created table shape
+
+        Raises:
+            OutOfBoundsError: If row or column is out of bounds
+            CellMergeError: If the cell is part of a merged cell
+
+        Example:
+            ```python
+            # Add table to a specific cell
+            data = [["Name", "Value"], ["Item 1", 100], ["Item 2", 200]]
+            grid.add_table(0, 0, data, has_header=True)
+
+            # With pandas DataFrame
+            import pandas as pd
+            df = pd.DataFrame({"Name": ["Item 1", "Item 2"], "Value": [100, 200]})
+            grid.add_table(1, 1, df)
+            ```
+        """
+        import pandas as pd
+
+        from easypptx.table import Table
+
+        # Get the cell to determine the position and dimensions
+        cell = self.get_cell(row, col)
+
+        # Create a Table object
+        table_obj = Table(self.parent)
+
+        # Extract position from the cell
+        kwargs["x"] = cell.x
+        kwargs["y"] = cell.y
+        kwargs["width"] = cell.width
+        kwargs["height"] = cell.height
+
+        # Remove data from kwargs to handle separately
+        kwargs.pop("data", None)
+
+        # Handle has_header parameter if provided
+        if "has_header" in kwargs:
+            kwargs["first_row_header"] = kwargs.pop("has_header")
+
+        # Convert pandas DataFrame to list if needed
+        if isinstance(data, pd.DataFrame):
+            table_data = [list(data.columns)] + [list(row) for _, row in data.iterrows()]
+        else:
+            table_data = data
+
+        # Create the table with the processed data
+        table_shape = table_obj.add(data=table_data, **kwargs)
+
+        # Store the table in the cell's content
+        cell.content = table_shape
+
+        return table_shape
 
     @classmethod
     def autogrid(

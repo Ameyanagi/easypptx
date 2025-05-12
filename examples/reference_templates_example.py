@@ -5,6 +5,8 @@ This example demonstrates how EasyPPTX automatically uses reference templates
 based on the aspect ratio when creating new presentations.
 """
 
+import sys
+
 # For demonstration purposes, this example uses a different approach
 # to avoid package import issues. In a normal scenario, you would use:
 # from easypptx import Presentation
@@ -23,11 +25,11 @@ print("   presentation = Presentation()")
 print("   # This automatically uses reference_16x9.pptx")
 print("")
 print("2. Standard 4:3 presentation:")
-print("   presentation = Presentation(aspect_ratio=\"4:3\")")
+print('   presentation = Presentation(aspect_ratio="4:3")')
 print("   # This automatically uses reference_4x3.pptx")
 print("")
 print("3. When a custom template is specified:")
-print("   presentation = Presentation(template_path=\"custom_template.pptx\")")
+print('   presentation = Presentation(template_path="custom_template.pptx")')
 print("   # This uses the custom template instead of reference templates")
 print("")
 print("4. When custom dimensions are provided:")
@@ -35,15 +37,13 @@ print("   presentation = Presentation(width_inches=12, height_inches=9)")
 print("   # No reference template is used")
 print("")
 print("5. For other aspect ratios without reference templates:")
-print("   presentation = Presentation(aspect_ratio=\"16:10\")")
-print("   presentation = Presentation(aspect_ratio=\"A4\")")
+print('   presentation = Presentation(aspect_ratio="16:10")')
+print('   presentation = Presentation(aspect_ratio="A4")')
 print("   # No reference template is used")
 print("")
 print("For more information, see the documentation at docs/templates.md")
 
 # Exit the script without trying to create the presentations
-import sys
-
 sys.exit(0)
 
 # The actual code to create presentations would look like this:

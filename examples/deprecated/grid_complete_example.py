@@ -376,12 +376,8 @@ methods = [
 
 # Apply all methods
 for method in methods:
-    if "index" in method:
-        # Access by flat index
-        cell = grid[method["index"]]
-    else:
-        # Access by row, col
-        cell = grid[method["row"], method["col"]]
+    # Use ternary operator for cell access
+    cell = grid[method["index"]] if "index" in method else grid[method["row"], method["col"]]
 
     # Add background shape
     slide3.add_shape(

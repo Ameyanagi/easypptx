@@ -433,7 +433,7 @@ class Grid:
             cols: Number of columns (default: 1)
             padding: Padding between cells as percentage of cell size (default: 5.0)
         """
-    
+
     def get_cell(self, row: int, col: int) -> GridCell:
         """Get a cell at the specified row and column.
 
@@ -447,7 +447,7 @@ class Grid:
         Raises:
             OutOfBoundsError: If row or column is out of bounds
         """
-    
+
     def merge_cells(self, start_row: int, start_col: int, end_row: int, end_col: int) -> GridCell:
         """Merge cells in the specified range.
 
@@ -464,7 +464,7 @@ class Grid:
             OutOfBoundsError: If any row or column is out of bounds
             CellMergeError: If the merged area overlaps with an existing merged cell
         """
-    
+
     def add_to_cell(self, row: int, col: int, content_func: Callable, **kwargs) -> Any:
         """Add content to a specific cell in the grid.
 
@@ -481,7 +481,7 @@ class Grid:
             OutOfBoundsError: If row or column is out of bounds
             CellMergeError: If the cell is part of a merged cell
         """
-    
+
     def add_grid_to_cell(self, row: int, col: int, rows: int = 1, cols: int = 1, padding: float = 5.0) -> "Grid":
         """Add a nested grid to a specific cell.
 
@@ -499,14 +499,14 @@ class Grid:
             OutOfBoundsError: If row or column is out of bounds
             CellMergeError: If the cell is part of a merged cell
         """
-    
+
     def __iter__(self):
         """Make Grid iterable to loop through all cells.
 
         Returns:
             Iterator over all grid cells
         """
-    
+
     def __getitem__(self, key):
         """Access a cell or range of cells using indexing.
 
@@ -520,7 +520,7 @@ class Grid:
             OutOfBoundsError: If the requested cell is out of bounds
             TypeError: If the key is not in the right format
         """
-    
+
     @property
     def flat(self):
         """Flat iterator for this grid, similar to matplotlib's subplot.flat.
@@ -528,7 +528,7 @@ class Grid:
         Returns:
             A flat iterator over all cells in the grid
         """
-    
+
     @classmethod
     def autogrid(cls, parent: Any, content_funcs: list, rows: int | None = None, cols: int | None = None,
                 x: PositionType = "5%", y: PositionType = "5%", width: PositionType = "90%",
@@ -552,7 +552,7 @@ class Grid:
         Returns:
             The created Grid object
         """
-    
+
     @classmethod
     def autogrid_pyplot(cls, parent: Any, figures: list, rows: int | None = None, cols: int | None = None,
                        x: PositionType = "5%", y: PositionType = "5%", width: PositionType = "90%",
@@ -611,10 +611,10 @@ class GridFlatIterator:
         Args:
             grid: The Grid object to iterate over
         """
-    
+
     def __iter__(self):
         """Return the iterator itself."""
-    
+
     def __next__(self):
         """Get the next cell in the flattened grid.
 

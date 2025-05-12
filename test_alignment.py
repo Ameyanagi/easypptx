@@ -1,48 +1,49 @@
 from easypptx import Presentation
 from easypptx.text import Text
-from pptx.util import Inches
 
 # Create a new presentation
 presentation = Presentation()
 
+
 # Debug function to print slide dimensions
 def print_slide_dimensions(slide):
     """Print the slide dimensions for debugging purposes"""
-    print(f"Slide dimensions:")
+    print("Slide dimensions:")
     print(f"  _slide_width: {slide._slide_width} EMUs ({slide._slide_width / 914400:.2f} inches)")
     print(f"  _slide_height: {slide._slide_height} EMUs ({slide._slide_height / 914400:.2f} inches)")
-    
+
     # Try to access the actual presentation dimensions for comparison using multiple methods
     print("Trying to access actual presentation dimensions:")
-    
+
     # Method 1
     try:
-        if hasattr(slide.pptx_slide.part.package, 'presentation'):
+        if hasattr(slide.pptx_slide.part.package, "presentation"):
             pres = slide.pptx_slide.part.package.presentation
             print(f"  [Method 1] slide_width: {pres.slide_width} EMUs ({pres.slide_width / 914400:.2f} inches)")
             print(f"  [Method 1] slide_height: {pres.slide_height} EMUs ({pres.slide_height / 914400:.2f} inches)")
     except (AttributeError, TypeError) as e:
         print(f"  [Method 1] Error: {e}")
-    
+
     # Method 2
     try:
         package = slide.pptx_slide.part.package
-        if hasattr(package, 'presentation_part') and hasattr(package.presentation_part, 'presentation'):
+        if hasattr(package, "presentation_part") and hasattr(package.presentation_part, "presentation"):
             pres = package.presentation_part.presentation
             print(f"  [Method 2] slide_width: {pres.slide_width} EMUs ({pres.slide_width / 914400:.2f} inches)")
             print(f"  [Method 2] slide_height: {pres.slide_height} EMUs ({pres.slide_height / 914400:.2f} inches)")
     except (AttributeError, TypeError) as e:
         print(f"  [Method 2] Error: {e}")
-    
+
     # Method 3
     try:
         parent = slide.pptx_slide.part.parent
-        if parent and hasattr(parent, 'presentation'):
+        if parent and hasattr(parent, "presentation"):
             pres = parent.presentation
             print(f"  [Method 3] slide_width: {pres.slide_width} EMUs ({pres.slide_width / 914400:.2f} inches)")
             print(f"  [Method 3] slide_height: {pres.slide_height} EMUs ({pres.slide_height / 914400:.2f} inches)")
     except (AttributeError, TypeError) as e:
         print(f"  [Method 3] Error: {e}")
+
 
 # Create a slide first and print its dimensions for debugging
 test_slide = presentation.add_slide()

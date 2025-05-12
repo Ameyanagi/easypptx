@@ -1675,7 +1675,7 @@ class Presentation:
     def add_autogrid(
         self,
         slide: Slide,
-        content_funcs: list,
+        content_funcs: list | None = None,
         rows: int | None = None,
         cols: int | None = None,
         x: float | str = "0%",
@@ -1689,10 +1689,11 @@ class Presentation:
         """Add an autogrid layout to a slide.
 
         This method automatically places the provided content functions into a grid.
+        If content_funcs is None, an empty grid is created that can be populated later.
 
         Args:
             slide: The slide to add the autogrid to
-            content_funcs: List of functions that add content to the slide
+            content_funcs: List of functions that add content to the slide, or None for an empty grid
             rows: Number of rows (default: None, calculated automatically)
             cols: Number of columns (default: None, calculated automatically)
             x: X position in inches or percentage (default: "0%")
@@ -1710,6 +1711,7 @@ class Presentation:
             ```python
             slide = pres.add_slide()
 
+            # Option 1: With content functions
             def create_text1():
                 return slide.add_text("Text 1")
 
@@ -1718,24 +1720,77 @@ class Presentation:
 
             content_funcs = [create_text1, create_text2]
             pres.add_autogrid(slide, content_funcs, title="Auto Grid Example")
+
+            # Option 2: Empty grid that can be populated later
+            grid = pres.add_autogrid(slide, None, rows=2, cols=3)
+            grid.add_to_cell(0, 0, slide.add_text, text="Cell 0,0")
+            grid.add_to_cell(1, 2, slide.add_text, text="Cell 1,2")
             ```
         """
         from easypptx.grid import Grid
 
-        # Use the Grid.autogrid method
-        grid = Grid.autogrid(
-            parent=slide,
-            content_funcs=content_funcs,
-            rows=rows,
-            cols=cols,
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            padding=padding,
-            title=title,
-            title_height=title_height,
-        )
+        # If content_funcs is None and rows/cols are provided, create an empty grid
+        if content_funcs is None:
+            # Make sure rows and cols are specified for empty grid
+            if rows is None or cols is None:
+                rows = rows or 1
+                cols = cols or 1
+
+            # Adjust grid position and dimensions if a title is provided
+            adjusted_y = y
+            adjusted_height = height
+
+            if title:
+                if isinstance(y, str) and y.endswith("%"):
+                    y_percent = float(y.strip("%"))
+                    title_height_percent = float(str(title_height).strip("%"))
+                    # Adjust y position for the grid
+                    adjusted_y = f"{(y_percent + title_height_percent):.2f}%"
+
+                    # Adjust height to account for title
+                    if isinstance(height, str) and height.endswith("%"):
+                        height_percent = float(height.strip("%"))
+                        adjusted_height = f"{(height_percent - title_height_percent):.2f}%"
+
+                # Add the title to the slide
+                slide.add_text(
+                    text=title,
+                    x=x,
+                    y=y,
+                    width=width,
+                    height=title_height,
+                    font_size=24,
+                    font_bold=True,
+                    align="center",
+                    vertical="middle",
+                )
+
+            # Create empty grid with specified dimensions
+            grid = Grid(
+                parent=slide,
+                x=x,
+                y=adjusted_y,
+                width=width,
+                height=adjusted_height,
+                rows=rows,
+                cols=cols,
+                padding=padding,
+            )
+        else:
+            # Use the Grid.autogrid method for content_funcs
+            grid = Grid.autogrid(
+                parent=slide,
+                content_funcs=content_funcs,
+                rows=rows,
+                cols=cols,
+                x=x,
+                y=y,
+                width=width,
+                height=height,
+                padding=padding,
+                title=title,
+                title_height=title_height,
+            )
 
         return grid
 
