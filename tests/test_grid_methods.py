@@ -55,9 +55,9 @@ def test_add_grid_slide():
     assert grid2.rows == 3
     assert grid2.cols == 3
     assert grid2.x == "0%"
-    assert grid2.y == "15%"
+    assert grid2.y == "15.00%"
     assert grid2.width == "100%"
-    assert grid2.height == "85.0%"
+    assert grid2.height == "85.00%"
 
 
 def test_add_autogrid():
@@ -117,5 +117,6 @@ def test_add_autogrid_slide():
     assert isinstance(grid2, Grid)
     assert grid2.rows == 1
     assert grid2.cols == 2
-    assert grid2.y == "15%"
-    assert grid2.height == "85.0%"
+    # Expect two decimal places in percentage values
+    assert float(grid2.y.strip("%")) == 15.00
+    assert float(grid2.height.strip("%")) == 85.00

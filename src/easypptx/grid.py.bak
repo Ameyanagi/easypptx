@@ -1,11 +1,12 @@
 """Grid layout module for EasyPPTX."""
 
 from collections.abc import Callable
-from typing import Any, overload
+from typing import Any, TypeVar, overload
 
 from easypptx.slide import PositionType
 
-# Using forward annotations (PEP 563) to avoid circular references
+# Create a forward declaration for the Grid class
+T = TypeVar("T", bound="Grid")
 
 
 class GridCell:
@@ -134,7 +135,7 @@ class GridCellProxy:
         """
         return self.grid.add_table(self.row, self.col, data=data, **kwargs)
 
-    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0) -> "Grid":
+    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0) -> T:
         """Add a nested grid to this cell.
 
         Args:
@@ -262,7 +263,7 @@ class GridRowProxy:
         next_col = self._get_next_available_col()
         return self.grid.add_table(self.row, next_col, data=data, **kwargs)
 
-    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0) -> "Grid":
+    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0) -> T:
         """Add a nested grid to the next available cell in this row.
 
         Args:
@@ -720,7 +721,7 @@ class Grid:
     @overload
     def __getitem__(self, key: tuple[int, int]) -> GridCellProxy: ...
 
-    def __getitem__(self, key: int | tuple[int, int]) -> GridRowProxy | GridCellProxy | GridCell:
+    def __getitem__(self, key: int | tuple[int, int]) -> GridRowProxy | GridCellProxy:
         """Access a cell or range of cells using enhanced indexing with auto-expansion.
 
         This method supports three types of indexing:
@@ -803,9 +804,7 @@ class Grid:
                 # This must be an out of bounds row index
                 raise OutOfBoundsError(f"Row index {key} is out of bounds")
         else:
-            raise TypeError(
-                "Grid indices must be integers (for rows or flat access) or tuples of the form (row, col) for cell access"
-            )
+            raise TypeError("Grid indices must be integers (for rows or flat access) or tuples of the form (row, col) for cell access")
 
     @property
     def flat(self):
@@ -1121,8 +1120,6 @@ class Grid:
         padding: float = 5.0,
         title: str | None = None,
         title_height: PositionType = "10%",
-        title_align: str = "center",
-        column_major: bool = True,  # Use column-major order by default
     ) -> "Grid":
         """Create a grid and automatically place content into cells.
 
@@ -1141,11 +1138,6 @@ class Grid:
             padding: Padding between cells (default: 5.0)
             title: Optional title for the grid (default: None)
             title_height: Height of the title area (default: "10%")
-            title_align: Text alignment for the title, one of "left", "center", "right" (default: "center")
-            column_major: Whether to fill cells in column-major order (default: True)
-                         When True, fills cells down columns first, resulting in a visual layout
-                         that matches the specified rows and columns when content is added sequentially.
-                         When False, fills cells across rows first.
 
         Returns:
             The created Grid object
@@ -1203,14 +1195,12 @@ class Grid:
                 height=title_height,
                 font_size=24,
                 font_bold=True,
-                align=title_align,
+                align="center",
             )
 
         # Place content into grid cells
-        # Using column-major order (filling columns first) to better match visual expectations
-        # when users specify (rows, cols)
-        col_idx = 0
         row_idx = 0
+        col_idx = 0
 
         for func in content_funcs:
             # Create a wrapper function factory to properly capture the current func
@@ -1230,14 +1220,14 @@ class Grid:
                 content_func=wrapper,
             )
 
-            # Move to next cell (column-major order: increment row first, then column)
-            row_idx += 1
-            if row_idx >= rows:
-                row_idx = 0
-                col_idx += 1
+            # Move to next cell
+            col_idx += 1
+            if col_idx >= cols:
+                col_idx = 0
+                row_idx += 1
 
             # Stop if we've filled the grid
-            if col_idx >= cols:
+            if row_idx >= rows:
                 break
 
         return grid
@@ -1256,10 +1246,8 @@ class Grid:
         padding: float = 5.0,
         title: str | None = None,
         title_height: PositionType = "10%",
-        title_align: str = "center",
         dpi: int = 300,
         file_format: str = "png",
-        column_major: bool = True,  # Use column-major order by default
     ) -> "Grid":
         """Create a grid and automatically place matplotlib figures into cells.
 
@@ -1278,13 +1266,8 @@ class Grid:
             padding: Padding between cells (default: 5.0)
             title: Optional title for the grid (default: None)
             title_height: Height of the title area (default: "10%")
-            title_align: Text alignment for the title, one of "left", "center", "right" (default: "center")
             dpi: Resolution for saved figures (default: 300)
             file_format: Image format for saved figures (default: "png")
-            column_major: Whether to fill cells in column-major order (default: True)
-                         When True, fills cells down columns first, resulting in a visual layout
-                         that matches the specified rows and columns when content is added sequentially.
-                         When False, fills cells across rows first.
 
         Returns:
             The created Grid object
@@ -1336,8 +1319,6 @@ class Grid:
                 padding=padding,
                 title=title,
                 title_height=title_height,
-                title_align=title_align,
-                column_major=column_major,
             )
         finally:
             # Clean up temporary files

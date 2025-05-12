@@ -1860,6 +1860,7 @@ class Presentation:
         title: str | None = None,
         title_height: float | str = "10%",
         title_align: str = "center",
+        column_major: bool = True,  # Use column-major order by default
     ) -> Grid:
         """Add an autogrid layout to a slide.
 
@@ -1879,6 +1880,10 @@ class Presentation:
             title: Optional title for the grid (default: None)
             title_height: Height of the title area (default: "10%")
             title_align: Text alignment for the title, one of "left", "center", "right" (default: "center")
+            column_major: Whether to fill cells in column-major order (default: True)
+                         When True, fills cells down columns first, resulting in a visual layout
+                         that matches the specified rows and columns when content is added sequentially.
+                         When False, fills cells across rows first.
 
         Returns:
             The created Grid object
@@ -1966,6 +1971,7 @@ class Presentation:
                 padding=padding,
                 title=title,
                 title_height=title_height,
+                column_major=column_major,
             )
 
         return grid
@@ -2119,6 +2125,7 @@ class Presentation:
         padding: float = 5.0,
         bg_color: str | tuple[int, int, int] | None = None,
         title_align: str = "center",
+        column_major: bool = True,  # Use column-major order by default
     ) -> tuple[Slide, Grid]:
         """Add a slide with an autogrid layout.
 
@@ -2135,6 +2142,10 @@ class Presentation:
             padding: Padding between cells as percentage of cell size (default: 5.0)
             bg_color: Background color for the slide (default: None)
             title_align: Text alignment for the title, one of "left", "center", "right" (default: "center")
+            column_major: Whether to fill cells in column-major order (default: True)
+                         When True, fills cells down columns first, resulting in a visual layout
+                         that matches the specified rows and columns when content is added sequentially.
+                         When False, fills cells across rows first.
 
         Returns:
             A tuple containing (Slide, Grid)
@@ -2207,6 +2218,7 @@ class Presentation:
                 padding=padding,
                 title=None,  # No separate title for the grid
                 title_align=title_align,
+                column_major=column_major,
             )
         else:
             # Create the autogrid with full slide dimensions
@@ -2221,6 +2233,7 @@ class Presentation:
                 height="100%",
                 padding=padding,
                 title=None,  # No title
+                column_major=column_major,
             )
 
         return slide, grid

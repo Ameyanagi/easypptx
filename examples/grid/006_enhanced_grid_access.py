@@ -4,6 +4,7 @@
 This example demonstrates the enhanced Grid access API:
 1. Using grid[row].add_xxx methods for row-based operations
 2. Using grid[row, col].add_xxx methods for direct cell operations
+3. Using add_autogrid_slide to create a slide with an empty grid and title
 """
 
 from pathlib import Path
@@ -211,6 +212,83 @@ dashboard[2, 1].add_text(
         "• International expansion on track for Q4"
     ),
     font_size=12,
+)
+
+# --------------------------------------------------------------------------
+# Example 3: Using add_autogrid_slide to create a slide with an empty grid
+# --------------------------------------------------------------------------
+feature_slide, features_grid = pres.add_autogrid_slide(
+    content_funcs=None,  # Empty grid
+    rows=4,
+    cols=2,
+    title="Feature Comparison",
+    title_height="15%",
+    padding=5.0,
+)
+
+# Add feature items to each row without manually tracking columns
+# For row 0, this will add to (0,0) then (0,1)
+features_grid[0].add_textbox(
+    text="Simplified Syntax",
+    font_size=24,
+    font_bold=True,
+    align="center",
+    vertical="middle",
+)
+
+features_grid[0].add_textbox(
+    text="Intuitive and concise API",
+    font_size=18,
+    align="center",
+    vertical="middle",
+)
+
+# For row 1, this will add to (1,0) then (1,1)
+features_grid[1].add_textbox(
+    text="Automatic Placement",
+    font_size=24,
+    font_bold=True,
+    align="center",
+    vertical="middle",
+)
+
+features_grid[1].add_textbox(
+    text="Content flows naturally across rows",
+    font_size=18,
+    align="center",
+    vertical="middle",
+)
+
+# For row 2, this will add to (2,0) then (2,1)
+features_grid[2].add_textbox(
+    text="Reduced Code",
+    font_size=24,
+    font_bold=True,
+    align="center",
+    vertical="middle",
+)
+
+features_grid[2].add_textbox(
+    text="Less typing, fewer parameters",
+    font_size=18,
+    align="center",
+    vertical="middle",
+)
+
+# For row 3, this will add to (3,0) then (3,1)
+features_grid[3].add_textbox(
+    text="All Content Types",
+    font_size=24,
+    font_bold=True,
+    align="center",
+    vertical="middle",
+)
+
+features_grid[3].add_textbox(
+    text="Works with text, images, tables, charts",
+    font_size=18,
+    align="center",
+    vertical="middle",
 )
 
 # Save the presentation

@@ -19,6 +19,8 @@ A Python library for easily creating and manipulating PowerPoint presentations p
 - Default 16:9 aspect ratio with support for multiple ratio options
 - Percentage-based positioning for responsive layouts
 - Auto-alignment of multiple objects (grid, horizontal, vertical)
+- Advanced Grid layout system with convenience methods
+- Grid iteration, indexing, and nested grid capabilities
 - Dark theme support with custom background colors
 - Expanded color palette for modern designs
 - Default font settings with Meiryo
@@ -145,6 +147,82 @@ slide.add_multiple_objects(
 )
 ```
 
+## Enhanced Grid Layout System
+
+EasyPPTX provides a powerful Grid layout system for creating complex and responsive layouts:
+
+### Creating Empty Grids
+
+Create an empty grid and add content to specific cells:
+
+```python
+# Create an empty 2x2 grid
+grid = pres.add_autogrid(
+    slide=slide,
+    content_funcs=None,  # Empty grid
+    rows=2,
+    cols=2,
+    x="10%",
+    y="20%",
+    width="80%",
+    height="70%",
+    padding=5.0,
+)
+
+# Add content using convenience methods
+grid.add_textbox(0, 0, "Top Left Cell", font_size=18, align="center")
+grid.add_image(0, 1, "path/to/image.jpg")
+grid.add_pyplot(1, 0, matplotlib_figure, dpi=150)
+grid.add_table(1, 1, data=[["A", "B"], [1, 2]], has_header=True)
+```
+
+### Grid Iteration and Indexing
+
+Easily access and iterate through grid cells:
+
+```python
+# Access cells using indexing
+cell1 = grid[0, 0]  # Row 0, Column 0
+cell2 = grid[3]     # Flat index (row-major order)
+
+# Iterate through all cells
+for cell in grid:
+    print(f"Cell at {cell.row}, {cell.col}")
+
+# Use the flat property for flat iteration
+for cell in grid.flat:
+    print(f"Cell content: {cell.content}")
+
+# Merge cells to create larger areas
+merged_cell = grid.merge_cells(0, 0, 1, 1)  # 2x2 merged area
+```
+
+### Automatic Grid Layout
+
+Automatically arrange content in a grid:
+
+```python
+# Create content functions
+def create_text1():
+    return slide.add_text(text="Content 1", font_size=24)
+
+def create_image1():
+    return slide.add_image(image_path="logo.png")
+
+# Automatically arrange in a grid
+content_funcs = [create_text1, create_image1, create_text1, create_image1]
+grid = pres.add_autogrid(
+    slide=slide,
+    content_funcs=content_funcs,
+    x="5%",
+    y="20%",
+    width="90%",
+    height="75%",
+    padding=5.0,
+    title="Auto Grid Example",
+)
+```
+
 ## Reference PowerPoint Templates
 
 Use existing PowerPoint files as templates:
@@ -224,11 +302,20 @@ uv run pytest
   - `image.py` - Image handling
   - `table.py` - Table creation from data
   - `chart.py` - Chart generation
+  - `grid.py` - Grid layout system for complex arrangements
+  - `pyplot.py` - Integration with matplotlib plots
+  - `template.py` - Template management and utilities
 - `examples/` - Example scripts demonstrating usage
   - `quick_start.py` - Basic usage example
   - `basic_demo.py` - Introduction to basic features
   - `comprehensive_example.py` - Full-featured business presentation
   - `aspect_ratio_example.py` - Demonstration of aspect ratio options
+  - `grid/` - Grid layout examples
+    - `001_basic_grid.py` - Basic Grid usage
+    - `002_grid_indexing.py` - Grid indexing and iteration
+    - `003_nested_grid.py` - Nested grids and merged cells
+    - `004_autogrid.py` - Automatic grid layout
+    - `005_enhanced_grid.py` - Enhanced Grid with convenience methods
   - `extended_features_example.py` - Showcase of percentage-based positioning, auto-alignment, and more
 
 ## Contributing
