@@ -37,39 +37,58 @@ pip install easypptx
 ## Quick Start
 
 ```python
-from easypptx import Presentation, Slide, Text, Image, Table, Chart
+from easypptx import Presentation
 import pandas as pd
 
 # Create a new presentation (uses 16:9 aspect ratio by default)
 pres = Presentation()
 
-# Add a slide
-slide = pres.add_slide()
+# Add a slide with a title
+slide = pres.add_slide(title="EasyPPTX Demo")
 
-# Add title
-text = Text(slide)
-text.add_title("EasyPPTX Demo")
-
-# Add text
-text.add_paragraph("This presentation was created with EasyPPTX",
-                  x=1, y=2, font_size=24)
+# Add text directly to the slide
+slide.add_text(
+    text="This presentation was created with EasyPPTX",
+    x="10%",
+    y="20%",
+    width="80%",
+    height="10%",
+    font_size=24
+)
 
 # Add an image
-img = Image(slide)
-img.add("path/to/image.png", x=1, y=3, width=4)
+slide.add_image(
+    image_path="path/to/image.png",
+    x="10%",
+    y="35%",
+    width="40%"
+)
 
 # Create a table
-tbl = Table(slide)
 data = [["Name", "Value"], ["Item 1", 100], ["Item 2", 200]]
-tbl.add(data, x=6, y=2)
+slide.add_table(
+    data=data,
+    x="60%",
+    y="35%",
+    width="30%",
+    has_header=True
+)
 
-# Add a chart from pandas DataFrame
+# Add a slide with a chart from pandas DataFrame
+chart_slide = pres.add_slide(title="Chart Example")
+
 df = pd.DataFrame({"Category": ["A", "B", "C"], "Value": [10, 20, 30]})
-chart = Chart(slide)
-chart.from_dataframe(df, chart_type="pie",
-                    category_column="Category",
-                    value_column="Value",
-                    x=6, y=4, title="Sample Chart")
+chart_slide.add_chart(
+    data=df,
+    chart_type="pie",
+    category_column="Category",
+    value_column="Value",
+    x="20%",
+    y="20%",
+    width="60%",
+    height="60%",
+    title="Sample Chart"
+)
 
 # Save the presentation
 pres.save("example.pptx")
@@ -151,29 +170,47 @@ slide.add_multiple_objects(
 
 EasyPPTX provides a powerful Grid layout system for creating complex and responsive layouts:
 
-### Creating Empty Grids
+### Creating Grids with Add Grid Slide
 
-Create an empty grid and add content to specific cells:
+Create a slide with a grid layout in one step:
 
 ```python
-# Create an empty 2x2 grid
-grid = pres.add_autogrid(
-    slide=slide,
-    content_funcs=None,  # Empty grid
+# Create a slide with a 2x2 grid
+slide, grid = pres.add_grid_slide(
+    title="Grid Layout Example",
     rows=2,
     cols=2,
-    x="10%",
-    y="20%",
-    width="80%",
-    height="70%",
-    padding=5.0,
+    title_height="10%",
+    padding=5.0
 )
 
-# Add content using convenience methods
-grid.add_textbox(0, 0, "Top Left Cell", font_size=18, align="center")
-grid.add_image(0, 1, "path/to/image.jpg")
-grid.add_pyplot(1, 0, matplotlib_figure, dpi=150)
-grid.add_table(1, 1, data=[["A", "B"], [1, 2]], has_header=True)
+# Add content directly to grid cells using the enhanced access API
+grid[0, 0].add_text(
+    text="Top Left Cell",
+    font_size=18,
+    align="center",
+    vertical="middle"
+)
+
+grid[0, 1].add_image(
+    image_path="path/to/image.jpg",
+    maintain_aspect_ratio=True
+)
+
+# Generate a matplotlib figure
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots()
+ax.plot([1, 2, 3, 4], [1, 4, 2, 3])
+ax.set_title("Sample Plot")
+
+# Add the matplotlib figure to a grid cell
+grid[1, 0].add_pyplot(figure=fig, dpi=150)
+
+# Add a table to the remaining cell
+grid[1, 1].add_table(
+    data=[["A", "B"], [1, 2]],
+    has_header=True
+)
 ```
 
 ### Grid Iteration and Indexing
@@ -197,33 +234,58 @@ for cell in grid.flat:
 merged_cell = grid.merge_cells(0, 0, 1, 1)  # 2x2 merged area
 ```
 
-### Automatic Grid Layout
+### Row-Based Grid Access
 
-Automatically arrange content in a grid:
+Easily add content to grid rows without specifying exact column indices:
 
 ```python
-# Create content functions
-def create_text1():
-    return slide.add_text(text="Content 1", font_size=24)
+# Create a slide with a 3x3 grid
+slide, grid = pres.add_grid_slide(
+    title="Row-Based Grid Access",
+    rows=3,
+    cols=3,
+    padding=5.0
+)
 
-def create_image1():
-    return slide.add_image(image_path="logo.png")
+# Add content to the first row using row-level access
+# This automatically adds each item to the next available cell in the row
+grid[0].add_text(
+    text="First item in row 0",
+    font_size=16,
+    align="center"
+)
 
-# Automatically arrange in a grid
-content_funcs = [create_text1, create_image1, create_text1, create_image1]
-grid = pres.add_autogrid(
-    slide=slide,
-    content_funcs=content_funcs,
-    x="5%",
-    y="20%",
-    width="90%",
-    height="75%",
-    padding=5.0,
-    title="Auto Grid Example",
+grid[0].add_text(
+    text="Second item in row 0",
+    font_size=16,
+    align="center"
+)
+
+grid[0].add_text(
+    text="Third item in row 0",
+    font_size=16,
+    align="center"
+)
+
+# Add content to the second row
+grid[1].add_text(
+    text="First item in row 1",
+    font_size=16,
+    align="center"
+)
+
+grid[1].add_text(
+    text="Second item in row 1",
+    font_size=16,
+    align="center"
 )
 ```
 
-## Reference PowerPoint Templates
+## Templates
+
+EasyPPTX supports multiple template formats for consistent presentation design.
+
+### Reference PowerPoint Templates
 
 Use existing PowerPoint files as templates:
 
@@ -231,13 +293,92 @@ Use existing PowerPoint files as templates:
 # Create a presentation using an existing template
 pres = Presentation(template_path="template.pptx")
 
-# Add a slide
-slide = pres.add_slide()
+# Add a slide with a title
+slide = pres.add_slide(title="Presentation with Template")
 
-# Add content and save
-text = Text(slide)
-text.add_title("Presentation with Template")
+# Add content to the slide
+slide.add_text(
+    text="Content using the template styles",
+    x="10%",
+    y="30%",
+    width="80%",
+    height="30%",
+    font_size=24
+)
+
+# Save the presentation
 pres.save("output.pptx")
+```
+
+### TOML-Based Templates
+
+Create, share, and reuse templates using human-readable TOML files:
+
+```python
+from easypptx import Presentation
+from easypptx.template import TemplateManager
+
+# Initialize template manager with template directory
+tm = TemplateManager(template_dir="templates")
+
+# Load a template from a TOML file
+template_name = tm.load("templates/business_title.toml")
+
+# Create a presentation
+pres = Presentation()
+
+# Create a slide using the loaded template
+slide = pres.add_slide_from_template(template_name)
+
+# Add content to the templated slide
+slide.add_text(
+    text="Quarterly Business Review",
+    x="10%",
+    y="30%",
+    width="80%",
+    height="20%",
+    font_size=44,
+    font_bold=True,
+    align="center",
+    color="white"
+)
+
+slide.add_text(
+    text="Q2 2025 Financial Results",
+    x="10%",
+    y="55%",
+    width="80%",
+    height="10%",
+    font_size=24,
+    align="center",
+    color="#66ccff"
+)
+
+# Save the presentation
+pres.save("output.pptx")
+```
+
+Sample TOML template (business_title.toml):
+
+```toml
+# Business Template - Title Slide
+bg_color = "#003366"  # Dark blue background
+
+[title]
+text = "Presentation Title"
+position = { x = "10%", y = "30%", width = "80%", height = "20%" }
+font = { name = "Meiryo", size = 44, bold = true }
+align = "center"
+vertical = "middle"
+color = "white"
+
+[subtitle]
+text = "Subtitle or Presenter Information"
+position = { x = "10%", y = "55%", width = "80%", height = "10%" }
+font = { name = "Meiryo", size = 24, bold = false }
+align = "center"
+vertical = "middle"
+color = "#66ccff"  # Light blue for subtitle
 ```
 
 ## Dark Theme Support
@@ -248,19 +389,53 @@ Create modern presentations with dark backgrounds and vibrant colors:
 # Create a presentation with black background
 pres = Presentation(default_bg_color="black")
 
-# Add a slide with default black background
-slide = pres.add_slide()
+# Add a slide with default black background and a title
+slide1 = pres.add_slide(
+    title="Dark Theme Example",
+    title_color="cyan"
+)
+
+# Add high-contrast text directly to the slide
+slide1.add_text(
+    text="High contrast text on dark background",
+    x="10%",
+    y="30%",
+    width="80%",
+    height="20%",
+    font_size=24,
+    color="white"
+)
 
 # Add a slide with a custom background color
-slide = pres.add_slide(bg_color=(0, 20, 40))  # Dark blue
+slide2 = pres.add_slide(
+    title="Custom Dark Background",
+    title_color="white",
+    bg_color=(0, 20, 40)  # Dark blue
+)
 
-# Add high-contrast text
-text = Text(slide)
-text.add_title("Dark Theme", color="cyan", align="center")
-text.add_paragraph("High contrast text", color="white")
+# Add content with vibrant colors
+slide2.add_text(
+    text="Text with vibrant color",
+    x="10%",
+    y="30%",
+    width="80%",
+    height="20%",
+    font_size=24,
+    color="lime"
+)
+
+# Add a shape with custom color
+slide2.add_shape(
+    shape_type="ROUNDED_RECTANGLE",
+    x="30%",
+    y="60%",
+    width="40%",
+    height="15%",
+    fill_color="purple"
+)
 
 # Set background color for an existing slide
-slide.set_background_color("darkgray")
+slide1.set_background_color("darkgray")
 ```
 
 ## Getting started with development

@@ -1,0 +1,42 @@
+# Business Template - Content Slide
+# Standard content slide for business presentations
+
+bg_color = "white"
+
+[title]
+text = "Content Slide Title"
+position = { x = "5%", y = "5%", width = "90%", height = "10%" }
+font = { name = "Meiryo", size = 32, bold = true }
+align = "left"
+vertical = "middle"
+color = "#003366"  # Dark blue for title
+
+[title_bar]
+position = { x = "5%", y = "15%", width = "90%", height = "1%" }
+fill_color = "#003366"  # Dark blue bar under title
+
+[content_area]
+position = { x = "5%", y = "20%", width = "90%", height = "70%" }
+bg_color = "white"
+
+[bullet_points]
+position = { x = "7%", y = "22%", width = "86%", height = "65%" }
+font = { name = "Meiryo", size = 20, bold = false }
+align = "left"
+vertical = "top"
+color = "black"
+
+[footer]
+text = "Company Name | Confidential"
+position = { x = "0%", y = "90%", width = "100%", height = "5%" }
+font = { name = "Meiryo", size = 14, bold = true }
+align = "center"
+vertical = "middle"
+color = "#003366"  # Dark blue for footer
+
+[page_number]
+position = { x = "90%", y = "90%", width = "5%", height = "5%" }
+font = { name = "Meiryo", size = 12, bold = false }
+align = "right"
+vertical = "middle"
+color = "#003366"  # Dark blue for page number
