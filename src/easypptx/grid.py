@@ -1,9 +1,12 @@
 """Grid layout module for EasyPPTX."""
 
 from collections.abc import Callable
-from typing import Any
+from typing import Any, TypeVar, overload
 
 from easypptx.slide import PositionType
+
+# Create a forward declaration for the Grid class
+T = TypeVar("T", bound="Grid")
 
 
 class GridCell:
@@ -60,6 +63,209 @@ class CellMergeError(ValueError):
     """Exception raised when there's an issue with cell merging."""
 
 
+class GridCellProxy:
+    """Proxy class for accessing grid cells with enhanced syntax.
+
+    This class provides a more intuitive API for accessing grid cells and provides
+    direct access to all the add_xxx methods that the Grid class supports.
+
+    Attributes:
+        grid: The parent Grid object
+        row: The row index of this cell
+        col: The column index of this cell
+    """
+
+    def __init__(self, grid: "Grid", row: int, col: int):
+        """Initialize a GridCellProxy.
+
+        Args:
+            grid: The parent Grid object
+            row: The row index of this cell
+            col: The column index of this cell
+        """
+        self.grid = grid
+        self.row = row
+        self.col = col
+
+    def add_text(self, text: str, **kwargs) -> Any:
+        """Add text to this cell.
+
+        Args:
+            text: The text to add
+            **kwargs: Additional keyword arguments for the text
+
+        Returns:
+            The created text object
+        """
+        return self.grid.add_textbox(self.row, self.col, text=text, **kwargs)
+
+    def add_image(self, image_path: str, **kwargs) -> Any:
+        """Add an image to this cell.
+
+        Args:
+            image_path: The path to the image
+            **kwargs: Additional keyword arguments for the image
+
+        Returns:
+            The created image object
+        """
+        return self.grid.add_image(self.row, self.col, image_path=image_path, **kwargs)
+
+    def add_pyplot(self, figure, **kwargs) -> Any:
+        """Add a matplotlib figure to this cell.
+
+        Args:
+            figure: The matplotlib figure to add
+            **kwargs: Additional keyword arguments for the figure
+
+        Returns:
+            The created pyplot object
+        """
+        return self.grid.add_pyplot(self.row, self.col, figure=figure, **kwargs)
+
+    def add_table(self, data, **kwargs) -> Any:
+        """Add a table to this cell.
+
+        Args:
+            data: The table data to add
+            **kwargs: Additional keyword arguments for the table
+
+        Returns:
+            The created table object
+        """
+        return self.grid.add_table(self.row, self.col, data=data, **kwargs)
+
+    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0) -> T:
+        """Add a nested grid to this cell.
+
+        Args:
+            rows: The number of rows in the nested grid
+            cols: The number of columns in the nested grid
+            padding: The padding for the nested grid
+
+        Returns:
+            The created grid object
+        """
+        return self.grid.add_grid_to_cell(self.row, self.col, rows=rows, cols=cols, padding=padding)
+
+
+class GridRowProxy:
+    """Proxy class for accessing grid rows with enhanced syntax.
+
+    This class provides a more intuitive API for accessing grid rows and redirects
+    add_xxx method calls to the next available cell in the row.
+
+    Attributes:
+        grid: The parent Grid object
+        row: The row index
+        current_col: The current column index for sequential operations
+    """
+
+    def __init__(self, grid: "Grid", row: int):
+        """Initialize a GridRowProxy.
+
+        Args:
+            grid: The parent Grid object
+            row: The row index
+        """
+        self.grid = grid
+        self.row = row
+        self.current_col = 0
+
+    def __getitem__(self, col: int) -> GridCellProxy:
+        """Get the cell at the specified column.
+
+        Args:
+            col: The column index
+
+        Returns:
+            A GridCellProxy for the specified cell
+        """
+        return GridCellProxy(self.grid, self.row, col)
+
+    def _get_next_available_col(self) -> int:
+        """Get the next available column in this row.
+
+        Returns:
+            The column index of the next available cell
+
+        Raises:
+            IndexError: If all cells in this row are filled
+        """
+        if self.current_col >= self.grid.cols:
+            raise IndexError(f"All cells in row {self.row} are already filled")
+
+        col = self.current_col
+        self.current_col += 1
+        return col
+
+    def add_text(self, text: str, **kwargs) -> Any:
+        """Add text to the next available cell in this row.
+
+        Args:
+            text: The text to add
+            **kwargs: Additional keyword arguments for the text
+
+        Returns:
+            The created text object
+        """
+        next_col = self._get_next_available_col()
+        return self.grid.add_textbox(self.row, next_col, text=text, **kwargs)
+
+    def add_image(self, image_path: str, **kwargs) -> Any:
+        """Add an image to the next available cell in this row.
+
+        Args:
+            image_path: The path to the image
+            **kwargs: Additional keyword arguments for the image
+
+        Returns:
+            The created image object
+        """
+        next_col = self._get_next_available_col()
+        return self.grid.add_image(self.row, next_col, image_path=image_path, **kwargs)
+
+    def add_pyplot(self, figure, **kwargs) -> Any:
+        """Add a matplotlib figure to the next available cell in this row.
+
+        Args:
+            figure: The matplotlib figure to add
+            **kwargs: Additional keyword arguments for the figure
+
+        Returns:
+            The created pyplot object
+        """
+        next_col = self._get_next_available_col()
+        return self.grid.add_pyplot(self.row, next_col, figure=figure, **kwargs)
+
+    def add_table(self, data, **kwargs) -> Any:
+        """Add a table to the next available cell in this row.
+
+        Args:
+            data: The table data to add
+            **kwargs: Additional keyword arguments for the table
+
+        Returns:
+            The created table object
+        """
+        next_col = self._get_next_available_col()
+        return self.grid.add_table(self.row, next_col, data=data, **kwargs)
+
+    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0) -> T:
+        """Add a nested grid to the next available cell in this row.
+
+        Args:
+            rows: The number of rows in the nested grid
+            cols: The number of columns in the nested grid
+            padding: The padding for the nested grid
+
+        Returns:
+            The created grid object
+        """
+        next_col = self._get_next_available_col()
+        return self.grid.add_grid_to_cell(self.row, next_col, rows=rows, cols=cols, padding=padding)
+
+
 class Grid:
     """Class for creating grid layouts in PowerPoint slides.
 
@@ -83,6 +289,14 @@ class Grid:
         # Access a cell with grid[row, col]
         cell = grid[0, 1]  # Get cell at row 0, column 1
 
+        # Add content directly to a cell using proxy access
+        grid[0, 1].add_text("Cell 0,1", font_size=24)
+        grid[1, 0].add_image(image_path="image.png")
+
+        # Add content to the next available cell in a row
+        grid[0].add_text("First available cell in row 0")
+        grid[0].add_text("Second available cell in row 0")
+
         # Loop through all cells
         for cell in grid:
             print(cell)
@@ -91,7 +305,7 @@ class Grid:
         for cell in grid.flat:
             print(cell.row, cell.col)
 
-        # Add content directly to a cell
+        # Add content using traditional methods
         grid.add_textbox(0, 1, text="Cell 0,1", font_size=24)
         grid.add_image(1, 0, image_path="image.png")
         ```
@@ -478,32 +692,54 @@ class Grid:
             for col in range(self.cols):
                 yield self.cells[row][col]
 
-    def __getitem__(self, key):
-        """Access a cell or range of cells using indexing.
+    @overload
+    def __getitem__(self, key: int) -> GridRowProxy: ...
+
+    @overload
+    def __getitem__(self, key: tuple[int, int]) -> GridCellProxy: ...
+
+    def __getitem__(self, key: int | tuple[int, int]) -> GridRowProxy | GridCellProxy:
+        """Access a cell or range of cells using enhanced indexing.
+
+        This method supports both grid[row] for row-based operations and
+        grid[row, col] for cell-specific operations.
 
         Args:
-            key: A tuple of (row, col) or a single index for flattened access
+            key: An int for row access or a tuple of (row, col) for cell access
 
         Returns:
-            The requested GridCell object or a list of cells
+            - GridRowProxy if key is a single integer (row index)
+            - GridCellProxy if key is a tuple of (row, col)
 
         Raises:
-            OutOfBoundsError: If the requested cell is out of bounds
+            OutOfBoundsError: If the requested cell or row is out of bounds
             TypeError: If the key is not in the right format
+
+        Examples:
+            ```python
+            # Access a specific cell
+            grid[0, 1].add_text("Cell 0,1")
+
+            # Access a row (adds content to the next available cell)
+            grid[1].add_image("image.png")
+            ```
         """
         if isinstance(key, tuple) and len(key) == 2:
-            # Access as grid[row, col]
+            # Access as grid[row, col] -> return a GridCellProxy
             row, col = key
-            return self.get_cell(row, col)
+            # Validate bounds
+            if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
+                raise OutOfBoundsError(f"Cell position ({row}, {col}) is out of bounds")
+            return GridCellProxy(self, row, col)
         elif isinstance(key, int):
-            # Access as grid[flat_index]
-            if key < 0 or key >= self.rows * self.cols:
-                raise OutOfBoundsError(f"Flat index {key} is out of bounds")
-            row = key // self.cols
-            col = key % self.cols
-            return self.cells[row][col]
+            # Access as grid[row] -> return a GridRowProxy
+            row = key
+            # Validate bounds
+            if row < 0 or row >= self.rows:
+                raise OutOfBoundsError(f"Row index {row} is out of bounds")
+            return GridRowProxy(self, row)
         else:
-            raise TypeError("Grid indices must be integers or tuples of the form (row, col)")
+            raise TypeError("Grid indices must be integers (for rows) or tuples of the form (row, col) for cells")
 
     @property
     def flat(self):
