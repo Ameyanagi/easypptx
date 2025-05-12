@@ -488,6 +488,179 @@ class Presentation:
 
         return slide
 
+    def add_image_gen_slide(
+        self,
+        image_path: str,
+        title: str | None = None,
+        subtitle: str | None = None,
+        label: str | None = None,
+        x: float | str = "10%",
+        y: float | str = "20%",
+        width: float | str = "80%",
+        height: float | str = "70%",
+        title_height: float | str = "10%",
+        subtitle_height: float | str = "5%",
+        bg_color: str | tuple[int, int, int] | None = None,
+        title_font_size: int = 24,
+        subtitle_font_size: int = 18,
+        label_font_size: int = 14,
+        border: bool = False,
+        border_color: str = "black",
+        shadow: bool = False,
+        maintain_aspect_ratio: bool = True,
+    ) -> tuple[Slide, PPTXShape]:
+        """Add a slide with an image and optional title, subtitle, and label.
+
+        This method provides a more flexible alternative to add_image_slide with
+        similar parameters to add_grid_slide and add_pyplot_slide.
+
+        Args:
+            image_path: Path to the image file
+            title: Optional title for the slide (default: None)
+            subtitle: Optional subtitle for the slide (default: None)
+            label: Optional caption for the image, displayed below (default: None)
+            x: X position of the image as percentage or absolute value (default: "10%")
+            y: Y position of the image as percentage or absolute value (default: "20%")
+            width: Width of the image as percentage or absolute value (default: "80%")
+            height: Height of the image as percentage or absolute value (default: "70%")
+            title_height: Height of the title area (default: "10%")
+            subtitle_height: Height of the subtitle area (default: "5%")
+            bg_color: Background color for the slide (default: None)
+            title_font_size: Font size for the title (default: 24)
+            subtitle_font_size: Font size for the subtitle (default: 18)
+            label_font_size: Font size for the caption (default: 14)
+            border: Whether to add a border around the image (default: False)
+            border_color: Color for the border (default: "black")
+            shadow: Whether to add a shadow effect to the image (default: False)
+            maintain_aspect_ratio: Whether to maintain the image's aspect ratio (default: True)
+
+        Returns:
+            A tuple containing (Slide, PPTXShape) where PPTXShape is the image shape
+
+        Example:
+            ```python
+            # Add an image with title and subtitle
+            slide, image = pres.add_image_gen_slide(
+                image_path="path/to/image.jpg",
+                title="Product Showcase",
+                subtitle="Latest Design",
+                label="Figure 1: Product Prototype",
+                maintain_aspect_ratio=True
+            )
+            ```
+        """
+        # Create a new slide
+        slide = self.add_slide(bg_color=bg_color)
+
+        # Calculate positions and dimensions
+        adjusted_y = y
+        adjusted_height = height
+
+        # Add title if provided
+        if title:
+            # Add the title to the slide
+            slide.add_text(
+                text=title,
+                x="0%",  # Center the title across the slide
+                y="0%",
+                width="100%",
+                height=title_height,
+                font_size=title_font_size,
+                font_bold=True,
+                align="center",
+                vertical="middle",
+            )
+
+            # Adjust y position for what comes next
+            if isinstance(y, str) and y.endswith("%"):
+                y_percent = float(y.strip("%"))
+                title_height_percent = float(str(title_height).strip("%"))
+                adjusted_y = f"{(y_percent + title_height_percent):.2f}%"
+
+                # Adjust height to account for title
+                if isinstance(height, str) and height.endswith("%"):
+                    height_percent = float(height.strip("%"))
+                    adjusted_height = f"{(height_percent - title_height_percent):.2f}%"
+
+        # Add subtitle if provided
+        if subtitle:
+            # Add the subtitle to the slide
+            slide.add_text(
+                text=subtitle,
+                x="0%",  # Center the subtitle across the slide
+                y=adjusted_y,
+                width="100%",
+                height=subtitle_height,
+                font_size=subtitle_font_size,
+                align="center",
+                vertical="middle",
+            )
+
+            # Adjust y position for the image
+            if isinstance(adjusted_y, str) and adjusted_y.endswith("%"):
+                y_percent = float(adjusted_y.strip("%"))
+                subtitle_height_percent = float(str(subtitle_height).strip("%"))
+                adjusted_y = f"{(y_percent + subtitle_height_percent):.2f}%"
+
+                # Adjust height to account for subtitle
+                if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
+                    height_percent = float(adjusted_height.strip("%"))
+                    adjusted_height = f"{(height_percent - subtitle_height_percent):.2f}%"
+
+        # Add the image to the slide
+        img = Image(slide)
+        image_shape = img.add(
+            image_path=image_path,
+            x=x,
+            y=adjusted_y,
+            width=width,
+            height=adjusted_height,
+            maintain_aspect_ratio=maintain_aspect_ratio,
+        )
+
+        # Apply styling to the image
+        if border:
+            image_shape.line.color.rgb = self.COLORS.get(border_color, self.COLORS["black"])
+            image_shape.line.width = 1  # 1 point width for border
+
+        # Apply shadow if specified
+        if shadow:
+            image_shape.shadow.inherit = False
+            image_shape.shadow.visible = True
+            image_shape.shadow.blur_radius = 5
+            image_shape.shadow.distance = 3
+            image_shape.shadow.angle = 45
+
+        # Add label if specified
+        if label:
+            # Calculate the position below the image
+            if (
+                isinstance(adjusted_y, str)
+                and adjusted_y.endswith("%")
+                and isinstance(adjusted_height, str)
+                and adjusted_height.endswith("%")
+            ):
+                image_y = float(adjusted_y.strip("%"))
+                image_height = float(adjusted_height.strip("%"))
+                label_y = f"{(image_y + image_height + 1):.2f}%"  # Add a small gap
+            else:
+                # Fall back to a reasonable default if we can't calculate exactly
+                label_y = "95%"
+
+            # Add the label text
+            slide.add_text(
+                text=label,
+                x="0%",  # Center the label
+                y=label_y,
+                width="100%",
+                height="5%",
+                font_size=label_font_size,
+                align="center",
+                vertical="top",
+            )
+
+        return slide, image_shape
+
     def add_image_slide(
         self, title: str, image_path: str, label: str | None = None, custom_style: dict | None = None
     ) -> Slide:
@@ -1580,7 +1753,7 @@ class Presentation:
 
         return grid
 
-    def add_grid_slide(
+    def add_simple_grid_slide(
         self,
         rows: int = 1,
         cols: int = 1,
@@ -1589,9 +1762,10 @@ class Presentation:
         padding: float = 5.0,
         bg_color: str | tuple[int, int, int] | None = None,
     ) -> tuple[Slide, Grid]:
-        """Add a slide with a grid layout.
+        """Add a slide with a simple grid layout.
 
         The grid will fill the entire slide, except for the title area if a title is provided.
+        This is a simplified version of add_grid_slide for backward compatibility.
 
         Args:
             rows: Number of rows in the grid (default: 1)
@@ -1606,7 +1780,7 @@ class Presentation:
 
         Example:
             ```python
-            slide, grid = pres.add_grid_slide(rows=2, cols=3, title="My Grid Slide")
+            slide, grid = pres.add_simple_grid_slide(rows=2, cols=3, title="My Grid Slide")
 
             grid.add_to_cell(
                 row=0,
@@ -1685,6 +1859,7 @@ class Presentation:
         padding: float = 5.0,
         title: str | None = None,
         title_height: float | str = "10%",
+        title_align: str = "center",
     ) -> Grid:
         """Add an autogrid layout to a slide.
 
@@ -1703,6 +1878,7 @@ class Presentation:
             padding: Padding between cells as percentage of cell size (default: 5.0)
             title: Optional title for the grid (default: None)
             title_height: Height of the title area (default: "10%")
+            title_align: Text alignment for the title, one of "left", "center", "right" (default: "center")
 
         Returns:
             The created Grid object
@@ -1761,7 +1937,7 @@ class Presentation:
                     height=title_height,
                     font_size=24,
                     font_bold=True,
-                    align="center",
+                    align=title_align,
                     vertical="middle",
                 )
 
@@ -1794,35 +1970,178 @@ class Presentation:
 
         return grid
 
-    def add_autogrid_slide(
+    def add_grid_slide(
         self,
-        content_funcs: list,
-        rows: int | None = None,
-        cols: int | None = None,
+        rows: int,
+        cols: int,
         title: str | None = None,
+        subtitle: str | None = None,
         title_height: float | str = "10%",
+        subtitle_height: float | str = "5%",
+        x: float | str = "0%",
+        y: float | str = "0%",
+        width: float | str = "100%",
+        height: float | str = "100%",
         padding: float = 5.0,
         bg_color: str | tuple[int, int, int] | None = None,
+        title_font_size: int = 24,
+        subtitle_font_size: int = 18,
+        title_align: str = "center",
+        subtitle_align: str = "center",
     ) -> tuple[Slide, Grid]:
-        """Add a slide with an autogrid layout.
+        """Add a slide with a grid layout.
 
-        This method creates a new slide and automatically places the provided
-        content functions into a grid.
+        This method creates a new slide with an empty grid that can be populated later.
+        It provides flexible options for positioning and sizing the grid, as well as
+        adding a title and subtitle to the slide.
 
         Args:
-            content_funcs: List of functions that add content to the slide
-            rows: Number of rows (default: None, calculated automatically)
-            cols: Number of columns (default: None, calculated automatically)
+            rows: Number of rows in the grid
+            cols: Number of columns in the grid
             title: Optional title for the slide (default: None)
+            subtitle: Optional subtitle for the slide (default: None)
             title_height: Height of the title area (default: "10%")
+            subtitle_height: Height of the subtitle area (default: "5%")
+            x: X position of the grid as percentage or absolute value (default: "0%")
+            y: Y position of the grid as percentage or absolute value (default: "0%")
+            width: Width of the grid as percentage or absolute value (default: "100%")
+            height: Height of the grid as percentage or absolute value (default: "100%")
             padding: Padding between cells as percentage of cell size (default: 5.0)
             bg_color: Background color for the slide (default: None)
+            title_font_size: Font size for the title (default: 24)
+            subtitle_font_size: Font size for the subtitle (default: 18)
+            title_align: Text alignment for the title, one of "left", "center", "right" (default: "center")
+            subtitle_align: Text alignment for the subtitle, one of "left", "center", "right" (default: "center")
 
         Returns:
             A tuple containing (Slide, Grid)
 
         Example:
             ```python
+            # Create a slide with a 3x2 grid and a title
+            slide, grid = pres.add_grid_slide(
+                rows=3,
+                cols=2,
+                title="Features Overview",
+                subtitle="Product Capabilities",
+                padding=5.0,
+                title_align="left"
+            )
+
+            # Add content to specific cells
+            grid[0, 0].add_text("Feature 1", font_bold=True)
+            grid[0, 1].add_image("image1.png")
+
+            # Add content to rows sequentially
+            grid[1].add_text("Feature 2", font_bold=True)
+            grid[1].add_text("Description of Feature 2")
+            ```
+        """
+        # Create a new slide
+        slide = self.add_slide(bg_color=bg_color)
+
+        # Calculate positions and dimensions
+        adjusted_y = y
+        adjusted_height = height
+
+        # Add title if provided
+        if title:
+            # Add the title to the slide
+            slide.add_text(
+                text=title,
+                x=x,
+                y=y,
+                width=width,
+                height=title_height,
+                font_size=title_font_size,
+                font_bold=True,
+                align=title_align,
+                vertical="middle",
+            )
+
+            # Adjust y position for what comes next
+            if isinstance(y, str) and y.endswith("%"):
+                y_percent = float(y.strip("%"))
+                title_height_percent = float(str(title_height).strip("%"))
+                adjusted_y = f"{(y_percent + title_height_percent):.2f}%"
+
+                # Adjust height to account for title
+                if isinstance(height, str) and height.endswith("%"):
+                    height_percent = float(height.strip("%"))
+                    adjusted_height = f"{(height_percent - title_height_percent):.2f}%"
+
+        # Add subtitle if provided
+        if subtitle:
+            # Add the subtitle to the slide
+            slide.add_text(
+                text=subtitle,
+                x=x,
+                y=adjusted_y,
+                width=width,
+                height=subtitle_height,
+                font_size=subtitle_font_size,
+                align=subtitle_align,
+                vertical="middle",
+            )
+
+            # Adjust y position for the grid
+            if isinstance(adjusted_y, str) and adjusted_y.endswith("%"):
+                y_percent = float(adjusted_y.strip("%"))
+                subtitle_height_percent = float(str(subtitle_height).strip("%"))
+                adjusted_y = f"{(y_percent + subtitle_height_percent):.2f}%"
+
+                # Adjust height to account for subtitle
+                if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
+                    height_percent = float(adjusted_height.strip("%"))
+                    adjusted_height = f"{(height_percent - subtitle_height_percent):.2f}%"
+
+        # Create the grid
+        grid = Grid(
+            parent=slide,
+            x=x,
+            y=adjusted_y,
+            width=width,
+            height=adjusted_height,
+            rows=rows,
+            cols=cols,
+            padding=padding,
+        )
+
+        return slide, grid
+
+    def add_autogrid_slide(
+        self,
+        content_funcs: list | None = None,
+        rows: int | None = None,
+        cols: int | None = None,
+        title: str | None = None,
+        title_height: float | str = "10%",
+        padding: float = 5.0,
+        bg_color: str | tuple[int, int, int] | None = None,
+        title_align: str = "center",
+    ) -> tuple[Slide, Grid]:
+        """Add a slide with an autogrid layout.
+
+        This method creates a new slide and automatically places the provided
+        content functions into a grid. If content_funcs is None, it creates an
+        empty grid with the specified rows and columns that can be populated later.
+
+        Args:
+            content_funcs: List of functions that add content to the slide, or None for an empty grid
+            rows: Number of rows (default: None, calculated automatically when content_funcs provided)
+            cols: Number of columns (default: None, calculated automatically when content_funcs provided)
+            title: Optional title for the slide (default: None)
+            title_height: Height of the title area (default: "10%")
+            padding: Padding between cells as percentage of cell size (default: 5.0)
+            bg_color: Background color for the slide (default: None)
+            title_align: Text alignment for the title, one of "left", "center", "right" (default: "center")
+
+        Returns:
+            A tuple containing (Slide, Grid)
+
+        Example:
+            ```python
+            # With content functions
             def create_text1():
                 return slide.add_text("Text 1")
 
@@ -1830,11 +2149,25 @@ class Presentation:
                 return slide.add_text("Text 2")
 
             content_funcs = [create_text1, create_text2]
-            slide, grid = pres.add_autogrid_slide(content_funcs, title="Auto Grid Slide")
+            slide, grid = pres.add_autogrid_slide(content_funcs, title="Auto Grid Slide", title_align="left")
+
+            # With empty grid
+            slide, grid = pres.add_autogrid_slide(None, rows=4, cols=2, title="Features")
+
+            # Add content directly to rows
+            grid[0].add_text("Feature 1", font_bold=True)
+            grid[0].add_text("Description 1")
+            grid[1].add_text("Feature 2", font_bold=True)
+            grid[1].add_text("Description 2")
             ```
         """
         # Create a new slide
         slide = self.add_slide(bg_color=bg_color)
+
+        # If content_funcs is None and rows/cols are provided, ensure they have values
+        if content_funcs is None and (rows is None or cols is None):
+            rows = rows or 1
+            cols = cols or 1
 
         # Create the autogrid (without title, we'll add it separately to the slide)
         if title:
@@ -1847,11 +2180,11 @@ class Presentation:
                 height=title_height,
                 font_size=24,
                 font_bold=True,
-                align="center",
+                align=title_align,
                 vertical="middle",
             )
 
-            # Calculate grid dimensions
+            # Calculate grid dimensions - preserve the original title_height format
             grid_y = title_height
 
             # Calculate grid height by subtracting title height
@@ -1873,6 +2206,7 @@ class Presentation:
                 height=grid_height,
                 padding=padding,
                 title=None,  # No separate title for the grid
+                title_align=title_align,
             )
         else:
             # Create the autogrid with full slide dimensions
@@ -1890,6 +2224,197 @@ class Presentation:
             )
 
         return slide, grid
+
+    def add_pyplot_slide(
+        self,
+        figure,
+        title: str | None = None,
+        subtitle: str | None = None,
+        label: str | None = None,
+        x: float | str = "10%",
+        y: float | str = "20%",
+        width: float | str = "80%",
+        height: float | str = "70%",
+        title_height: float | str = "10%",
+        subtitle_height: float | str = "5%",
+        dpi: int = 300,
+        file_format: str = "png",
+        bg_color: str | tuple[int, int, int] | None = None,
+        title_font_size: int = 24,
+        subtitle_font_size: int = 18,
+        label_font_size: int = 14,
+        border: bool = False,
+        border_color: str = "black",
+        shadow: bool = False,
+        maintain_aspect_ratio: bool = True,
+        title_align: str = "center",
+        subtitle_align: str = "center",
+        label_align: str = "center",
+    ) -> tuple[Slide, PPTXShape]:
+        """Add a slide with a title and a matplotlib/seaborn figure.
+
+        This method provides more flexibility than add_matplotlib_slide and add_seaborn_slide
+        by allowing control over positioning, titles, and styling, similar to add_grid_slide.
+
+        Args:
+            figure: Matplotlib or Seaborn figure object
+            title: Optional title for the slide (default: None)
+            subtitle: Optional subtitle for the slide (default: None)
+            label: Optional caption for the figure, displayed below (default: None)
+            x: X position of the figure as percentage or absolute value (default: "10%")
+            y: Y position of the figure as percentage or absolute value (default: "20%")
+            width: Width of the figure as percentage or absolute value (default: "80%")
+            height: Height of the figure as percentage or absolute value (default: "70%")
+            title_height: Height of the title area (default: "10%")
+            subtitle_height: Height of the subtitle area (default: "5%")
+            dpi: Resolution for the figure in dots per inch (default: 300)
+            file_format: Image format ("png" or "jpg") (default: "png")
+            bg_color: Background color for the slide (default: None)
+            title_font_size: Font size for the title (default: 24)
+            subtitle_font_size: Font size for the subtitle (default: 18)
+            label_font_size: Font size for the caption (default: 14)
+            border: Whether to add a border around the figure (default: False)
+            border_color: Color for the border (default: "black")
+            shadow: Whether to add a shadow effect to the figure (default: False)
+            maintain_aspect_ratio: Whether to maintain the figure's aspect ratio (default: True)
+            title_align: Text alignment for the title, one of "left", "center", "right" (default: "center")
+            subtitle_align: Text alignment for the subtitle, one of "left", "center", "right" (default: "center")
+            label_align: Text alignment for the caption, one of "left", "center", "right" (default: "center")
+
+        Returns:
+            A tuple containing (Slide, PPTXShape) where PPTXShape is the figure shape
+
+        Example:
+            ```python
+            import matplotlib.pyplot as plt
+
+            # Create a matplotlib figure
+            plt.figure(figsize=(8, 6))
+            plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
+            plt.title('Sample Plot')
+            plt.grid(True)
+
+            # Add it to a presentation with title and subtitle
+            slide, pyplot = pres.add_pyplot_slide(
+                figure=plt.gcf(),
+                title="Data Visualization",
+                subtitle="Matplotlib Example",
+                label="Figure 1: Sample Plot",
+                dpi=300,
+                title_align="left"
+            )
+            ```
+        """
+        # Create a new slide
+        slide = self.add_slide(bg_color=bg_color)
+
+        # Calculate positions and dimensions
+        adjusted_y = y
+        adjusted_height = height
+
+        # Add title if provided
+        if title:
+            # Add the title to the slide
+            slide.add_text(
+                text=title,
+                x="0%",  # Center the title across the slide
+                y="0%",
+                width="100%",
+                height=title_height,
+                font_size=title_font_size,
+                font_bold=True,
+                align=title_align,
+                vertical="middle",
+            )
+
+            # Adjust y position for what comes next
+            if isinstance(y, str) and y.endswith("%"):
+                y_percent = float(y.strip("%"))
+                title_height_percent = float(str(title_height).strip("%"))
+                adjusted_y = f"{(y_percent + title_height_percent):.2f}%"
+
+                # Adjust height to account for title
+                if isinstance(height, str) and height.endswith("%"):
+                    height_percent = float(height.strip("%"))
+                    adjusted_height = f"{(height_percent - title_height_percent):.2f}%"
+
+        # Add subtitle if provided
+        if subtitle:
+            # Add the subtitle to the slide
+            slide.add_text(
+                text=subtitle,
+                x="0%",  # Center the subtitle across the slide
+                y=adjusted_y,
+                width="100%",
+                height=subtitle_height,
+                font_size=subtitle_font_size,
+                align=subtitle_align,
+                vertical="middle",
+            )
+
+            # Adjust y position for the pyplot
+            if isinstance(adjusted_y, str) and adjusted_y.endswith("%"):
+                y_percent = float(adjusted_y.strip("%"))
+                subtitle_height_percent = float(str(subtitle_height).strip("%"))
+                adjusted_y = f"{(y_percent + subtitle_height_percent):.2f}%"
+
+                # Adjust height to account for subtitle
+                if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
+                    height_percent = float(adjusted_height.strip("%"))
+                    adjusted_height = f"{(height_percent - subtitle_height_percent):.2f}%"
+
+        # Create a style dictionary for the pyplot
+        style = {
+            "border": border,
+            "border_color": border_color,
+            "shadow": shadow,
+            "maintain_aspect_ratio": maintain_aspect_ratio,
+        }
+
+        # Add the pyplot to the slide
+        pyplot = Pyplot.add(
+            slide=slide,
+            figure=figure,
+            position={
+                "x": x,
+                "y": adjusted_y,
+                "width": width,
+                "height": adjusted_height,
+            },
+            dpi=dpi,
+            file_format=file_format,
+            style=style,
+        )
+
+        # Add label if specified
+        if label:
+            # Calculate the position below the figure
+            if (
+                isinstance(adjusted_y, str)
+                and adjusted_y.endswith("%")
+                and isinstance(adjusted_height, str)
+                and adjusted_height.endswith("%")
+            ):
+                figure_y = float(adjusted_y.strip("%"))
+                figure_height = float(adjusted_height.strip("%"))
+                label_y = f"{(figure_y + figure_height + 1):.2f}%"  # Add a small gap
+            else:
+                # Fall back to a reasonable default if we can't calculate exactly
+                label_y = "95%"
+
+            # Add the label text
+            slide.add_text(
+                text=label,
+                x="0%",  # Center the label
+                y=label_y,
+                width="100%",
+                height="5%",
+                font_size=label_font_size,
+                align=label_align,
+                vertical="top",
+            )
+
+        return slide, pyplot
 
     def add_pyplot(
         self,

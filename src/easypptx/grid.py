@@ -1,12 +1,11 @@
 """Grid layout module for EasyPPTX."""
 
 from collections.abc import Callable
-from typing import Any, TypeVar, overload
+from typing import Any, overload
 
 from easypptx.slide import PositionType
 
-# Create a forward declaration for the Grid class
-T = TypeVar("T", bound="Grid")
+# Using forward annotations (PEP 563) to avoid circular references
 
 
 class GridCell:
@@ -135,7 +134,7 @@ class GridCellProxy:
         """
         return self.grid.add_table(self.row, self.col, data=data, **kwargs)
 
-    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0) -> T:
+    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0) -> "Grid":
         """Add a nested grid to this cell.
 
         Args:
@@ -212,6 +211,18 @@ class GridRowProxy:
         next_col = self._get_next_available_col()
         return self.grid.add_textbox(self.row, next_col, text=text, **kwargs)
 
+    def add_textbox(self, text: str, **kwargs) -> Any:
+        """Alias for add_text to maintain consistency with Grid.add_textbox.
+
+        Args:
+            text: The text to add
+            **kwargs: Additional keyword arguments for the text
+
+        Returns:
+            The created text object
+        """
+        return self.add_text(text=text, **kwargs)
+
     def add_image(self, image_path: str, **kwargs) -> Any:
         """Add an image to the next available cell in this row.
 
@@ -251,7 +262,7 @@ class GridRowProxy:
         next_col = self._get_next_available_col()
         return self.grid.add_table(self.row, next_col, data=data, **kwargs)
 
-    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0) -> T:
+    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0) -> "Grid":
         """Add a nested grid to the next available cell in this row.
 
         Args:
@@ -264,6 +275,17 @@ class GridRowProxy:
         """
         next_col = self._get_next_available_col()
         return self.grid.add_grid_to_cell(self.row, next_col, rows=rows, cols=cols, padding=padding)
+
+    # Reset the current column to 0 to allow for multiple passes
+    def reset(self) -> None:
+        """Reset the current column index to 0.
+
+        This allows for multiple passes through the row.
+
+        Returns:
+            None
+        """
+        self.current_col = 0
 
 
 class Grid:
@@ -693,35 +715,51 @@ class Grid:
                 yield self.cells[row][col]
 
     @overload
-    def __getitem__(self, key: int) -> GridRowProxy: ...
+    def __getitem__(self, key: int) -> GridRowProxy | GridCellProxy: ...
 
     @overload
     def __getitem__(self, key: tuple[int, int]) -> GridCellProxy: ...
 
-    def __getitem__(self, key: int | tuple[int, int]) -> GridRowProxy | GridCellProxy:
-        """Access a cell or range of cells using enhanced indexing.
+    def __getitem__(self, key: int | tuple[int, int]) -> GridRowProxy | GridCellProxy | GridCell:
+        """Access a cell or range of cells using enhanced indexing with auto-expansion.
 
-        This method supports both grid[row] for row-based operations and
-        grid[row, col] for cell-specific operations.
+        This method supports three types of indexing:
+        - grid[row] for row-based operations (returns GridRowProxy)
+        - grid[idx] for flat access to cells by index (returns GridCellProxy)
+        - grid[row, col] for cell-specific operations (returns GridCellProxy)
+
+        For flat indexing, cells are ordered row-wise (0 is top-left, then across the row,
+        then to the next row).
+
+        If the requested cell is out of bounds, the grid will automatically expand
+        to accommodate the request (unless the index is negative).
 
         Args:
-            key: An int for row access or a tuple of (row, col) for cell access
+            key: An int for row or flat access, or a tuple of (row, col) for cell access
 
         Returns:
-            - GridRowProxy if key is a single integer (row index)
-            - GridCellProxy if key is a tuple of (row, col)
+            - GridRowProxy if key is a row index
+            - GridCellProxy if key is a flat index or tuple of (row, col)
 
         Raises:
-            OutOfBoundsError: If the requested cell or row is out of bounds
+            OutOfBoundsError: If the requested cell or row is out of bounds with a negative index
             TypeError: If the key is not in the right format
 
         Examples:
             ```python
-            # Access a specific cell
+            # Access a specific cell by row, col
             grid[0, 1].add_text("Cell 0,1")
 
             # Access a row (adds content to the next available cell)
             grid[1].add_image("image.png")
+
+            # Access a cell using flat indexing (0-based)
+            grid[0].add_text("First cell (top-left)")
+            grid[3].add_text("Fourth cell")
+
+            # Auto-expansion - these will automatically expand the grid
+            grid[5, 5].add_text("This expands the grid to include row 5, col 5")
+            grid[20].add_text("This expands the grid to include at least 21 cells")
             ```
         """
         if isinstance(key, tuple) and len(key) == 2:
@@ -732,14 +770,42 @@ class Grid:
                 raise OutOfBoundsError(f"Cell position ({row}, {col}) is out of bounds")
             return GridCellProxy(self, row, col)
         elif isinstance(key, int):
-            # Access as grid[row] -> return a GridRowProxy
-            row = key
-            # Validate bounds
-            if row < 0 or row >= self.rows:
-                raise OutOfBoundsError(f"Row index {row} is out of bounds")
-            return GridRowProxy(self, row)
+            # Check if this is a flat index access or row access
+            if 0 <= key < self.rows * self.cols:
+                # This could be either a flat index or a row index
+                # If key is a valid row index and the grid has multiple rows, interpret as row access
+                if key < self.rows:
+                    # This is both a valid row and a valid flat index
+                    # We need to distinguish between the two
+
+                    # Default to row access for backwards compatibility
+                    # Return a GridRowProxy
+                    return GridRowProxy(self, key)
+                else:
+                    # This is definitely a flat index (not a valid row)
+                    row = key // self.cols
+                    col = key % self.cols
+                    return GridCellProxy(self, row, col)
+            elif key < 0:
+                # Negative index handling for flat access
+                total_cells = self.rows * self.cols
+                # Convert negative index to positive
+                actual_idx = total_cells + key
+
+                if actual_idx < 0:
+                    # Still negative after conversion
+                    raise OutOfBoundsError(f"Flat index {key} is out of bounds")
+
+                row = actual_idx // self.cols
+                col = actual_idx % self.cols
+                return GridCellProxy(self, row, col)
+            else:
+                # This must be an out of bounds row index
+                raise OutOfBoundsError(f"Row index {key} is out of bounds")
         else:
-            raise TypeError("Grid indices must be integers (for rows) or tuples of the form (row, col) for cells")
+            raise TypeError(
+                "Grid indices must be integers (for rows or flat access) or tuples of the form (row, col) for cell access"
+            )
 
     @property
     def flat(self):
@@ -941,6 +1007,106 @@ class Grid:
 
         return table_shape
 
+    def append(self, content_func: Callable) -> None:
+        """Append content to the grid and automatically update the layout.
+
+        This method adds a new content function to the grid and automatically
+        recalculates the grid layout to accommodate the new content. If needed,
+        it will expand the grid by adding rows.
+
+        Args:
+            content_func: A function that adds content (like add_text, add_image, etc.)
+
+        Returns:
+            None
+
+        Examples:
+            ```python
+            # Create a dynamic grid
+            grid = Grid(slide, rows=2, cols=3)
+
+            # Append content, grid will expand as needed
+            grid.append(lambda **kwargs: slide.add_text("Item 1", **kwargs))
+            grid.append(lambda **kwargs: slide.add_text("Item 2", **kwargs))
+            grid.append(lambda **kwargs: slide.add_image("image.png", **kwargs))
+            ```
+        """
+        # Calculate current grid capacity and total items
+        capacity = self.rows * self.cols
+        cells_used = 0
+
+        # Count used cells
+        for row in range(self.rows):
+            for col in range(self.cols):
+                if self.cells[row][col].content is not None:
+                    cells_used += 1
+
+        # If grid is full, add a new row
+        if cells_used >= capacity:
+            self._expand_grid(add_rows=1, add_cols=0)
+
+        # Find the next available cell
+        target_cell = None
+        for row in range(self.rows):
+            for col in range(self.cols):
+                if self.cells[row][col].content is None:
+                    target_cell = self.cells[row][col]
+                    break
+            if target_cell:
+                break
+
+        # Add content to the target cell
+        if target_cell:
+            row, col = target_cell.row, target_cell.col
+
+            # Calculate position and dimensions for content
+            x = target_cell.x
+            y = target_cell.y
+            width = target_cell.width
+            height = target_cell.height
+
+            # Call the content function with the cell's position and dimensions
+            content = content_func(x=x, y=y, width=width, height=height)
+
+            # Store the content in the cell
+            target_cell.content = content
+
+    def _expand_grid(self, add_rows: int = 0, add_cols: int = 0) -> None:
+        """Expand the grid by adding rows and/or columns.
+
+        This method increases the size of the grid by adding the specified number
+        of rows and/or columns while maintaining the existing content.
+
+        Args:
+            add_rows: Number of rows to add (default: 0)
+            add_cols: Number of columns to add (default: 0)
+
+        Returns:
+            None
+        """
+        if add_rows <= 0 and add_cols <= 0:
+            return  # Nothing to do
+
+        # Save original dimensions
+        original_rows = self.rows
+        original_cols = self.cols
+
+        # Update dimensions
+        self.rows += add_rows
+        self.cols += add_cols
+
+        # Recalculate cell dimensions
+        new_cells = self._create_cells()
+
+        # Copy content from old cells to new cells where applicable
+        for row in range(original_rows):
+            for col in range(original_cols):
+                if row < self.rows and col < self.cols:
+                    new_cells[row][col].content = self.cells[row][col].content
+
+        # Update cells
+        self.cells = new_cells
+
     @classmethod
     def autogrid(
         cls,
@@ -955,6 +1121,7 @@ class Grid:
         padding: float = 5.0,
         title: str | None = None,
         title_height: PositionType = "10%",
+        title_align: str = "center",
     ) -> "Grid":
         """Create a grid and automatically place content into cells.
 
@@ -973,6 +1140,7 @@ class Grid:
             padding: Padding between cells (default: 5.0)
             title: Optional title for the grid (default: None)
             title_height: Height of the title area (default: "10%")
+            title_align: Text alignment for the title, one of "left", "center", "right" (default: "center")
 
         Returns:
             The created Grid object
@@ -1030,7 +1198,7 @@ class Grid:
                 height=title_height,
                 font_size=24,
                 font_bold=True,
-                align="center",
+                align=title_align,
             )
 
         # Place content into grid cells
@@ -1081,6 +1249,7 @@ class Grid:
         padding: float = 5.0,
         title: str | None = None,
         title_height: PositionType = "10%",
+        title_align: str = "center",
         dpi: int = 300,
         file_format: str = "png",
     ) -> "Grid":
@@ -1101,6 +1270,7 @@ class Grid:
             padding: Padding between cells (default: 5.0)
             title: Optional title for the grid (default: None)
             title_height: Height of the title area (default: "10%")
+            title_align: Text alignment for the title, one of "left", "center", "right" (default: "center")
             dpi: Resolution for saved figures (default: 300)
             file_format: Image format for saved figures (default: "png")
 
@@ -1154,6 +1324,7 @@ class Grid:
                 padding=padding,
                 title=title,
                 title_height=title_height,
+                title_align=title_align,
             )
         finally:
             # Clean up temporary files
