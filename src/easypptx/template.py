@@ -22,6 +22,12 @@ class Template:
         # Define vertical alignment mappings
         self.vertical_dict = {"top": MSO_ANCHOR.TOP, "middle": MSO_ANCHOR.MIDDLE, "bottom": MSO_ANCHOR.BOTTOM}
 
+        # Store reference PPTX paths for presets
+        self.preset_references: dict[str, str] = {}
+
+        # Store blank layout indices for presets
+        self.preset_blank_layouts: dict[str, int] = {}
+
         # Define standard colors
         self.color_dict = {
             "black": RGBColor(0x40, 0x40, 0x40),
@@ -305,6 +311,48 @@ class Template:
 
         return style
 
+    def set_reference_pptx(self, preset_name: str, reference_pptx: str, blank_layout_index: int | None = None) -> None:
+        """Set a reference PPTX file for a preset.
+
+        Args:
+            preset_name: Name of the preset
+            reference_pptx: Path to the reference PPTX file
+            blank_layout_index: Index of the blank layout (default: None, auto-detect)
+
+        Raises:
+            ValueError: If the preset name doesn't exist
+        """
+        if preset_name not in self.presets:
+            valid_presets = ", ".join(self.presets.keys())
+            raise ValueError(f"Unknown preset: {preset_name}. Valid presets are: {valid_presets}")
+
+        self.preset_references[preset_name] = reference_pptx
+
+        if blank_layout_index is not None:
+            self.preset_blank_layouts[preset_name] = blank_layout_index
+
+    def get_reference_pptx(self, preset_name: str) -> str | None:
+        """Get the reference PPTX file path for a preset if specified.
+
+        Args:
+            preset_name: Name of the preset
+
+        Returns:
+            Path to the reference PPTX file or None if not specified
+        """
+        return self.preset_references.get(preset_name)
+
+    def get_blank_layout_index(self, preset_name: str) -> int | None:
+        """Get the blank layout index for a preset if specified.
+
+        Args:
+            preset_name: Name of the preset
+
+        Returns:
+            Index of the blank layout or None if not specified
+        """
+        return self.preset_blank_layouts.get(preset_name)
+
 
 class TemplateManager:
     """Class for managing templates, providing easy save/load functionality."""
@@ -320,6 +368,12 @@ class TemplateManager:
 
         # Dictionary for additional registered templates
         self.registered_templates: dict[str, dict[str, Any]] = {}
+
+        # Dictionary for reference PPTX file paths associated with templates
+        self.template_references: dict[str, str] = {}
+
+        # Dictionary for blank layout indices associated with templates
+        self.blank_layout_indices: dict[str, int] = {}
 
         # Set the template directory
         self.template_dir = template_dir
@@ -372,6 +426,28 @@ class TemplateManager:
         """
         # Combine built-in and registered templates
         return list(self.template.presets.keys()) + list(self.registered_templates.keys())
+
+    def get_reference_pptx(self, template_name: str) -> str | None:
+        """Get the reference PPTX file path for a template if specified.
+
+        Args:
+            template_name: Name of the template
+
+        Returns:
+            Path to the reference PPTX file or None if not specified
+        """
+        return self.template_references.get(template_name)
+
+    def get_blank_layout_index(self, template_name: str) -> int | None:
+        """Get the blank layout index for a template if specified.
+
+        Args:
+            template_name: Name of the template
+
+        Returns:
+            Index of the blank layout or None if not specified
+        """
+        return self.blank_layout_indices.get(template_name)
 
     def save(self, template_name: str, file_path: str | None = None, file_format: str = "toml") -> str:
         """Save a template to a file.
@@ -440,20 +516,40 @@ class TemplateManager:
         # Determine the file format from extension
         file_extension = os.path.splitext(file_path)[1].lower()
 
+        # Get the base directory for relative paths
+        base_dir = os.path.dirname(os.path.abspath(file_path))
+
         # Load the template from the file based on format
         if file_extension == ".toml":
             # Load TOML
             with open(file_path, "rb") as f:
-                template = tomli.load(f)
+                template_data = tomli.load(f)
         elif file_extension == ".json":
             # Load JSON
             with open(file_path) as f:
-                template = json.load(f)
+                template_data = json.load(f)
         else:
             raise ValueError(f"Unsupported file format: {file_extension}. Supported formats: .toml, .json")
 
+        # Extract reference_pptx and blank_layout_index if present
+        reference_pptx = template_data.pop("reference_pptx", None)
+        blank_layout_index = template_data.pop("blank_layout_index", None)
+
+        # Process reference_pptx path (resolve relative paths)
+        if reference_pptx is not None:
+            # If it's a relative path, make it absolute relative to the TOML file location
+            if not os.path.isabs(reference_pptx):
+                reference_pptx = os.path.normpath(os.path.join(base_dir, reference_pptx))
+
+            # Store the reference path
+            self.template_references[template_name] = reference_pptx
+
+        # Store blank layout index if specified
+        if blank_layout_index is not None:
+            self.blank_layout_indices[template_name] = blank_layout_index
+
         # Convert serialized color values back to RGBColor objects
-        template = self._process_after_deserialization(template)
+        template = self._process_after_deserialization(template_data)
 
         # Register the template
         self.register(template_name, template)

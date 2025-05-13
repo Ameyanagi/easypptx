@@ -112,6 +112,63 @@ pres = Presentation(aspect_ratio="16:10")
 pres = Presentation(width_inches=12, height_inches=9)
 ```
 
+## Custom Reference PPTX Files
+
+You can use custom PPTX files as references for your presentations:
+
+```python
+# Use a custom reference PPTX file (keeping all layouts and styles)
+pres = Presentation(reference_pptx="path/to/your/reference.pptx")
+
+# Specify a custom blank layout index (if the default auto-detection doesn't work)
+pres = Presentation(
+    reference_pptx="path/to/your/reference.pptx",
+    blank_layout_index=2  # Use the third layout as blank
+)
+
+# When opening existing presentations, you can also specify blank layout
+pres = Presentation.open(
+    "path/to/existing.pptx",
+    blank_layout_index=4  # Use the fifth layout as blank
+)
+```
+
+### TOML Template Reference PPTX Specification
+
+You can also specify reference PPTX files in TOML template files:
+
+```toml
+# Specify the reference PPTX file path (absolute or relative to the TOML file)
+reference_pptx = "../references/my_template.pptx"
+
+# Optionally specify the blank layout index
+blank_layout_index = 3
+
+# Rest of your template content
+[title]
+text = "Presentation Title"
+position = { x = "10%", y = "30%", width = "80%", height = "20%" }
+font = { name = "Meiryo", size = 44, bold = true }
+align = "center"
+# ...
+```
+
+Then use the template in your code:
+
+```python
+from easypptx import Presentation
+from easypptx.template import TemplateManager
+
+# Load the template file
+template_manager = TemplateManager()
+template_name = template_manager.load("path/to/template.toml")
+
+# Create a presentation and use the template
+pres = Presentation()
+slide = pres.add_slide_from_template(template_name)
+# The reference PPTX specified in the TOML is automatically loaded
+```
+
 ## Percentage-Based Positioning
 
 Position and size elements using percentages of the slide dimensions:

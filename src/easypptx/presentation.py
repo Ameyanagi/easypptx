@@ -114,6 +114,8 @@ class Presentation:
         width_inches: float | None = None,
         height_inches: float | None = None,
         template_path: str | None = None,
+        reference_pptx: str | None = None,
+        blank_layout_index: int | None = None,
         default_bg_color: str | tuple[int, int, int] | None = None,
     ) -> None:
         """Initialize a new empty presentation.
@@ -123,6 +125,8 @@ class Presentation:
             width_inches: Custom width in inches (overrides aspect_ratio if specified)
             height_inches: Custom height in inches (overrides aspect_ratio if specified)
             template_path: Path to a reference PowerPoint template to use for styles (default: None)
+            reference_pptx: Path to a custom reference PPTX file to use (default: None)
+            blank_layout_index: Index of blank layout in the slide_layouts (default: None, auto-detected)
             default_bg_color: Default background color for slides as string name or RGB tuple (default: None)
 
         Raises:
@@ -135,12 +139,27 @@ class Presentation:
         self.template = Template()
         self.template_manager = TemplateManager()
 
+        # Track which reference PPTX file we've loaded
+        self._loaded_reference = None
+
         if template_path:
             # Use an existing template
             try:
                 self.pptx_presentation = PPTXPresentation(template_path)
+                self._loaded_reference = str(template_path)
             except Exception as e:
                 raise FileNotFoundError(f"Template file not found or invalid: {e}") from e
+        elif reference_pptx:
+            # Use a custom reference PPTX file
+            reference_path = Path(reference_pptx)
+            if not reference_path.exists():
+                raise FileNotFoundError(f"Reference PPTX file not found: {reference_pptx}")
+
+            try:
+                self.pptx_presentation = PPTXPresentation(str(reference_path))
+                self._loaded_reference = str(reference_path)
+            except Exception as e:
+                raise FileNotFoundError(f"Reference PPTX file not found or invalid: {e}") from e
         else:
             # Check if we should use a reference template based on aspect ratio
             reference_template = None
@@ -173,8 +192,42 @@ class Presentation:
                 width, height = self.ASPECT_RATIOS[aspect_ratio]
                 self._set_slide_dimensions(width, height)
 
-        # Store the blank slide layout (typically index 6)
-        self.blank_layout = self.pptx_presentation.slide_layouts[6]
+        # Find and store the blank slide layout
+        if blank_layout_index is not None:
+            # Use the specified index
+            if 0 <= blank_layout_index < len(self.pptx_presentation.slide_layouts):
+                self.blank_layout = self.pptx_presentation.slide_layouts[blank_layout_index]
+            else:
+                # If index is out of range, fall back to a safe default
+                self.blank_layout = self._find_blank_layout() or self.pptx_presentation.slide_layouts[0]
+        else:
+            # Auto-detect the blank layout (typically index 6, but can vary)
+            self.blank_layout = self._find_blank_layout() or self.pptx_presentation.slide_layouts[6]
+
+    def _find_blank_layout(self) -> Any:
+        """Find the blank layout in the presentation.
+
+        Attempts to find the layout with the fewest placeholders, which is typically the blank layout.
+
+        Returns:
+            The slide layout that appears to be blank, or None if no suitable layout is found
+        """
+        # First, check if there's a layout named "Blank" or similar
+        for layout in self.pptx_presentation.slide_layouts:
+            if hasattr(layout, "name") and "blank" in layout.name.lower():
+                return layout
+
+        # Find the layout with the fewest placeholders (likely to be blank)
+        blank_layout = None
+        min_placeholders = float("inf")
+
+        for layout in self.pptx_presentation.slide_layouts:
+            placeholder_count = len(layout.placeholders)
+            if placeholder_count < min_placeholders:
+                min_placeholders = placeholder_count
+                blank_layout = layout
+
+        return blank_layout if min_placeholders < 3 else None
 
     def _set_slide_dimensions(self, width_inches: float, height_inches: float) -> None:
         """Set the slide dimensions.
@@ -187,11 +240,12 @@ class Presentation:
         self.pptx_presentation.slide_height = int(Inches(height_inches))
 
     @classmethod
-    def open(cls, file_path: str | Path) -> Presentation:
+    def open(cls, file_path: str | Path, blank_layout_index: int | None = None) -> Presentation:
         """Open an existing PowerPoint presentation.
 
         Args:
             file_path: Path to the PowerPoint file to open
+            blank_layout_index: Index of blank layout in the slide_layouts (default: None, auto-detected)
 
         Returns:
             A new Presentation object with the loaded presentation
@@ -210,8 +264,26 @@ class Presentation:
         except Exception as e:
             raise ValueError(f"Invalid PowerPoint file: {e}") from e
 
-        presentation = cls(width_inches=None, height_inches=None)
+        presentation = cls(width_inches=None, height_inches=None, blank_layout_index=blank_layout_index)
         presentation.pptx_presentation = pptx_presentation
+        presentation._loaded_reference = str(file_path_obj)
+
+        # Find and store the blank slide layout
+        if blank_layout_index is not None:
+            # Use the specified index
+            if 0 <= blank_layout_index < len(presentation.pptx_presentation.slide_layouts):
+                presentation.blank_layout = presentation.pptx_presentation.slide_layouts[blank_layout_index]
+            else:
+                # If index is out of range, fall back to a safe default
+                presentation.blank_layout = (
+                    presentation._find_blank_layout() or presentation.pptx_presentation.slide_layouts[0]
+                )
+        else:
+            # Auto-detect the blank layout (typically index 6, but can vary)
+            presentation.blank_layout = (
+                presentation._find_blank_layout() or presentation.pptx_presentation.slide_layouts[6]
+            )
+
         return presentation
 
     def add_slide(self, layout_index: int | None = None, bg_color: str | tuple[int, int, int] | None = None) -> Slide:
@@ -264,7 +336,9 @@ class Presentation:
             A new Slide object configured according to the template
         """
         # Get the template data - either from a preset or use the provided dictionary
+        template_name = None
         if isinstance(template_data, str):
+            template_name = template_data
             try:
                 # First try to get from TemplateManager (includes built-in and registered templates)
                 preset = self.template_manager.get(template_data)
@@ -273,6 +347,45 @@ class Presentation:
                 preset = self.template.get_preset(template_data)
         else:
             preset = template_data
+
+        # Check if there's a reference PPTX file specified for this template
+        reference_pptx = None
+        blank_layout_index = None
+        if template_name is not None:
+            # First check in TemplateManager for loaded templates
+            reference_pptx = self.template_manager.get_reference_pptx(template_name)
+            blank_layout_index = self.template_manager.get_blank_layout_index(template_name)
+
+            # If not found, check built-in presets
+            if reference_pptx is None:
+                reference_pptx = self.template.get_reference_pptx(template_name)
+                blank_layout_index = self.template.get_blank_layout_index(template_name)
+
+            # If a reference PPTX is specified and we haven't loaded it yet, create a new Presentation with it
+            if reference_pptx is not None and self._loaded_reference != reference_pptx:
+                # Save current properties we want to preserve
+                current_width = self.pptx_presentation.slide_width
+                current_height = self.pptx_presentation.slide_height
+
+                # Load the reference PPTX
+                try:
+                    self.pptx_presentation = PPTXPresentation(reference_pptx)
+                    self._loaded_reference = reference_pptx
+
+                    # Restore dimensions
+                    self.pptx_presentation.slide_width = current_width
+                    self.pptx_presentation.slide_height = current_height
+
+                    # Update blank layout
+                    if blank_layout_index is not None:
+                        if 0 <= blank_layout_index < len(self.pptx_presentation.slide_layouts):
+                            self.blank_layout = self.pptx_presentation.slide_layouts[blank_layout_index]
+                        else:
+                            self.blank_layout = self._find_blank_layout() or self.pptx_presentation.slide_layouts[0]
+                    else:
+                        self.blank_layout = self._find_blank_layout() or self.pptx_presentation.slide_layouts[6]
+                except Exception as e:
+                    print(f"Warning: Failed to load reference PPTX '{reference_pptx}': {e}")
 
         # Get background color if specified
         bg_color = preset.get("bg_color", None)

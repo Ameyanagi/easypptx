@@ -765,8 +765,11 @@ class Grid:
                 raise OutOfBoundsError(f"Cell position ({row}, {col}) is out of bounds")
             return GridCellProxy(self, row, col)
         elif isinstance(key, int):
-            # Always interpret integer keys as flat indices
-            if 0 <= key < self.rows * self.cols:
+            # For row access, if key < rows, return a row proxy
+            if 0 <= key < self.rows:
+                return GridRowProxy(self, key)
+            # Otherwise, interpret integer keys as flat indices
+            elif 0 <= key < self.rows * self.cols:
                 # This is a valid flat index
                 row = key // self.cols
                 col = key % self.cols
