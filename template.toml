@@ -1,0 +1,9 @@
+# Custom Template Example
+
+[title]
+text = "Presentation Title"
+position = { x = "10%", y = "30%", width = "80%", height = "20%" }
+font = { name = "Meiryo", size = 44, bold = true }
+align = "left"
+vertical = "middle"
+color = "white"  # This predefined color name is fine
