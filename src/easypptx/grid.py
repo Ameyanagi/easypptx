@@ -148,146 +148,6 @@ class GridCellProxy:
         return self.grid.add_grid_to_cell(self.row, self.col, rows=rows, cols=cols, padding=padding)
 
 
-class GridRowProxy:
-    """Proxy class for accessing grid rows with enhanced syntax.
-
-    This class provides a more intuitive API for accessing grid rows and redirects
-    add_xxx method calls to the next available cell in the row.
-
-    Attributes:
-        grid: The parent Grid object
-        row: The row index
-        current_col: The current column index for sequential operations
-    """
-
-    def __init__(self, grid: "Grid", row: int):
-        """Initialize a GridRowProxy.
-
-        Args:
-            grid: The parent Grid object
-            row: The row index
-        """
-        self.grid = grid
-        self.row = row
-        self.current_col = 0
-
-    def __getitem__(self, col: int) -> GridCellProxy:
-        """Get the cell at the specified column.
-
-        Args:
-            col: The column index
-
-        Returns:
-            A GridCellProxy for the specified cell
-        """
-        return GridCellProxy(self.grid, self.row, col)
-
-    def _get_next_available_col(self) -> int:
-        """Get the next available column in this row.
-
-        Returns:
-            The column index of the next available cell
-
-        Raises:
-            IndexError: If all cells in this row are filled
-        """
-        if self.current_col >= self.grid.cols:
-            raise IndexError(f"All cells in row {self.row} are already filled")
-
-        col = self.current_col
-        self.current_col += 1
-        return col
-
-    def add_text(self, text: str, **kwargs) -> Any:
-        """Add text to the next available cell in this row.
-
-        Args:
-            text: The text to add
-            **kwargs: Additional keyword arguments for the text
-
-        Returns:
-            The created text object
-        """
-        next_col = self._get_next_available_col()
-        return self.grid.add_textbox(self.row, next_col, text=text, **kwargs)
-
-    def add_textbox(self, text: str, **kwargs) -> Any:
-        """Alias for add_text to maintain consistency with Grid.add_textbox.
-
-        Args:
-            text: The text to add
-            **kwargs: Additional keyword arguments for the text
-
-        Returns:
-            The created text object
-        """
-        return self.add_text(text=text, **kwargs)
-
-    def add_image(self, image_path: str, **kwargs) -> Any:
-        """Add an image to the next available cell in this row.
-
-        Args:
-            image_path: The path to the image
-            **kwargs: Additional keyword arguments for the image
-
-        Returns:
-            The created image object
-        """
-        next_col = self._get_next_available_col()
-        return self.grid.add_image(self.row, next_col, image_path=image_path, **kwargs)
-
-    def add_pyplot(self, figure, **kwargs) -> Any:
-        """Add a matplotlib figure to the next available cell in this row.
-
-        Args:
-            figure: The matplotlib figure to add
-            **kwargs: Additional keyword arguments for the figure
-
-        Returns:
-            The created pyplot object
-        """
-        next_col = self._get_next_available_col()
-        return self.grid.add_pyplot(self.row, next_col, figure=figure, **kwargs)
-
-    def add_table(self, data, **kwargs) -> Any:
-        """Add a table to the next available cell in this row.
-
-        Args:
-            data: The table data to add
-            **kwargs: Additional keyword arguments for the table
-
-        Returns:
-            The created table object
-        """
-        next_col = self._get_next_available_col()
-        return self.grid.add_table(self.row, next_col, data=data, **kwargs)
-
-    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0) -> "Grid":
-        """Add a nested grid to the next available cell in this row.
-
-        Args:
-            rows: The number of rows in the nested grid
-            cols: The number of columns in the nested grid
-            padding: The padding for the nested grid
-
-        Returns:
-            The created grid object
-        """
-        next_col = self._get_next_available_col()
-        return self.grid.add_grid_to_cell(self.row, next_col, rows=rows, cols=cols, padding=padding)
-
-    # Reset the current column to 0 to allow for multiple passes
-    def reset(self) -> None:
-        """Reset the current column index to 0.
-
-        This allows for multiple passes through the row.
-
-        Returns:
-            None
-        """
-        self.current_col = 0
-
-
 class Grid:
     """Class for creating grid layouts in PowerPoint slides.
 
@@ -315,9 +175,9 @@ class Grid:
         grid[0, 1].add_text("Cell 0,1", font_size=24)
         grid[1, 0].add_image(image_path="image.png")
 
-        # Add content to the next available cell in a row
-        grid[0].add_text("First available cell in row 0")
-        grid[0].add_text("Second available cell in row 0")
+        # Access a cell using flat indexing
+        grid[0].add_text("First cell (flat index 0)")
+        grid[3].add_text("Fourth cell (flat index 3)")
 
         # Loop through all cells
         for cell in grid:
@@ -720,13 +580,12 @@ class Grid:
     @overload
     def __getitem__(self, key: tuple[int, int]) -> GridCellProxy: ...
 
-    def __getitem__(self, key: int | tuple[int, int]) -> GridRowProxy | GridCellProxy | GridCell:
-        """Access a cell or range of cells using enhanced indexing with auto-expansion.
+    def __getitem__(self, key: int | tuple[int, int]) -> GridCellProxy | GridCell:
+        """Access a cell using enhanced indexing with auto-expansion.
 
-        This method supports three types of indexing:
+        This method supports two types of indexing:
         - grid[idx] for flat access to cells by index (returns GridCellProxy)
         - grid[row, col] for cell-specific operations (returns GridCellProxy)
-        - grid.row(row_idx) for row-based operations (returns GridRowProxy)
 
         For flat indexing, cells are ordered row-wise (0 is top-left, then across the row,
         then to the next row).
@@ -752,9 +611,6 @@ class Grid:
             # Access a cell using flat indexing (0-based)
             grid[0].add_text("First cell (top-left)")
             grid[3].add_text("Fourth cell")
-
-            # Access a row (for backwards compatibility, use the row method)
-            grid.row(1).add_image("image.png")
             ```
         """
         if isinstance(key, tuple) and len(key) == 2:
@@ -765,11 +621,8 @@ class Grid:
                 raise OutOfBoundsError(f"Cell position ({row}, {col}) is out of bounds")
             return GridCellProxy(self, row, col)
         elif isinstance(key, int):
-            # For row access, if key < rows, return a row proxy
-            if 0 <= key < self.rows:
-                return GridRowProxy(self, key)
-            # Otherwise, interpret integer keys as flat indices
-            elif 0 <= key < self.rows * self.cols:
+            # Interpret integer keys as flat indices
+            if 0 <= key < self.rows * self.cols:
                 # This is a valid flat index
                 row = key // self.cols
                 col = key % self.cols
@@ -794,32 +647,6 @@ class Grid:
             raise TypeError(
                 "Grid indices must be integers (for flat access) or tuples of the form (row, col) for cell access"
             )
-
-    def row(self, row_idx: int) -> GridRowProxy:
-        """Access a row by index.
-
-        Args:
-            row_idx: The row index (0-based)
-
-        Returns:
-            A GridRowProxy for sequential access to cells in the row
-
-        Raises:
-            OutOfBoundsError: If the row index is out of bounds
-
-        Examples:
-            ```python
-            # Add content to the next available cell in row 0
-            grid.row(0).add_text("First cell in row 0")
-            grid.row(0).add_text("Second cell in row 0")
-
-            # Add content to the next available cell in row 1
-            grid.row(1).add_text("First cell in row 1")
-            ```
-        """
-        if row_idx < 0 or row_idx >= self.rows:
-            raise OutOfBoundsError(f"Row index {row_idx} is out of bounds")
-        return GridRowProxy(self, row_idx)
 
     @property
     def flat(self):

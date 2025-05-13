@@ -2380,9 +2380,9 @@ class Presentation:
             grid[0, 0].add_text("Feature 1", font_bold=True)
             grid[0, 1].add_image("image1.png")
 
-            # Add content to rows sequentially
-            grid[1].add_text("Feature 2", font_bold=True)
-            grid[1].add_text("Description of Feature 2")
+            # Access cells using flat indexing (row-major order)
+            grid[2].add_text("Feature 2", font_bold=True)  # Third cell (flat index 2)
+            grid[3].add_text("Description of Feature 2")   # Fourth cell (flat index 3)
             ```
         """
         # Create a new slide
