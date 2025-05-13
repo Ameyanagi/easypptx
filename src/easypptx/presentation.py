@@ -2498,21 +2498,24 @@ class Presentation:
                 # First check template defaults for grid_slide
                 title_align_val = template_defaults.get("title_align")
 
-                # Check global defaults if still None
-                if title_align_val is None and "defaults" in template and "global" in template["defaults"]:
-                    title_align_val = template["defaults"]["global"].get("title_align")
-
-                # Also check if a global align is specified
-                if title_align_val is None and "defaults" in template and "global" in template["defaults"]:
-                    title_align_val = template["defaults"]["global"].get("align")
-
-                # If still None, check dedicated title section alignment
+                # If still None and we have a default template, try to get more defaults
                 if title_align_val is None and self._default_template is not None:
                     try:
                         # Try to get template settings
-                        template = self.template_manager.get(self._default_template)
-                        if "title" in template and "align" in template["title"]:
-                            title_align_val = template["title"]["align"]
+                        template_data = self.template_manager.get(self._default_template)
+
+                        # Check global defaults if available
+                        if "defaults" in template_data and "global" in template_data["defaults"]:
+                            # Check for title_align in global defaults
+                            title_align_val = template_data["defaults"]["global"].get("title_align")
+
+                            # If still None, check for generic align in global defaults
+                            if title_align_val is None:
+                                title_align_val = template_data["defaults"]["global"].get("align")
+
+                        # If still None, check dedicated title section alignment
+                        if title_align_val is None and "title" in template_data and "align" in template_data["title"]:
+                            title_align_val = template_data["title"]["align"]
                     except (ValueError, KeyError):
                         pass
 
@@ -2590,21 +2593,24 @@ class Presentation:
                 # First check template defaults for grid_slide
                 subtitle_align_val = template_defaults.get("subtitle_align")
 
-                # Check global defaults if still None
-                if subtitle_align_val is None and "defaults" in template and "global" in template["defaults"]:
-                    subtitle_align_val = template["defaults"]["global"].get("subtitle_align")
-
-                # Also check if a global align is specified
-                if subtitle_align_val is None and "defaults" in template and "global" in template["defaults"]:
-                    subtitle_align_val = template["defaults"]["global"].get("align")
-
-                # If still None, check dedicated subtitle section alignment
+                # If still None and we have a default template, try to get more defaults
                 if subtitle_align_val is None and self._default_template is not None:
                     try:
                         # Try to get template settings
-                        template = self.template_manager.get(self._default_template)
-                        if "subtitle" in template and "align" in template["subtitle"]:
-                            subtitle_align_val = template["subtitle"]["align"]
+                        template_data = self.template_manager.get(self._default_template)
+
+                        # Check global defaults if available
+                        if "defaults" in template_data and "global" in template_data["defaults"]:
+                            # Check for subtitle_align in global defaults
+                            subtitle_align_val = template_data["defaults"]["global"].get("subtitle_align")
+
+                            # If still None, check for generic align in global defaults
+                            if subtitle_align_val is None:
+                                subtitle_align_val = template_data["defaults"]["global"].get("align")
+
+                        # If still None, check dedicated subtitle section alignment
+                        if subtitle_align_val is None and "subtitle" in template_data and "align" in template_data["subtitle"]:
+                            subtitle_align_val = template_data["subtitle"]["align"]
                     except (ValueError, KeyError):
                         pass
 
