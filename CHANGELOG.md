@@ -5,11 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.5.2] - 2025-05-13
+## [0.5.4] - 2025-05-14
+
+### Fixed
+- Improved template defaults cascade priority to ensure consistent behavior
+- Fixed `defaults.global` settings not being respected in alignment and other properties
+- Ensured proper inheritance of global defaults into method-specific defaults
+- Enhanced consistency between Grid and Slide classes for template handling
+
+## [0.5.3] - 2025-05-13
 
 ### Fixed
 - Title alignment settings from TOML templates now properly apply to `add_grid_slide` and `add_autogrid_slide` methods
 - Fixed `title_align` parameter to respect template settings when not explicitly specified
+
+## [0.5.2] - 2025-05-13
+
+### Fixed
 - Added example showing how to properly use template-based alignment settings: `examples/templates/001_template_align_fix.py`
 
 ## [0.5.1] - 2025-05-13

@@ -53,6 +53,7 @@ class Slide:
             "shape": {},
             "table": {},
             "chart": {},
+            "global": {},
         }
 
         # Cache slide dimensions to avoid recalculating them
@@ -73,7 +74,7 @@ class Slide:
             defaults = template_data["defaults"]
 
             # Apply defaults for each element type
-            for element_type in ["text", "image", "shape", "table", "chart"]:
+            for element_type in ["text", "image", "shape", "table", "chart", "global"]:
                 if element_type in defaults:
                     self.template_defaults[element_type] = defaults[element_type]
 
@@ -87,14 +88,24 @@ class Slide:
         Returns:
             Dictionary with merged arguments, where provided args override defaults
         """
-        # Start with a copy of the defaults for this method type
-        merged = self.template_defaults.get(method_type, {}).copy()
+        # Start with a copy of the method-specific defaults
+        method_defaults: dict[str, Any] = self.template_defaults.get(method_type, {}).copy()
+
+        # Get global defaults if available
+        global_defaults: dict[str, Any] = self.template_defaults.get("global", {})
+
+        # Create merged defaults: global defaults overridden by method-specific defaults
+        merged_defaults: dict[str, Any] = global_defaults.copy()
+        for key, value in method_defaults.items():
+            merged_defaults[key] = value
 
         # Override with provided kwargs
+        result: dict[str, Any] = merged_defaults.copy()
         for key, value in kwargs.items():
-            merged[key] = value
+            if value is not None:  # Only override if the value is not None
+                result[key] = value
 
-        return merged
+        return result
 
     def _convert_position(self, value: PositionType, slide_dimension: int, is_width: bool = True) -> float:
         """Convert a position value to inches.

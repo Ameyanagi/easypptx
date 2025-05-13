@@ -1,6 +1,6 @@
 [project]
 name = "EasyPPTX"
-version = "0.5.3"
+version = "0.5.4"
 description = "A Python library for easily creating and manipulating PowerPoint presentations programmatically with simple APIs."
 authors = [{ name = "Ameyanagi", email = "contact@ameyanagi.com" }]
 readme = "README.md"

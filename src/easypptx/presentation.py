@@ -2498,7 +2498,15 @@ class Presentation:
                 # First check template defaults for grid_slide
                 title_align_val = template_defaults.get("title_align")
 
-                # If still None, check global title alignment
+                # Check global defaults if still None
+                if title_align_val is None and "defaults" in template and "global" in template["defaults"]:
+                    title_align_val = template["defaults"]["global"].get("title_align")
+
+                # Also check if a global align is specified
+                if title_align_val is None and "defaults" in template and "global" in template["defaults"]:
+                    title_align_val = template["defaults"]["global"].get("align")
+
+                # If still None, check dedicated title section alignment
                 if title_align_val is None and self._default_template is not None:
                     try:
                         # Try to get template settings
@@ -2582,7 +2590,15 @@ class Presentation:
                 # First check template defaults for grid_slide
                 subtitle_align_val = template_defaults.get("subtitle_align")
 
-                # If still None, check global subtitle alignment
+                # Check global defaults if still None
+                if subtitle_align_val is None and "defaults" in template and "global" in template["defaults"]:
+                    subtitle_align_val = template["defaults"]["global"].get("subtitle_align")
+
+                # Also check if a global align is specified
+                if subtitle_align_val is None and "defaults" in template and "global" in template["defaults"]:
+                    subtitle_align_val = template["defaults"]["global"].get("align")
+
+                # If still None, check dedicated subtitle section alignment
                 if subtitle_align_val is None and self._default_template is not None:
                     try:
                         # Try to get template settings
@@ -2688,6 +2704,15 @@ class Presentation:
             cols=cols,
             padding=padding_val,
         )
+
+        # Apply template defaults from template to grid if available
+        if self._default_template is not None:
+            try:
+                template = self.template_manager.get(self._default_template)
+                grid.apply_template_defaults(template)
+            except (ValueError, KeyError):
+                # If template lookup fails, proceed without template defaults
+                pass
 
         return slide, grid
 
@@ -2865,6 +2890,15 @@ class Presentation:
                 title_align=title_align,
                 column_major=column_major,
             )
+
+            # Apply template defaults to grid if available
+            if self._default_template is not None:
+                try:
+                    template = self.template_manager.get(self._default_template)
+                    grid.apply_template_defaults(template)
+                except (ValueError, KeyError):
+                    # If template lookup fails, proceed without template defaults
+                    pass
         else:
             # If no title, apply content padding if specified
             if content_padding is not None or content_y_padding is not None:
@@ -2896,6 +2930,15 @@ class Presentation:
                 title=None,  # No title
                 column_major=column_major,
             )
+
+            # Apply template defaults to grid if available
+            if self._default_template is not None:
+                try:
+                    template = self.template_manager.get(self._default_template)
+                    grid.apply_template_defaults(template)
+                except (ValueError, KeyError):
+                    # If template lookup fails, proceed without template defaults
+                    pass
 
         return slide, grid
 
