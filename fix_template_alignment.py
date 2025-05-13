@@ -1,8 +1,4 @@
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath("."))
-from src.easypptx import Presentation
+from easypptx import Presentation
 
 
 def fix_template_title_alignment():

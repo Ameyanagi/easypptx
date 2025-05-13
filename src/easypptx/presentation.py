@@ -482,6 +482,10 @@ class Presentation:
         # Get background color if specified
         bg_color = preset.get("bg_color", None)
 
+        # Convert list colors to tuples for compatibility with slide.set_background_color
+        if isinstance(bg_color, list) and len(bg_color) == 3:
+            bg_color = tuple(bg_color)
+
         # Create a new slide using the blank layout directly (avoiding recursion)
         # Use the blank layout or specified layout if provided
         slide_layout = self.blank_layout
@@ -507,6 +511,10 @@ class Presentation:
             align = title_data.get("align", "center")
             vertical = title_data.get("vertical", "middle")
             color = title_data.get("color", "black")
+
+            # Convert list colors to tuples
+            if isinstance(color, list) and len(color) == 3:
+                color = tuple(color)
 
             # Add the title text
             Text.add(
@@ -536,6 +544,10 @@ class Presentation:
             align = subtitle_data.get("align", "center")
             vertical = subtitle_data.get("vertical", "middle")
             color = subtitle_data.get("color", "black")
+
+            # Convert list colors to tuples
+            if isinstance(color, list) and len(color) == 3:
+                color = tuple(color)
 
             # Add the subtitle text
             Text.add(
@@ -570,6 +582,18 @@ class Presentation:
                 start_color = gradient.get("start_color")
                 end_color = gradient.get("end_color")
                 angle = gradient.get("angle", 0)
+
+                # Convert list colors to tuples
+                if isinstance(start_color, list) and len(start_color) == 3:
+                    start_color = tuple(start_color)
+                if isinstance(end_color, list) and len(end_color) == 3:
+                    end_color = tuple(end_color)
+
+                # Convert tuple colors to RGBColor objects
+                if isinstance(start_color, tuple) and len(start_color) == 3:
+                    start_color = RGBColor(*start_color)
+                if isinstance(end_color, tuple) and len(end_color) == 3:
+                    end_color = RGBColor(*end_color)
 
                 fill = shape.fill
                 fill.gradient()
@@ -632,6 +656,10 @@ class Presentation:
             align = subtitle_data.get("align", "center")
             vertical = subtitle_data.get("vertical", "middle")
             color = subtitle_data.get("color", "black")
+
+            # Convert list colors to tuples
+            if isinstance(color, list) and len(color) == 3:
+                color = tuple(color)
 
             # Add the subtitle text
             Text.add(
@@ -817,12 +845,12 @@ class Presentation:
             if title_padding is not None or title_x_padding is not None:
                 title_x_val = title_padding if title_padding is not None else title_x_padding
                 if title_x_val is not None:
-                    title_x = title_x_val
+                    title_x = str(title_x_val)
 
             if title_padding is not None or title_y_padding is not None:
                 title_y_val = title_padding if title_padding is not None else title_y_padding
                 if title_y_val is not None:
-                    title_y = title_y_val
+                    title_y = str(title_y_val)
 
             # Add the title to the slide
             slide.add_text(
@@ -858,7 +886,7 @@ class Presentation:
             if subtitle_padding is not None or subtitle_x_padding is not None:
                 subtitle_x_val = subtitle_padding if subtitle_padding is not None else subtitle_x_padding
                 if subtitle_x_val is not None:
-                    subtitle_x = subtitle_x_val
+                    subtitle_x = str(subtitle_x_val)
 
             if subtitle_padding is not None or subtitle_y_padding is not None:
                 subtitle_y_val = subtitle_padding if subtitle_padding is not None else subtitle_y_padding
@@ -943,7 +971,7 @@ class Presentation:
             if label_padding is not None or label_x_padding is not None:
                 label_x_val = label_padding if label_padding is not None else label_x_padding
                 if label_x_val is not None:
-                    label_x = label_x_val
+                    label_x = str(label_x_val)
 
             # Calculate label Y position with proper padding
             if (
@@ -2134,7 +2162,7 @@ class Presentation:
             )
 
             # Adjust grid position and height to account for title
-            grid_y = title_height
+            grid_y = str(title_height)
 
             # Calculate grid height by subtracting title height
             if isinstance(title_height, str) and title_height.endswith("%"):
@@ -2305,27 +2333,27 @@ class Presentation:
         cols: int,
         title: str | None = None,
         subtitle: str | None = None,
-        title_height: float | str = "10%",
-        subtitle_height: float | str = "5%",
-        x: float | str = "0%",
-        y: float | str = "0%",
-        width: float | str = "100%",
-        height: float | str = "100%",
-        padding: float = 5.0,
-        bg_color: str | tuple[int, int, int] | None = None,
-        title_font_size: int = 24,
-        subtitle_font_size: int = 18,
-        title_align: str | None = None,  # Changed to None to allow using template settings
-        subtitle_align: str = "center",
-        title_padding: str | float | None = None,
-        title_x_padding: str | float | None = None,
-        title_y_padding: str | float | None = None,
-        subtitle_padding: str | float | None = None,
-        subtitle_x_padding: str | float | None = None,
-        subtitle_y_padding: str | float | None = None,
-        content_padding: str | float | None = None,
-        content_x_padding: str | float | None = None,
-        content_y_padding: str | float | None = None,
+        title_height: float | str | None = None,  # None means use template default
+        subtitle_height: float | str | None = None,  # None means use template default
+        x: float | str | None = None,  # None means use template default
+        y: float | str | None = None,  # None means use template default
+        width: float | str | None = None,  # None means use template default
+        height: float | str | None = None,  # None means use template default
+        padding: float | None = None,  # None means use template default
+        bg_color: str | tuple[int, int, int] | None = None,  # None means use template default
+        title_font_size: int | None = None,  # None means use template default
+        subtitle_font_size: int | None = None,  # None means use template default
+        title_align: str | None = None,  # None means use template default
+        subtitle_align: str | None = None,  # None means use template default
+        title_padding: str | float | None = None,  # None means use template default
+        title_x_padding: str | float | None = None,  # None means use template default
+        title_y_padding: str | float | None = None,  # None means use template default
+        subtitle_padding: str | float | None = None,  # None means use template default
+        subtitle_x_padding: str | float | None = None,  # None means use template default
+        subtitle_y_padding: str | float | None = None,  # None means use template default
+        content_padding: str | float | None = None,  # None means use template default
+        content_x_padding: str | float | None = None,  # None means use template default
+        content_y_padding: str | float | None = None,  # None means use template default
     ) -> tuple[Slide, Grid]:
         """Add a slide with a grid layout.
 
@@ -2333,32 +2361,35 @@ class Presentation:
         It provides flexible options for positioning and sizing the grid, as well as
         adding a title and subtitle to the slide.
 
+        All parameters can be set to None to use the template defaults if a template is
+        registered with the presentation.
+
         Args:
             rows: Number of rows in the grid
             cols: Number of columns in the grid
             title: Optional title for the slide (default: None)
             subtitle: Optional subtitle for the slide (default: None)
-            title_height: Height of the title area (default: "10%")
-            subtitle_height: Height of the subtitle area (default: "5%")
-            x: X position of the grid as percentage or absolute value (default: "0%")
-            y: Y position of the grid as percentage or absolute value (default: "0%")
-            width: Width of the grid as percentage or absolute value (default: "100%")
-            height: Height of the grid as percentage or absolute value (default: "100%")
-            padding: Padding between cells as percentage of cell size (default: 5.0)
-            bg_color: Background color for the slide (default: None)
-            title_font_size: Font size for the title (default: 24)
-            subtitle_font_size: Font size for the subtitle (default: 18)
-            title_align: Text alignment for the title, one of "left", "center", "right" (default: "center")
-            subtitle_align: Text alignment for the subtitle, one of "left", "center", "right" (default: "center")
-            title_padding: Padding around the title, applies to both x and y (default: None)
-            title_x_padding: Horizontal padding for title, overridden by title_padding if provided (default: None)
-            title_y_padding: Vertical padding for title, overridden by title_padding if provided (default: None)
-            subtitle_padding: Padding around the subtitle, applies to both x and y (default: None)
-            subtitle_x_padding: Horizontal padding for subtitle, overridden by subtitle_padding if provided (default: None)
-            subtitle_y_padding: Vertical padding for subtitle, overridden by subtitle_padding if provided (default: None)
-            content_padding: Padding around the content area, applies to both x and y (default: None)
-            content_x_padding: Horizontal padding for content, overridden by content_padding if provided (default: None)
-            content_y_padding: Vertical padding for content, overridden by content_padding if provided (default: None)
+            title_height: Height of the title area (default: template default or "10%")
+            subtitle_height: Height of the subtitle area (default: template default or "5%")
+            x: X position of the grid as percentage or absolute value (default: template default or "0%")
+            y: Y position of the grid as percentage or absolute value (default: template default or "0%")
+            width: Width of the grid as percentage or absolute value (default: template default or "100%")
+            height: Height of the grid as percentage or absolute value (default: template default or "100%")
+            padding: Padding between cells as percentage of cell size (default: template default or 5.0)
+            bg_color: Background color for the slide (default: template default or None)
+            title_font_size: Font size for the title (default: template default or 24)
+            subtitle_font_size: Font size for the subtitle (default: template default or 18)
+            title_align: Text alignment for the title, one of "left", "center", "right" (default: template default or "center")
+            subtitle_align: Text alignment for the subtitle, one of "left", "center", "right" (default: template default or "center")
+            title_padding: Padding around the title, applies to both x and y (default: template default or None)
+            title_x_padding: Horizontal padding for title, overridden by title_padding if provided (default: template default or None)
+            title_y_padding: Vertical padding for title, overridden by title_padding if provided (default: template default or None)
+            subtitle_padding: Padding around the subtitle, applies to both x and y (default: template default or None)
+            subtitle_x_padding: Horizontal padding for subtitle, overridden by subtitle_padding if provided (default: template default or None)
+            subtitle_y_padding: Vertical padding for subtitle, overridden by subtitle_padding if provided (default: template default or None)
+            content_padding: Padding around the content area, applies to both x and y (default: template default or None)
+            content_x_padding: Horizontal padding for content, overridden by content_padding if provided (default: template default or None)
+            content_y_padding: Vertical padding for content, overridden by content_padding if provided (default: template default or None)
 
         Returns:
             A tuple containing (Slide, Grid)
@@ -2385,125 +2416,212 @@ class Presentation:
             grid[3].add_text("Description of Feature 2")   # Fourth cell (flat index 3)
             ```
         """
+        # Get template defaults if available
+        template_defaults = {}
+        if self._default_template is not None:
+            try:
+                template = self.template_manager.get(self._default_template)
+                if "defaults" in template and "grid_slide" in template["defaults"]:
+                    template_defaults = template["defaults"]["grid_slide"]
+            except (ValueError, KeyError):
+                # If template lookup fails, use empty defaults
+                pass
+
+        # Apply defaults for parameters that are None
+        x_val = x if x is not None else template_defaults.get("x", "0%")
+        y_val = y if y is not None else template_defaults.get("y", "0%")
+        width_val = width if width is not None else template_defaults.get("width", "100%")
+        height_val = height if height is not None else template_defaults.get("height", "100%")
+        padding_val = padding if padding is not None else template_defaults.get("padding", 5.0)
+        title_height_val = title_height if title_height is not None else template_defaults.get("title_height", "10%")
+        subtitle_height_val = (
+            subtitle_height if subtitle_height is not None else template_defaults.get("subtitle_height", "5%")
+        )
+        title_font_size_val = (
+            title_font_size if title_font_size is not None else template_defaults.get("title_font_size", 24)
+        )
+        subtitle_font_size_val = (
+            subtitle_font_size if subtitle_font_size is not None else template_defaults.get("subtitle_font_size", 18)
+        )
+        bg_color_val = bg_color if bg_color is not None else template_defaults.get("bg_color")
+
         # Create a new slide
-        slide = self.add_slide(bg_color=bg_color)
+        slide = self.add_slide(bg_color=bg_color_val)
 
         # Calculate positions and dimensions
-        adjusted_y = y
-        adjusted_height = height
+        adjusted_y = y_val
+        adjusted_height = height_val
 
         # Apply content padding if specified (for grid positioning)
-        grid_x = x
-        if content_padding is not None or content_x_padding is not None:
-            content_x = content_padding if content_padding is not None else content_x_padding
+        grid_x = x_val
+        content_padding_val = (
+            content_padding if content_padding is not None else template_defaults.get("content_padding")
+        )
+        content_x_padding_val = (
+            content_x_padding if content_x_padding is not None else template_defaults.get("content_x_padding")
+        )
+
+        if content_padding_val is not None or content_x_padding_val is not None:
+            content_x = content_padding_val if content_padding_val is not None else content_x_padding_val
             if content_x is not None:
-                grid_x = content_x
+                grid_x = str(content_x)
 
         # Add title if provided
         if title:
             # Calculate title position with padding
-            title_x = x
-            title_y = y
+            title_x = x_val
+            title_y = y_val
+
+            # Get title padding values from template defaults if not specified
+            title_padding_val = title_padding if title_padding is not None else template_defaults.get("title_padding")
+            title_x_padding_val = (
+                title_x_padding if title_x_padding is not None else template_defaults.get("title_x_padding")
+            )
+            title_y_padding_val = (
+                title_y_padding if title_y_padding is not None else template_defaults.get("title_y_padding")
+            )
 
             # Apply title padding if specified
-            if title_padding is not None or title_x_padding is not None:
-                title_x_val = title_padding if title_padding is not None else title_x_padding
-                if title_x_val is not None:
-                    title_x = title_x_val
+            if title_padding_val is not None or title_x_padding_val is not None:
+                title_x_padding_value = title_padding_val if title_padding_val is not None else title_x_padding_val
+                if title_x_padding_value is not None:
+                    title_x = title_x_padding_value
 
-            if title_padding is not None or title_y_padding is not None:
-                title_y_val = title_padding if title_padding is not None else title_y_padding
-                if title_y_val is not None:
-                    title_y = title_y_val
+            if title_padding_val is not None or title_y_padding_val is not None:
+                title_y_padding_value = title_padding_val if title_padding_val is not None else title_y_padding_val
+                if title_y_padding_value is not None:
+                    title_y = title_y_padding_value
 
-            # Get template alignment if available and title_align not explicitly set
-            template_align = None
-            if title_align is None and self._default_template is not None:
-                try:
-                    # Try to get template settings
-                    template = self.template_manager.get(self._default_template)
-                    if "title" in template and "align" in template["title"]:
-                        template_align = template["title"]["align"]
-                except (ValueError, KeyError):
-                    # If template lookup fails, use default
-                    template_align = "center"
+            # Get title alignment
+            title_align_val = title_align
+            if title_align_val is None:
+                # First check template defaults for grid_slide
+                title_align_val = template_defaults.get("title_align")
 
-            # Use explicit title_align if set, template_align if found, or default to center
-            alignment = (
-                title_align if title_align is not None else (template_align if template_align is not None else "center")
-            )
+                # If still None, check global title alignment
+                if title_align_val is None and self._default_template is not None:
+                    try:
+                        # Try to get template settings
+                        template = self.template_manager.get(self._default_template)
+                        if "title" in template and "align" in template["title"]:
+                            title_align_val = template["title"]["align"]
+                    except (ValueError, KeyError):
+                        pass
+
+            # Default to center if still None
+            if title_align_val is None:
+                title_align_val = "center"
+
+            # Get title font properties from template if available
+            title_font_bold = template_defaults.get("title_font_bold", True)
+            title_vertical = template_defaults.get("title_vertical", "middle")
 
             # Add the title to the slide
             slide.add_text(
                 text=title,
                 x=title_x,
                 y=title_y,
-                width=width,
-                height=title_height,
-                font_size=title_font_size,
-                font_bold=True,
-                align=alignment,
-                vertical="middle",
+                width=width_val,
+                height=title_height_val,
+                font_size=title_font_size_val,
+                font_bold=title_font_bold,
+                align=title_align_val,
+                vertical=title_vertical,
             )
 
             # Adjust y position for what comes next
-            if isinstance(y, str) and y.endswith("%"):
-                y_percent = float(y.strip("%"))
-                title_height_percent = float(str(title_height).strip("%"))
+            if (
+                isinstance(y_val, str)
+                and y_val.endswith("%")
+                and isinstance(title_height_val, str)
+                and title_height_val.endswith("%")
+            ):
+                y_percent = float(y_val.strip("%"))
+                title_height_percent = float(title_height_val.strip("%"))
                 adjusted_y = f"{(y_percent + title_height_percent):.2f}%"
 
                 # Adjust height to account for title
-                if isinstance(height, str) and height.endswith("%"):
-                    height_percent = float(height.strip("%"))
+                if isinstance(height_val, str) and height_val.endswith("%"):
+                    height_percent = float(height_val.strip("%"))
                     adjusted_height = f"{(height_percent - title_height_percent):.2f}%"
 
         # Add subtitle if provided
         if subtitle:
             # Calculate subtitle position with padding
-            subtitle_x = x
+            subtitle_x = x_val
             subtitle_y = adjusted_y
 
+            # Get subtitle padding values from template defaults if not specified
+            subtitle_padding_val = (
+                subtitle_padding if subtitle_padding is not None else template_defaults.get("subtitle_padding")
+            )
+            subtitle_x_padding_val = (
+                subtitle_x_padding if subtitle_x_padding is not None else template_defaults.get("subtitle_x_padding")
+            )
+            subtitle_y_padding_val = (
+                subtitle_y_padding if subtitle_y_padding is not None else template_defaults.get("subtitle_y_padding")
+            )
+
             # Apply subtitle padding if specified
-            if subtitle_padding is not None or subtitle_x_padding is not None:
-                subtitle_x_val = subtitle_padding if subtitle_padding is not None else subtitle_x_padding
-                if subtitle_x_val is not None:
-                    subtitle_x = subtitle_x_val
+            if subtitle_padding_val is not None or subtitle_x_padding_val is not None:
+                subtitle_x_padding_value = (
+                    subtitle_padding_val if subtitle_padding_val is not None else subtitle_x_padding_val
+                )
+                if subtitle_x_padding_value is not None:
+                    subtitle_x = subtitle_x_padding_value
 
-            if subtitle_padding is not None or subtitle_y_padding is not None:
-                subtitle_y_val = subtitle_padding if subtitle_padding is not None else subtitle_y_padding
-                subtitle_y = subtitle_y_val if subtitle_y_val is not None else adjusted_y
+            if subtitle_padding_val is not None or subtitle_y_padding_val is not None:
+                subtitle_y_padding_value = (
+                    subtitle_padding_val if subtitle_padding_val is not None else subtitle_y_padding_val
+                )
+                subtitle_y = subtitle_y_padding_value if subtitle_y_padding_value is not None else adjusted_y
 
-            # Get template alignment for subtitle if available
-            template_subtitle_align = None
-            if self._default_template is not None:
-                try:
-                    # Try to get template settings
-                    template = self.template_manager.get(self._default_template)
-                    if "subtitle" in template and "align" in template["subtitle"]:
-                        template_subtitle_align = template["subtitle"]["align"]
-                except (ValueError, KeyError):
-                    # If template lookup fails, use default
-                    pass
+            # Get subtitle alignment
+            subtitle_align_val = subtitle_align
+            if subtitle_align_val is None:
+                # First check template defaults for grid_slide
+                subtitle_align_val = template_defaults.get("subtitle_align")
 
-            # Use explicit subtitle_align if set, template_align if found, or default to center
-            subtitle_alignment = subtitle_align if subtitle_align != "center" else (template_subtitle_align or "center")
+                # If still None, check global subtitle alignment
+                if subtitle_align_val is None and self._default_template is not None:
+                    try:
+                        # Try to get template settings
+                        template = self.template_manager.get(self._default_template)
+                        if "subtitle" in template and "align" in template["subtitle"]:
+                            subtitle_align_val = template["subtitle"]["align"]
+                    except (ValueError, KeyError):
+                        pass
+
+            # Default to center if still None
+            if subtitle_align_val is None:
+                subtitle_align_val = "center"
+
+            # Get subtitle font properties from template if available
+            subtitle_font_bold = template_defaults.get("subtitle_font_bold", False)
+            subtitle_vertical = template_defaults.get("subtitle_vertical", "middle")
 
             # Add the subtitle to the slide
             slide.add_text(
                 text=subtitle,
                 x=subtitle_x,
                 y=subtitle_y,
-                width=width,
-                height=subtitle_height,
-                font_size=subtitle_font_size,
-                align=subtitle_alignment,
-                vertical="middle",
+                width=width_val,
+                height=subtitle_height_val,
+                font_size=subtitle_font_size_val,
+                font_bold=subtitle_font_bold,
+                align=subtitle_align_val,
+                vertical=subtitle_vertical,
             )
 
             # Adjust y position for the grid
-            if isinstance(adjusted_y, str) and adjusted_y.endswith("%"):
+            if (
+                isinstance(adjusted_y, str)
+                and adjusted_y.endswith("%")
+                and isinstance(subtitle_height_val, str)
+                and subtitle_height_val.endswith("%")
+            ):
                 y_percent = float(adjusted_y.strip("%"))
-                subtitle_height_percent = float(str(subtitle_height).strip("%"))
+                subtitle_height_percent = float(subtitle_height_val.strip("%"))
                 adjusted_y = f"{(y_percent + subtitle_height_percent):.2f}%"
 
                 # Adjust height to account for subtitle
@@ -2532,18 +2650,43 @@ class Presentation:
                         adjusted_height_percent = float(adjusted_height.strip("%"))
                         adjusted_height = f"{(adjusted_height_percent - content_y_percent):.2f}%"
                 else:
-                    grid_y = content_y
+                    grid_y = str(content_y)
+
+        # Get content y padding value
+        content_y_padding_val = (
+            content_y_padding if content_y_padding is not None else template_defaults.get("content_y_padding")
+        )
+        if content_padding_val is not None or content_y_padding_val is not None:
+            content_y = content_padding_val if content_padding_val is not None else content_y_padding_val
+            if content_y is not None:
+                # If content_y is provided as a percentage, add it to the adjusted_y
+                if (
+                    isinstance(content_y, str)
+                    and content_y.endswith("%")
+                    and isinstance(adjusted_y, str)
+                    and adjusted_y.endswith("%")
+                ):
+                    content_y_percent = float(content_y.strip("%"))
+                    adjusted_y_percent = float(adjusted_y.strip("%"))
+                    grid_y = f"{(adjusted_y_percent + content_y_percent):.2f}%"
+
+                    # Also adjust the height accordingly
+                    if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
+                        adjusted_height_percent = float(adjusted_height.strip("%"))
+                        adjusted_height = f"{(adjusted_height_percent - content_y_percent):.2f}%"
+                else:
+                    grid_y = str(content_y)
 
         # Create the grid
         grid = Grid(
             parent=slide,
             x=grid_x,
             y=grid_y,
-            width=width,
+            width=width_val,
             height=adjusted_height,
             rows=rows,
             cols=cols,
-            padding=padding,
+            padding=padding_val,
         )
 
         return slide, grid
@@ -2643,7 +2786,7 @@ class Presentation:
         if content_padding is not None or content_x_padding is not None:
             content_x = content_padding if content_padding is not None else content_x_padding
             if content_x is not None:
-                grid_x = content_x
+                grid_x = str(content_x)
 
         # Create the autogrid (without title, we'll add it separately to the slide)
         if title:
@@ -2655,12 +2798,12 @@ class Presentation:
             if title_padding is not None or title_x_padding is not None:
                 title_x_val = title_padding if title_padding is not None else title_x_padding
                 if title_x_val is not None:
-                    title_x = title_x_val
+                    title_x = str(title_x_val)
 
             if title_padding is not None or title_y_padding is not None:
                 title_y_val = title_padding if title_padding is not None else title_y_padding
                 if title_y_val is not None:
-                    title_y = title_y_val
+                    title_y = str(title_y_val)
 
             # Add the title to the slide
             slide.add_text(
@@ -2676,7 +2819,7 @@ class Presentation:
             )
 
             # Calculate grid dimensions - preserve the original title_height format
-            grid_y = title_height
+            grid_y = str(title_height)
 
             # Calculate grid height by subtracting title height
             if isinstance(title_height, str) and title_height.endswith("%"):
@@ -2705,7 +2848,7 @@ class Presentation:
                             grid_height_percent = float(grid_height.strip("%"))
                             grid_height = f"{(grid_height_percent - content_y_percent):.2f}%"
                     else:
-                        grid_y = content_y
+                        grid_y = str(content_y)
 
             # Create the autogrid without its own title (we already added it)
             grid = self.add_autogrid(
@@ -2727,7 +2870,7 @@ class Presentation:
             if content_padding is not None or content_y_padding is not None:
                 content_y = content_padding if content_padding is not None else content_y_padding
                 if content_y is not None:
-                    grid_y = content_y
+                    grid_y = str(content_y)
 
                     # Adjust height if necessary
                     if (
@@ -2886,12 +3029,12 @@ class Presentation:
             if title_padding is not None or title_x_padding is not None:
                 title_x_val = title_padding if title_padding is not None else title_x_padding
                 if title_x_val is not None:
-                    title_x = title_x_val
+                    title_x = str(title_x_val)
 
             if title_padding is not None or title_y_padding is not None:
                 title_y_val = title_padding if title_padding is not None else title_y_padding
                 if title_y_val is not None:
-                    title_y = title_y_val
+                    title_y = str(title_y_val)
 
             # Add the title to the slide
             slide.add_text(
@@ -2927,7 +3070,7 @@ class Presentation:
             if subtitle_padding is not None or subtitle_x_padding is not None:
                 subtitle_x_val = subtitle_padding if subtitle_padding is not None else subtitle_x_padding
                 if subtitle_x_val is not None:
-                    subtitle_x = subtitle_x_val
+                    subtitle_x = str(subtitle_x_val)
 
             if subtitle_padding is not None or subtitle_y_padding is not None:
                 subtitle_y_val = subtitle_padding if subtitle_padding is not None else subtitle_y_padding
@@ -3011,7 +3154,7 @@ class Presentation:
             if label_padding is not None or label_x_padding is not None:
                 label_x_val = label_padding if label_padding is not None else label_x_padding
                 if label_x_val is not None:
-                    label_x = label_x_val
+                    label_x = str(label_x_val)
 
             # Calculate label Y position with proper padding
             if (

@@ -46,9 +46,55 @@ class Slide:
         self.pptx_slide = pptx_slide
         self.user_data: dict[str, Any] = {}
 
+        # Store template defaults when applied from a template
+        self.template_defaults: dict[str, dict[str, Any]] = {
+            "text": {},
+            "image": {},
+            "shape": {},
+            "table": {},
+            "chart": {},
+        }
+
         # Cache slide dimensions to avoid recalculating them
         self._slide_width = self._get_slide_width()
         self._slide_height = self._get_slide_height()
+
+    def apply_template_defaults(self, template_data: dict[str, Any]) -> None:
+        """Apply template defaults to this slide.
+
+        This method extracts default method arguments from a template and stores them
+        for later use by the add_xxx methods.
+
+        Args:
+            template_data: Template data dictionary
+        """
+        # Extract defaults for different element types
+        if "defaults" in template_data:
+            defaults = template_data["defaults"]
+
+            # Apply defaults for each element type
+            for element_type in ["text", "image", "shape", "table", "chart"]:
+                if element_type in defaults:
+                    self.template_defaults[element_type] = defaults[element_type]
+
+    def merge_with_defaults(self, method_type: str, kwargs: dict[str, Any]) -> dict[str, Any]:
+        """Merge provided arguments with template defaults.
+
+        Args:
+            method_type: The type of method ("text", "image", etc.)
+            kwargs: Keyword arguments provided to the method
+
+        Returns:
+            Dictionary with merged arguments, where provided args override defaults
+        """
+        # Start with a copy of the defaults for this method type
+        merged = self.template_defaults.get(method_type, {}).copy()
+
+        # Override with provided kwargs
+        for key, value in kwargs.items():
+            merged[key] = value
+
+        return merged
 
     def _convert_position(self, value: PositionType, slide_dimension: int, is_width: bool = True) -> float:
         """Convert a position value to inches.
@@ -171,16 +217,16 @@ class Slide:
     def add_text(
         self,
         text: str,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
-        width: PositionType = 8.0,
-        height: PositionType = 1.0,
-        font_size: int = 18,
-        font_bold: bool = False,
-        font_italic: bool = False,
-        font_name: str = "Meiryo",
-        align: str = "left",
-        vertical: str = "top",
+        x: PositionType | None = None,
+        y: PositionType | None = None,
+        width: PositionType | None = None,
+        height: PositionType | None = None,
+        font_size: int | None = None,
+        font_bold: bool | None = None,
+        font_italic: bool | None = None,
+        font_name: str | None = None,
+        align: str | None = None,
+        vertical: str | None = None,
         color: str | tuple[int, int, int] | None = None,
     ) -> PPTXShape:
         """Add a text box to the slide.
@@ -202,15 +248,74 @@ class Slide:
         Returns:
             The created shape object
         """
+        # Get defaults from template (method-specific and global)
+        text_defaults = self.template_defaults.get("text", {})
+        global_defaults = self.template_defaults.get("global", {})
+
+        # Apply defaults for None values with cascading fallbacks:
+        # 1. Use parameter if provided (not None)
+        # 2. Otherwise use text-specific default from template
+        # 3. Otherwise use global default from template
+        # 4. Otherwise use fallback hardcoded default
+
+        # Position and size
+        x_val = x if x is not None else text_defaults.get("x", global_defaults.get("x", 1.0))
+        y_val = y if y is not None else text_defaults.get("y", global_defaults.get("y", 1.0))
+        width_val = width if width is not None else text_defaults.get("width", global_defaults.get("width", 8.0))
+        height_val = height if height is not None else text_defaults.get("height", global_defaults.get("height", 1.0))
+
+        # Font properties
+        font_size_val = (
+            font_size if font_size is not None else text_defaults.get("font_size", global_defaults.get("font_size", 18))
+        )
+        font_bold_val = (
+            font_bold
+            if font_bold is not None
+            else text_defaults.get("font_bold", global_defaults.get("font_bold", False))
+        )
+        font_italic_val = (
+            font_italic
+            if font_italic is not None
+            else text_defaults.get("font_italic", global_defaults.get("font_italic", False))
+        )
+        font_name_val = (
+            font_name
+            if font_name is not None
+            else text_defaults.get("font_name", global_defaults.get("font_name", "Meiryo"))
+        )
+
+        # Alignment
+        align_val = align if align is not None else text_defaults.get("align", global_defaults.get("align", "left"))
+        vertical_val = (
+            vertical if vertical is not None else text_defaults.get("vertical", global_defaults.get("vertical", "top"))
+        )
+
+        # Color - can be None as a valid value
+        color_val = color
+        if color_val is None:
+            # Try to get color from text defaults
+            color_val = text_defaults.get("color")
+            # If still None, try to get from global defaults
+            if color_val is None:
+                color_val = global_defaults.get("color")
+
+        # Convert list colors to tuples if needed
+        if isinstance(color_val, list) and len(color_val) == 3:
+            from typing import cast
+
+            # Cast the color_val to a specific type for mypy
+            color_list = cast(list[int], color_val)
+            color_val = (color_list[0], color_list[1], color_list[2])
+
         # Use cached slide dimensions
         slide_width = self._slide_width
         slide_height = self._slide_height
 
         # Convert position values to inches
-        x_inches = self._convert_position(x, slide_width, is_width=True)
-        y_inches = self._convert_position(y, slide_height, is_width=False)
-        width_inches = self._convert_position(width, slide_width, is_width=True)
-        height_inches = self._convert_position(height, slide_height, is_width=False)
+        x_inches = self._convert_position(x_val, slide_width, is_width=True)
+        y_inches = self._convert_position(y_val, slide_height, is_width=False)
+        width_inches = self._convert_position(width_val, slide_width, is_width=True)
+        height_inches = self._convert_position(height_val, slide_height, is_width=False)
 
         # Create the textbox
         text_box = self.pptx_slide.shapes.add_textbox(
@@ -232,32 +337,32 @@ class Slide:
                 text_frame.auto_size = True
 
         # Set vertical alignment
-        if vertical in ["top", "middle", "bottom"]:
+        if vertical_val in ["top", "middle", "bottom"]:
             from easypptx.presentation import Presentation
 
-            text_frame.vertical_anchor = Presentation.VERTICAL[vertical]
+            text_frame.vertical_anchor = Presentation.VERTICAL[vertical_val]
 
         # Apply text formatting
         p = text_frame.paragraphs[0]
-        p.font.size = Pt(font_size)
-        p.font.bold = font_bold
-        p.font.italic = font_italic
-        p.font.name = font_name
+        p.font.size = Pt(font_size_val)
+        p.font.bold = font_bold_val
+        p.font.italic = font_italic_val
+        p.font.name = font_name_val
 
         # Set horizontal alignment
-        if align in ["left", "center", "right"]:
+        if align_val in ["left", "center", "right"]:
             from easypptx.presentation import Presentation
 
-            p.alignment = Presentation.ALIGN[align]
+            p.alignment = Presentation.ALIGN[align_val]
 
         # Set text color
-        if color:
+        if color_val:
             from easypptx.presentation import Presentation
 
-            if isinstance(color, str) and color in Presentation.COLORS:
-                p.font.color.rgb = Presentation.COLORS[color]
-            elif isinstance(color, tuple) and len(color) == 3:
-                p.font.color.rgb = RGBColor(*color)
+            if isinstance(color_val, str) and color_val in Presentation.COLORS:
+                p.font.color.rgb = Presentation.COLORS[color_val]
+            elif isinstance(color_val, tuple) and len(color_val) == 3:
+                p.font.color.rgb = RGBColor(*color_val)
 
         return text_box
 
