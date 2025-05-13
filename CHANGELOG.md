@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ensured proper inheritance of global defaults into method-specific defaults
 - Enhanced consistency between Grid and Slide classes for template handling
 
+### Added
+- New example demonstrating how to use global defaults in templates: `examples/templates/011_template_global_defaults.py`
+
 ## [0.5.3] - 2025-05-13
 
 ### Fixed
