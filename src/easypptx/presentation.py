@@ -2315,7 +2315,7 @@ class Presentation:
         bg_color: str | tuple[int, int, int] | None = None,
         title_font_size: int = 24,
         subtitle_font_size: int = 18,
-        title_align: str = "center",
+        title_align: str | None = None,  # Changed to None to allow using template settings
         subtitle_align: str = "center",
         title_padding: str | float | None = None,
         title_x_padding: str | float | None = None,
@@ -2416,6 +2416,23 @@ class Presentation:
                 if title_y_val is not None:
                     title_y = title_y_val
 
+            # Get template alignment if available and title_align not explicitly set
+            template_align = None
+            if title_align is None and self._default_template is not None:
+                try:
+                    # Try to get template settings
+                    template = self.template_manager.get(self._default_template)
+                    if "title" in template and "align" in template["title"]:
+                        template_align = template["title"]["align"]
+                except (ValueError, KeyError):
+                    # If template lookup fails, use default
+                    template_align = "center"
+
+            # Use explicit title_align if set, template_align if found, or default to center
+            alignment = (
+                title_align if title_align is not None else (template_align if template_align is not None else "center")
+            )
+
             # Add the title to the slide
             slide.add_text(
                 text=title,
@@ -2425,7 +2442,7 @@ class Presentation:
                 height=title_height,
                 font_size=title_font_size,
                 font_bold=True,
-                align=title_align,
+                align=alignment,
                 vertical="middle",
             )
 
@@ -2456,6 +2473,21 @@ class Presentation:
                 subtitle_y_val = subtitle_padding if subtitle_padding is not None else subtitle_y_padding
                 subtitle_y = subtitle_y_val if subtitle_y_val is not None else adjusted_y
 
+            # Get template alignment for subtitle if available
+            template_subtitle_align = None
+            if self._default_template is not None:
+                try:
+                    # Try to get template settings
+                    template = self.template_manager.get(self._default_template)
+                    if "subtitle" in template and "align" in template["subtitle"]:
+                        template_subtitle_align = template["subtitle"]["align"]
+                except (ValueError, KeyError):
+                    # If template lookup fails, use default
+                    pass
+
+            # Use explicit subtitle_align if set, template_align if found, or default to center
+            subtitle_alignment = subtitle_align if subtitle_align != "center" else (template_subtitle_align or "center")
+
             # Add the subtitle to the slide
             slide.add_text(
                 text=subtitle,
@@ -2464,7 +2496,7 @@ class Presentation:
                 width=width,
                 height=subtitle_height,
                 font_size=subtitle_font_size,
-                align=subtitle_align,
+                align=subtitle_alignment,
                 vertical="middle",
             )
 
