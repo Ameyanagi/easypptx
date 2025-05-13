@@ -239,6 +239,7 @@ class Slide:
         align: str | None = None,
         vertical: str | None = None,
         color: str | tuple[int, int, int] | None = None,
+        **kwargs,  # Accept any additional parameters and ignore them
     ) -> PPTXShape:
         """Add a text box to the slide.
 
@@ -255,6 +256,7 @@ class Slide:
             align: Text alignment, one of "left", "center", "right" (default: "left")
             vertical: Vertical alignment, one of "top", "middle", "bottom" (default: "top")
             color: Text color as string name from COLORS dict or RGB tuple (default: None)
+            **kwargs: Additional parameters (ignored)
 
         Returns:
             The created shape object
@@ -384,6 +386,7 @@ class Slide:
         y: PositionType = 1.0,
         width: PositionType | None = None,
         height: PositionType | None = None,
+        **kwargs,  # Accept any additional parameters and ignore them
     ) -> PPTXShape:
         """Add an image to the slide.
 
@@ -393,6 +396,7 @@ class Slide:
             y: Y position in inches or percentage (default: 1.0)
             width: Width in inches or percentage (default: None, maintains aspect ratio)
             height: Height in inches or percentage (default: None, maintains aspect ratio)
+            **kwargs: Additional parameters (ignored)
 
         Returns:
             The created picture shape
@@ -443,6 +447,7 @@ class Slide:
         width: PositionType = 5.0,
         height: PositionType = 1.0,
         fill_color: str | tuple[int, int, int] | None = None,
+        **kwargs,  # Accept any additional parameters and ignore them
     ) -> PPTXShape:
         """Add a shape to the slide.
 
@@ -453,6 +458,7 @@ class Slide:
             width: Width in inches or percentage (default: 5.0)
             height: Height in inches or percentage (default: 1.0)
             fill_color: Fill color as string name from COLORS dict or RGB tuple (default: None)
+            **kwargs: Additional parameters (ignored)
 
         Returns:
             The created shape object
@@ -494,6 +500,7 @@ class Slide:
         start_y: PositionType = "5%",
         width: PositionType = "90%",
         height: PositionType = "90%",
+        **kwargs,  # Accept any additional parameters and ignore them
     ) -> list[PPTXShape]:
         """Add multiple objects to the slide with automatic alignment.
 
@@ -506,6 +513,7 @@ class Slide:
             start_y: Starting Y position of container in inches or percentage
             width: Width of container in inches or percentage
             height: Height of container in inches or percentage
+            **kwargs: Additional parameters (ignored)
 
         Returns:
             List of created shape objects
@@ -625,11 +633,12 @@ class Slide:
         if self.pptx_slide.shapes.title:
             self.pptx_slide.shapes.title.text = value
 
-    def set_background_color(self, color: str | tuple[int, int, int]) -> None:
+    def set_background_color(self, color: str | tuple[int, int, int], **kwargs) -> None:
         """Set the background color of the slide.
 
         Args:
             color: Background color as string name from COLORS dict or RGB tuple
+            **kwargs: Additional parameters (ignored)
         """
         # Get the background fill object
         background = self.pptx_slide.background

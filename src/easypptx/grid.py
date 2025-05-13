@@ -134,18 +134,19 @@ class GridCellProxy:
         """
         return self.grid.add_table(self.row, self.col, data=data, **kwargs)
 
-    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0) -> "Grid":
+    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0, **kwargs) -> "Grid":
         """Add a nested grid to this cell.
 
         Args:
             rows: The number of rows in the nested grid
             cols: The number of columns in the nested grid
             padding: The padding for the nested grid
+            **kwargs: Additional parameters to pass to the grid
 
         Returns:
             The created grid object
         """
-        return self.grid.add_grid_to_cell(self.row, self.col, rows=rows, cols=cols, padding=padding)
+        return self.grid.add_grid_to_cell(self.row, self.col, rows=rows, cols=cols, padding=padding, **kwargs)
 
 
 class Grid:
@@ -547,6 +548,7 @@ class Grid:
         rows: int = 1,
         cols: int = 1,
         padding: float = 5.0,
+        **kwargs,  # Accept any additional parameters
     ) -> "Grid":
         """Add a nested grid to a specific cell.
 
@@ -556,6 +558,7 @@ class Grid:
             rows: Number of rows in the nested grid (default: 1)
             cols: Number of columns in the nested grid (default: 1)
             padding: Padding between cells as percentage of cell size (default: 5.0)
+            **kwargs: Additional parameters (ignored)
 
         Returns:
             The nested Grid object
@@ -765,6 +768,7 @@ class Grid:
             merged_kwargs["color"] = tuple(merged_kwargs["color"])
 
         # Call add_to_cell with the parent's add_text method
+        # The parent's add_text method now accepts **kwargs which will handle any extra parameters
         return self.add_to_cell(row, col, self.parent.add_text, **merged_kwargs)
 
     def add_image(self, row: int, col: int, image_path: str, **kwargs) -> Any:
@@ -1063,6 +1067,7 @@ class Grid:
         title_height: PositionType = "10%",
         title_align: str = "center",
         column_major: bool = True,  # Use column-major order by default
+        **kwargs,  # Accept any additional parameters
     ) -> "Grid":
         """Create a grid and automatically place content into cells.
 
@@ -1086,6 +1091,7 @@ class Grid:
                          When True, fills cells down columns first, resulting in a visual layout
                          that matches the specified rows and columns when content is added sequentially.
                          When False, fills cells across rows first.
+            **kwargs: Additional parameters (ignored)
 
         Returns:
             The created Grid object
@@ -1200,6 +1206,7 @@ class Grid:
         dpi: int = 300,
         file_format: str = "png",
         column_major: bool = True,  # Use column-major order by default
+        **kwargs,  # Accept any additional parameters
     ) -> "Grid":
         """Create a grid and automatically place matplotlib figures into cells.
 
@@ -1225,6 +1232,7 @@ class Grid:
                          When True, fills cells down columns first, resulting in a visual layout
                          that matches the specified rows and columns when content is added sequentially.
                          When False, fills cells across rows first.
+            **kwargs: Additional parameters (ignored)
 
         Returns:
             The created Grid object

@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.6] - 2025-05-14
+
+### Fixed
+- Modified all content-related methods in Slide and Grid classes to accept additional parameters
+- Fixed `TypeError` when methods receive unexpected parameters like 'padding'
+- Added `**kwargs` parameter to ensure API flexibility and backward compatibility
+- Updated documentation for all affected methods
+
+## [0.5.5] - 2025-05-14
+
+### Fixed
+- Version bump for minor changes
+
 ## [0.5.4] - 2025-05-14
 
 ### Fixed
