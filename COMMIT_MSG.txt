@@ -1,7 +1,12 @@
-Initial EasyPPTX commit
+feat: add title padding parameters and fix recursion error
 
-- Create project structure using cookiecutter-uv
-- Implement core PowerPoint manipulation modules
-- Add simple API for slides, text, images, tables, and charts
-- Create examples and tests
-- Add project documentation and specifications
+- Add title_padding, title_x_padding, and title_y_padding to all slide methods
+- Add subtitle and content padding parameters for more flexible positioning
+- Fix recursion error in add_slide_from_template method
+- Add comprehensive test suite for padding functionality
+- Create example demonstrating padding features
+- Update version to 0.5.0
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>

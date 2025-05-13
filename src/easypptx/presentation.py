@@ -304,6 +304,13 @@ class Presentation:
         bg_color: str | tuple[int, int, int] | None = None,
         title: str | None = None,
         template_toml: str | None = None,
+        title_padding: str | float | None = None,
+        title_x_padding: str | float | None = "5%",
+        title_y_padding: str | float | None = "5%",
+        title_width: str | float | None = "90%",
+        title_height: str | float | None = "10%",
+        title_font_size: int = 32,
+        title_align: str = "center",
     ) -> Slide:
         """Add a new slide to the presentation.
 
@@ -312,6 +319,13 @@ class Presentation:
             bg_color: Background color for this slide, overrides default (default: None)
             title: Optional title text for the slide (default: None)
             template_toml: Path to a TOML template file to use for this slide (default: None)
+            title_padding: Padding around the title (applies to both x and y if specified) (default: None)
+            title_x_padding: Horizontal padding for title (default: "5%")
+            title_y_padding: Vertical padding for title (default: "5%")
+            title_width: Width of the title area (default: "90%")
+            title_height: Height of the title area (default: "10%")
+            title_font_size: Font size for the title (default: 32)
+            title_align: Text alignment for the title (default: "center")
 
         Returns:
             A new Slide object
@@ -369,9 +383,20 @@ class Presentation:
 
             # Add title if provided
             if title is not None:
+                # If general title_padding is provided, it overrides individual x and y padding
+                x_padding = title_padding if title_padding is not None else title_x_padding
+                y_padding = title_padding if title_padding is not None else title_y_padding
+
                 # We don't have add_title method, so use add_text with appropriate positioning
                 slide.add_text(
-                    text=title, x="5%", y="5%", width="90%", height="10%", font_size=32, font_bold=True, align="center"
+                    text=title,
+                    x=x_padding,
+                    y=y_padding,
+                    width=title_width,
+                    height=title_height,
+                    font_size=title_font_size,
+                    font_bold=True,
+                    align=title_align,
                 )
 
             return slide
@@ -457,8 +482,15 @@ class Presentation:
         # Get background color if specified
         bg_color = preset.get("bg_color", None)
 
-        # Create a new slide using the blank layout
-        slide = self.add_slide(bg_color=bg_color)
+        # Create a new slide using the blank layout directly (avoiding recursion)
+        # Use the blank layout or specified layout if provided
+        slide_layout = self.blank_layout
+        pptx_slide = self.pptx_presentation.slides.add_slide(slide_layout)
+        slide = Slide(pptx_slide)
+
+        # Apply background color if specified for this slide
+        if bg_color is not None:
+            slide.set_background_color(bg_color)
 
         # Add title if specified in template
         if "title" in preset:
@@ -688,6 +720,21 @@ class Presentation:
         border_color: str = "black",
         shadow: bool = False,
         maintain_aspect_ratio: bool = True,
+        title_padding: str | float | None = None,
+        title_x_padding: str | float | None = None,
+        title_y_padding: str | float | None = None,
+        subtitle_padding: str | float | None = None,
+        subtitle_x_padding: str | float | None = None,
+        subtitle_y_padding: str | float | None = None,
+        content_padding: str | float | None = None,
+        content_x_padding: str | float | None = None,
+        content_y_padding: str | float | None = None,
+        label_padding: str | float | None = None,
+        label_x_padding: str | float | None = None,
+        label_y_padding: str | float | None = "1%",
+        title_align: str = "center",
+        subtitle_align: str = "center",
+        label_align: str = "center",
     ) -> tuple[Slide, PPTXShape]:
         """Add a slide with an image and optional title, subtitle, and label.
 
@@ -713,6 +760,21 @@ class Presentation:
             border_color: Color for the border (default: "black")
             shadow: Whether to add a shadow effect to the image (default: False)
             maintain_aspect_ratio: Whether to maintain the image's aspect ratio (default: True)
+            title_padding: Padding around the title, applies to both x and y (default: None)
+            title_x_padding: Horizontal padding for title, overridden by title_padding if provided (default: None)
+            title_y_padding: Vertical padding for title, overridden by title_padding if provided (default: None)
+            subtitle_padding: Padding around the subtitle, applies to both x and y (default: None)
+            subtitle_x_padding: Horizontal padding for subtitle, overridden by subtitle_padding if provided (default: None)
+            subtitle_y_padding: Vertical padding for subtitle, overridden by subtitle_padding if provided (default: None)
+            content_padding: Padding around the content area, applies to both x and y (default: None)
+            content_x_padding: Horizontal padding for content, overridden by content_padding if provided (default: None)
+            content_y_padding: Vertical padding for content, overridden by content_padding if provided (default: None)
+            label_padding: Padding around the label, applies to both x and y (default: None)
+            label_x_padding: Horizontal padding for label, overridden by label_padding if provided (default: None)
+            label_y_padding: Vertical padding between content and label (default: "1%")
+            title_align: Text alignment for the title (default: "center")
+            subtitle_align: Text alignment for the subtitle (default: "center")
+            label_align: Text alignment for the label (default: "center")
 
         Returns:
             A tuple containing (Slide, PPTXShape) where PPTXShape is the image shape
@@ -725,7 +787,9 @@ class Presentation:
                 title="Product Showcase",
                 subtitle="Latest Design",
                 label="Figure 1: Product Prototype",
-                maintain_aspect_ratio=True
+                maintain_aspect_ratio=True,
+                title_padding="5%",
+                content_padding="2%"
             )
             ```
         """
@@ -736,18 +800,40 @@ class Presentation:
         adjusted_y = y
         adjusted_height = height
 
+        # Determine content x-padding
+        content_x_val = x
+        if content_padding is not None or content_x_padding is not None:
+            content_x_val = content_padding if content_padding is not None else content_x_padding
+            if content_x_val is not None:
+                content_x_val = content_x_val
+
         # Add title if provided
         if title:
+            # Calculate title position with padding
+            title_x = "0%"
+            title_y = "0%"
+
+            # Apply title padding if specified
+            if title_padding is not None or title_x_padding is not None:
+                title_x_val = title_padding if title_padding is not None else title_x_padding
+                if title_x_val is not None:
+                    title_x = title_x_val
+
+            if title_padding is not None or title_y_padding is not None:
+                title_y_val = title_padding if title_padding is not None else title_y_padding
+                if title_y_val is not None:
+                    title_y = title_y_val
+
             # Add the title to the slide
             slide.add_text(
                 text=title,
-                x="0%",  # Center the title across the slide
-                y="0%",
+                x=title_x,
+                y=title_y,
                 width="100%",
                 height=title_height,
                 font_size=title_font_size,
                 font_bold=True,
-                align="center",
+                align=title_align,
                 vertical="middle",
             )
 
@@ -764,15 +850,29 @@ class Presentation:
 
         # Add subtitle if provided
         if subtitle:
+            # Calculate subtitle position with padding
+            subtitle_x = "0%"
+            subtitle_y = adjusted_y
+
+            # Apply subtitle padding if specified
+            if subtitle_padding is not None or subtitle_x_padding is not None:
+                subtitle_x_val = subtitle_padding if subtitle_padding is not None else subtitle_x_padding
+                if subtitle_x_val is not None:
+                    subtitle_x = subtitle_x_val
+
+            if subtitle_padding is not None or subtitle_y_padding is not None:
+                subtitle_y_val = subtitle_padding if subtitle_padding is not None else subtitle_y_padding
+                subtitle_y = subtitle_y_val if subtitle_y_val is not None else adjusted_y
+
             # Add the subtitle to the slide
             slide.add_text(
                 text=subtitle,
-                x="0%",  # Center the subtitle across the slide
-                y=adjusted_y,
+                x=subtitle_x,
+                y=subtitle_y,
                 width="100%",
                 height=subtitle_height,
                 font_size=subtitle_font_size,
-                align="center",
+                align=subtitle_align,
                 vertical="middle",
             )
 
@@ -787,12 +887,35 @@ class Presentation:
                     height_percent = float(adjusted_height.strip("%"))
                     adjusted_height = f"{(height_percent - subtitle_height_percent):.2f}%"
 
+        # Apply content y padding if specified
+        image_y = adjusted_y
+        if content_padding is not None or content_y_padding is not None:
+            content_y = content_padding if content_padding is not None else content_y_padding
+            if content_y is not None:
+                # If content_y is provided as a percentage, add it to the adjusted_y
+                if (
+                    isinstance(content_y, str)
+                    and content_y.endswith("%")
+                    and isinstance(adjusted_y, str)
+                    and adjusted_y.endswith("%")
+                ):
+                    content_y_percent = float(content_y.strip("%"))
+                    adjusted_y_percent = float(adjusted_y.strip("%"))
+                    image_y = f"{(adjusted_y_percent + content_y_percent):.2f}%"
+
+                    # Also adjust the height accordingly
+                    if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
+                        adjusted_height_percent = float(adjusted_height.strip("%"))
+                        adjusted_height = f"{(adjusted_height_percent - content_y_percent):.2f}%"
+                else:
+                    image_y = content_y
+
         # Add the image to the slide
         img = Image(slide)
         image_shape = img.add(
             image_path=image_path,
-            x=x,
-            y=adjusted_y,
+            x=content_x_val,
+            y=image_y,
             width=width,
             height=adjusted_height,
             maintain_aspect_ratio=maintain_aspect_ratio,
@@ -813,16 +936,36 @@ class Presentation:
 
         # Add label if specified
         if label:
-            # Calculate the position below the image
+            # Calculate the position below the image with padding
+            label_x = "0%"
+
+            # Apply label_x_padding if specified
+            if label_padding is not None or label_x_padding is not None:
+                label_x_val = label_padding if label_padding is not None else label_x_padding
+                if label_x_val is not None:
+                    label_x = label_x_val
+
+            # Calculate label Y position with proper padding
             if (
-                isinstance(adjusted_y, str)
-                and adjusted_y.endswith("%")
+                isinstance(image_y, str)
+                and image_y.endswith("%")
                 and isinstance(adjusted_height, str)
                 and adjusted_height.endswith("%")
             ):
-                image_y = float(adjusted_y.strip("%"))
-                image_height = float(adjusted_height.strip("%"))
-                label_y = f"{(image_y + image_height + 1):.2f}%"  # Add a small gap
+                image_y_percent = float(image_y.strip("%"))
+                image_height_percent = float(adjusted_height.strip("%"))
+
+                # Apply label_y_padding
+                label_y_pad = label_y_padding
+                if label_padding is not None:
+                    label_y_pad = label_padding
+
+                if isinstance(label_y_pad, str) and label_y_pad.endswith("%"):
+                    label_pad_percent = float(label_y_pad.strip("%"))
+                    label_y = f"{(image_y_percent + image_height_percent + label_pad_percent):.2f}%"
+                else:
+                    # Default gap
+                    label_y = f"{(image_y_percent + image_height_percent + 1):.2f}%"
             else:
                 # Fall back to a reasonable default if we can't calculate exactly
                 label_y = "95%"
@@ -830,12 +973,12 @@ class Presentation:
             # Add the label text
             slide.add_text(
                 text=label,
-                x="0%",  # Center the label
+                x=label_x,
                 y=label_y,
                 width="100%",
                 height="5%",
                 font_size=label_font_size,
-                align="center",
+                align=label_align,
                 vertical="top",
             )
 
@@ -2174,6 +2317,15 @@ class Presentation:
         subtitle_font_size: int = 18,
         title_align: str = "center",
         subtitle_align: str = "center",
+        title_padding: str | float | None = None,
+        title_x_padding: str | float | None = None,
+        title_y_padding: str | float | None = None,
+        subtitle_padding: str | float | None = None,
+        subtitle_x_padding: str | float | None = None,
+        subtitle_y_padding: str | float | None = None,
+        content_padding: str | float | None = None,
+        content_x_padding: str | float | None = None,
+        content_y_padding: str | float | None = None,
     ) -> tuple[Slide, Grid]:
         """Add a slide with a grid layout.
 
@@ -2198,6 +2350,15 @@ class Presentation:
             subtitle_font_size: Font size for the subtitle (default: 18)
             title_align: Text alignment for the title, one of "left", "center", "right" (default: "center")
             subtitle_align: Text alignment for the subtitle, one of "left", "center", "right" (default: "center")
+            title_padding: Padding around the title, applies to both x and y (default: None)
+            title_x_padding: Horizontal padding for title, overridden by title_padding if provided (default: None)
+            title_y_padding: Vertical padding for title, overridden by title_padding if provided (default: None)
+            subtitle_padding: Padding around the subtitle, applies to both x and y (default: None)
+            subtitle_x_padding: Horizontal padding for subtitle, overridden by subtitle_padding if provided (default: None)
+            subtitle_y_padding: Vertical padding for subtitle, overridden by subtitle_padding if provided (default: None)
+            content_padding: Padding around the content area, applies to both x and y (default: None)
+            content_x_padding: Horizontal padding for content, overridden by content_padding if provided (default: None)
+            content_y_padding: Vertical padding for content, overridden by content_padding if provided (default: None)
 
         Returns:
             A tuple containing (Slide, Grid)
@@ -2211,7 +2372,8 @@ class Presentation:
                 title="Features Overview",
                 subtitle="Product Capabilities",
                 padding=5.0,
-                title_align="left"
+                title_align="left",
+                title_padding="5%"
             )
 
             # Add content to specific cells
@@ -2230,13 +2392,35 @@ class Presentation:
         adjusted_y = y
         adjusted_height = height
 
+        # Apply content padding if specified (for grid positioning)
+        grid_x = x
+        if content_padding is not None or content_x_padding is not None:
+            content_x = content_padding if content_padding is not None else content_x_padding
+            if content_x is not None:
+                grid_x = content_x
+
         # Add title if provided
         if title:
+            # Calculate title position with padding
+            title_x = x
+            title_y = y
+
+            # Apply title padding if specified
+            if title_padding is not None or title_x_padding is not None:
+                title_x_val = title_padding if title_padding is not None else title_x_padding
+                if title_x_val is not None:
+                    title_x = title_x_val
+
+            if title_padding is not None or title_y_padding is not None:
+                title_y_val = title_padding if title_padding is not None else title_y_padding
+                if title_y_val is not None:
+                    title_y = title_y_val
+
             # Add the title to the slide
             slide.add_text(
                 text=title,
-                x=x,
-                y=y,
+                x=title_x,
+                y=title_y,
                 width=width,
                 height=title_height,
                 font_size=title_font_size,
@@ -2258,11 +2442,25 @@ class Presentation:
 
         # Add subtitle if provided
         if subtitle:
+            # Calculate subtitle position with padding
+            subtitle_x = x
+            subtitle_y = adjusted_y
+
+            # Apply subtitle padding if specified
+            if subtitle_padding is not None or subtitle_x_padding is not None:
+                subtitle_x_val = subtitle_padding if subtitle_padding is not None else subtitle_x_padding
+                if subtitle_x_val is not None:
+                    subtitle_x = subtitle_x_val
+
+            if subtitle_padding is not None or subtitle_y_padding is not None:
+                subtitle_y_val = subtitle_padding if subtitle_padding is not None else subtitle_y_padding
+                subtitle_y = subtitle_y_val if subtitle_y_val is not None else adjusted_y
+
             # Add the subtitle to the slide
             slide.add_text(
                 text=subtitle,
-                x=x,
-                y=adjusted_y,
+                x=subtitle_x,
+                y=subtitle_y,
                 width=width,
                 height=subtitle_height,
                 font_size=subtitle_font_size,
@@ -2281,11 +2479,34 @@ class Presentation:
                     height_percent = float(adjusted_height.strip("%"))
                     adjusted_height = f"{(height_percent - subtitle_height_percent):.2f}%"
 
+        # Apply content y padding if specified
+        grid_y = adjusted_y
+        if content_padding is not None or content_y_padding is not None:
+            content_y = content_padding if content_padding is not None else content_y_padding
+            if content_y is not None:
+                # If content_y is provided as a percentage, add it to the adjusted_y
+                if (
+                    isinstance(content_y, str)
+                    and content_y.endswith("%")
+                    and isinstance(adjusted_y, str)
+                    and adjusted_y.endswith("%")
+                ):
+                    content_y_percent = float(content_y.strip("%"))
+                    adjusted_y_percent = float(adjusted_y.strip("%"))
+                    grid_y = f"{(adjusted_y_percent + content_y_percent):.2f}%"
+
+                    # Also adjust the height accordingly
+                    if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
+                        adjusted_height_percent = float(adjusted_height.strip("%"))
+                        adjusted_height = f"{(adjusted_height_percent - content_y_percent):.2f}%"
+                else:
+                    grid_y = content_y
+
         # Create the grid
         grid = Grid(
             parent=slide,
-            x=x,
-            y=adjusted_y,
+            x=grid_x,
+            y=grid_y,
             width=width,
             height=adjusted_height,
             rows=rows,
@@ -2306,6 +2527,13 @@ class Presentation:
         bg_color: str | tuple[int, int, int] | None = None,
         title_align: str = "center",
         column_major: bool = True,  # Use column-major order by default
+        title_padding: str | float | None = None,
+        title_x_padding: str | float | None = None,
+        title_y_padding: str | float | None = None,
+        title_font_size: int = 24,
+        content_padding: str | float | None = None,
+        content_x_padding: str | float | None = None,
+        content_y_padding: str | float | None = None,
     ) -> tuple[Slide, Grid]:
         """Add a slide with an autogrid layout.
 
@@ -2326,6 +2554,13 @@ class Presentation:
                          When True, fills cells down columns first, resulting in a visual layout
                          that matches the specified rows and columns when content is added sequentially.
                          When False, fills cells across rows first.
+            title_padding: Padding around the title, applies to both x and y (default: None)
+            title_x_padding: Horizontal padding for title, overridden by title_padding if provided (default: None)
+            title_y_padding: Vertical padding for title, overridden by title_padding if provided (default: None)
+            title_font_size: Font size for the title (default: 24)
+            content_padding: Padding around the content area, applies to both x and y (default: None)
+            content_x_padding: Horizontal padding for content, overridden by content_padding if provided (default: None)
+            content_y_padding: Vertical padding for content, overridden by content_padding if provided (default: None)
 
         Returns:
             A tuple containing (Slide, Grid)
@@ -2340,7 +2575,13 @@ class Presentation:
                 return slide.add_text("Text 2")
 
             content_funcs = [create_text1, create_text2]
-            slide, grid = pres.add_autogrid_slide(content_funcs, title="Auto Grid Slide", title_align="left")
+            slide, grid = pres.add_autogrid_slide(
+                content_funcs,
+                title="Auto Grid Slide",
+                title_align="left",
+                title_padding="5%",
+                content_padding="2%"
+            )
 
             # With empty grid
             slide, grid = pres.add_autogrid_slide(None, rows=4, cols=2, title="Features")
@@ -2360,16 +2601,43 @@ class Presentation:
             rows = rows or 1
             cols = cols or 1
 
+        # Set default grid position and dimensions
+        grid_x = "0%"
+        grid_y = "0%"
+        grid_width = "100%"
+        grid_height = "100%"
+
+        # Apply content padding if specified (for grid positioning)
+        if content_padding is not None or content_x_padding is not None:
+            content_x = content_padding if content_padding is not None else content_x_padding
+            if content_x is not None:
+                grid_x = content_x
+
         # Create the autogrid (without title, we'll add it separately to the slide)
         if title:
+            # Calculate title position with padding
+            title_x = "0%"
+            title_y = "0%"
+
+            # Apply title padding if specified
+            if title_padding is not None or title_x_padding is not None:
+                title_x_val = title_padding if title_padding is not None else title_x_padding
+                if title_x_val is not None:
+                    title_x = title_x_val
+
+            if title_padding is not None or title_y_padding is not None:
+                title_y_val = title_padding if title_padding is not None else title_y_padding
+                if title_y_val is not None:
+                    title_y = title_y_val
+
             # Add the title to the slide
             slide.add_text(
                 text=title,
-                x="0%",
-                y="0%",
+                x=title_x,
+                y=title_y,
                 width="100%",
                 height=title_height,
-                font_size=24,
+                font_size=title_font_size,
                 font_bold=True,
                 align=title_align,
                 vertical="middle",
@@ -2385,15 +2653,37 @@ class Presentation:
             else:
                 grid_height = f"{100 - float(title_height)}%"
 
+            # Apply content y padding if specified
+            if content_padding is not None or content_y_padding is not None:
+                content_y = content_padding if content_padding is not None else content_y_padding
+                if content_y is not None:
+                    # If content_y is provided as a percentage, add it to the grid_y
+                    if (
+                        isinstance(content_y, str)
+                        and content_y.endswith("%")
+                        and isinstance(grid_y, str)
+                        and grid_y.endswith("%")
+                    ):
+                        content_y_percent = float(content_y.strip("%"))
+                        grid_y_percent = float(grid_y.strip("%"))
+                        grid_y = f"{(grid_y_percent + content_y_percent):.2f}%"
+
+                        # Also adjust the height accordingly
+                        if isinstance(grid_height, str) and grid_height.endswith("%"):
+                            grid_height_percent = float(grid_height.strip("%"))
+                            grid_height = f"{(grid_height_percent - content_y_percent):.2f}%"
+                    else:
+                        grid_y = content_y
+
             # Create the autogrid without its own title (we already added it)
             grid = self.add_autogrid(
                 slide=slide,
                 content_funcs=content_funcs,
                 rows=rows,
                 cols=cols,
-                x="0%",
+                x=grid_x,
                 y=grid_y,
-                width="100%",
+                width=grid_width,
                 height=grid_height,
                 padding=padding,
                 title=None,  # No separate title for the grid
@@ -2401,16 +2691,32 @@ class Presentation:
                 column_major=column_major,
             )
         else:
+            # If no title, apply content padding if specified
+            if content_padding is not None or content_y_padding is not None:
+                content_y = content_padding if content_padding is not None else content_y_padding
+                if content_y is not None:
+                    grid_y = content_y
+
+                    # Adjust height if necessary
+                    if (
+                        isinstance(content_y, str)
+                        and content_y.endswith("%")
+                        and isinstance(grid_height, str)
+                        and grid_height.endswith("%")
+                    ):
+                        content_y_percent = float(content_y.strip("%"))
+                        grid_height = f"{(100 - content_y_percent):.2f}%"
+
             # Create the autogrid with full slide dimensions
             grid = self.add_autogrid(
                 slide=slide,
                 content_funcs=content_funcs,
                 rows=rows,
                 cols=cols,
-                x="0%",
-                y="0%",
-                width="100%",
-                height="100%",
+                x=grid_x,
+                y=grid_y,
+                width=grid_width,
+                height=grid_height,
                 padding=padding,
                 title=None,  # No title
                 column_major=column_major,
@@ -2443,6 +2749,18 @@ class Presentation:
         title_align: str = "center",
         subtitle_align: str = "center",
         label_align: str = "center",
+        title_padding: str | float | None = None,
+        title_x_padding: str | float | None = None,
+        title_y_padding: str | float | None = None,
+        subtitle_padding: str | float | None = None,
+        subtitle_x_padding: str | float | None = None,
+        subtitle_y_padding: str | float | None = None,
+        content_padding: str | float | None = None,
+        content_x_padding: str | float | None = None,
+        content_y_padding: str | float | None = None,
+        label_padding: str | float | None = None,
+        label_x_padding: str | float | None = None,
+        label_y_padding: str | float | None = "1%",
     ) -> tuple[Slide, PPTXShape]:
         """Add a slide with a title and a matplotlib/seaborn figure.
 
@@ -2473,6 +2791,18 @@ class Presentation:
             title_align: Text alignment for the title, one of "left", "center", "right" (default: "center")
             subtitle_align: Text alignment for the subtitle, one of "left", "center", "right" (default: "center")
             label_align: Text alignment for the caption, one of "left", "center", "right" (default: "center")
+            title_padding: Padding around the title, applies to both x and y (default: None)
+            title_x_padding: Horizontal padding for title, overridden by title_padding if provided (default: None)
+            title_y_padding: Vertical padding for title, overridden by title_padding if provided (default: None)
+            subtitle_padding: Padding around the subtitle, applies to both x and y (default: None)
+            subtitle_x_padding: Horizontal padding for subtitle, overridden by subtitle_padding if provided (default: None)
+            subtitle_y_padding: Vertical padding for subtitle, overridden by subtitle_padding if provided (default: None)
+            content_padding: Padding around the content area, applies to both x and y (default: None)
+            content_x_padding: Horizontal padding for content, overridden by content_padding if provided (default: None)
+            content_y_padding: Vertical padding for content, overridden by content_padding if provided (default: None)
+            label_padding: Padding around the label, applies to both x and y (default: None)
+            label_x_padding: Horizontal padding for label, overridden by label_padding if provided (default: None)
+            label_y_padding: Vertical padding between content and label (default: "1%")
 
         Returns:
             A tuple containing (Slide, PPTXShape) where PPTXShape is the figure shape
@@ -2494,7 +2824,9 @@ class Presentation:
                 subtitle="Matplotlib Example",
                 label="Figure 1: Sample Plot",
                 dpi=300,
-                title_align="left"
+                title_align="left",
+                title_padding="5%",
+                content_padding="2%"
             )
             ```
         """
@@ -2505,13 +2837,35 @@ class Presentation:
         adjusted_y = y
         adjusted_height = height
 
+        # Determine content x-padding
+        content_x_val = x
+        if content_padding is not None or content_x_padding is not None:
+            content_x_val = content_padding if content_padding is not None else content_x_padding
+            if content_x_val is not None:
+                content_x_val = content_x_val
+
         # Add title if provided
         if title:
+            # Calculate title position with padding
+            title_x = "0%"
+            title_y = "0%"
+
+            # Apply title padding if specified
+            if title_padding is not None or title_x_padding is not None:
+                title_x_val = title_padding if title_padding is not None else title_x_padding
+                if title_x_val is not None:
+                    title_x = title_x_val
+
+            if title_padding is not None or title_y_padding is not None:
+                title_y_val = title_padding if title_padding is not None else title_y_padding
+                if title_y_val is not None:
+                    title_y = title_y_val
+
             # Add the title to the slide
             slide.add_text(
                 text=title,
-                x="0%",  # Center the title across the slide
-                y="0%",
+                x=title_x,
+                y=title_y,
                 width="100%",
                 height=title_height,
                 font_size=title_font_size,
@@ -2533,11 +2887,25 @@ class Presentation:
 
         # Add subtitle if provided
         if subtitle:
+            # Calculate subtitle position with padding
+            subtitle_x = "0%"
+            subtitle_y = adjusted_y
+
+            # Apply subtitle padding if specified
+            if subtitle_padding is not None or subtitle_x_padding is not None:
+                subtitle_x_val = subtitle_padding if subtitle_padding is not None else subtitle_x_padding
+                if subtitle_x_val is not None:
+                    subtitle_x = subtitle_x_val
+
+            if subtitle_padding is not None or subtitle_y_padding is not None:
+                subtitle_y_val = subtitle_padding if subtitle_padding is not None else subtitle_y_padding
+                subtitle_y = subtitle_y_val if subtitle_y_val is not None else adjusted_y
+
             # Add the subtitle to the slide
             slide.add_text(
                 text=subtitle,
-                x="0%",  # Center the subtitle across the slide
-                y=adjusted_y,
+                x=subtitle_x,
+                y=subtitle_y,
                 width="100%",
                 height=subtitle_height,
                 font_size=subtitle_font_size,
@@ -2556,6 +2924,29 @@ class Presentation:
                     height_percent = float(adjusted_height.strip("%"))
                     adjusted_height = f"{(height_percent - subtitle_height_percent):.2f}%"
 
+        # Apply content y padding if specified
+        figure_y = adjusted_y
+        if content_padding is not None or content_y_padding is not None:
+            content_y = content_padding if content_padding is not None else content_y_padding
+            if content_y is not None:
+                # If content_y is provided as a percentage, add it to the adjusted_y
+                if (
+                    isinstance(content_y, str)
+                    and content_y.endswith("%")
+                    and isinstance(adjusted_y, str)
+                    and adjusted_y.endswith("%")
+                ):
+                    content_y_percent = float(content_y.strip("%"))
+                    adjusted_y_percent = float(adjusted_y.strip("%"))
+                    figure_y = f"{(adjusted_y_percent + content_y_percent):.2f}%"
+
+                    # Also adjust the height accordingly
+                    if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
+                        adjusted_height_percent = float(adjusted_height.strip("%"))
+                        adjusted_height = f"{(adjusted_height_percent - content_y_percent):.2f}%"
+                else:
+                    figure_y = content_y
+
         # Create a style dictionary for the pyplot
         style = {
             "border": border,
@@ -2569,8 +2960,8 @@ class Presentation:
             slide=slide,
             figure=figure,
             position={
-                "x": x,
-                "y": adjusted_y,
+                "x": content_x_val,
+                "y": figure_y,
                 "width": width,
                 "height": adjusted_height,
             },
@@ -2581,16 +2972,36 @@ class Presentation:
 
         # Add label if specified
         if label:
-            # Calculate the position below the figure
+            # Calculate the position below the figure with padding
+            label_x = "0%"
+
+            # Apply label_x_padding if specified
+            if label_padding is not None or label_x_padding is not None:
+                label_x_val = label_padding if label_padding is not None else label_x_padding
+                if label_x_val is not None:
+                    label_x = label_x_val
+
+            # Calculate label Y position with proper padding
             if (
-                isinstance(adjusted_y, str)
-                and adjusted_y.endswith("%")
+                isinstance(figure_y, str)
+                and figure_y.endswith("%")
                 and isinstance(adjusted_height, str)
                 and adjusted_height.endswith("%")
             ):
-                figure_y = float(adjusted_y.strip("%"))
-                figure_height = float(adjusted_height.strip("%"))
-                label_y = f"{(figure_y + figure_height + 1):.2f}%"  # Add a small gap
+                figure_y_percent = float(figure_y.strip("%"))
+                figure_height_percent = float(adjusted_height.strip("%"))
+
+                # Apply label_y_padding
+                label_y_pad = label_y_padding
+                if label_padding is not None:
+                    label_y_pad = label_padding
+
+                if isinstance(label_y_pad, str) and label_y_pad.endswith("%"):
+                    label_pad_percent = float(label_y_pad.strip("%"))
+                    label_y = f"{(figure_y_percent + figure_height_percent + label_pad_percent):.2f}%"
+                else:
+                    # Default gap
+                    label_y = f"{(figure_y_percent + figure_height_percent + 1):.2f}%"
             else:
                 # Fall back to a reasonable default if we can't calculate exactly
                 label_y = "95%"
@@ -2598,7 +3009,7 @@ class Presentation:
             # Add the label text
             slide.add_text(
                 text=label,
-                x="0%",  # Center the label
+                x=label_x,
                 y=label_y,
                 width="100%",
                 height="5%",

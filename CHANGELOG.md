@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-05-13
+
+### Added
+- Title and content padding parameters for all slide creation methods
+  - Added `title_padding`, `title_x_padding`, and `title_y_padding` parameters
+  - Added `subtitle_padding`, `subtitle_x_padding`, and `subtitle_y_padding` parameters
+  - Added `content_padding`, `content_x_padding`, and `content_y_padding` parameters
+  - Added `label_padding`, `label_x_padding`, and `label_y_padding` parameters
+- Enhanced positioning control in all slide types (standard, grid, autogrid, pyplot, image)
+- New example demonstrating title padding features in `examples/styling/004_title_padding.py`
+- Comprehensive test suite for title padding functionality
+
+### Fixed
+- Fixed recursive call between `add_slide` and `add_slide_from_template` causing maximum recursion error
+
 ## [0.4.0] - 2025-05-13
 
 ### Added
@@ -96,6 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Grid layout system
 - Basic examples
 
+[0.5.0]: https://github.com/Ameyanagi/easypptx/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Ameyanagi/easypptx/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Ameyanagi/easypptx/compare/v0.2.0...v0.3.0
 [0.0.7]: https://github.com/Ameyanagi/easypptx/compare/v0.0.6...v0.0.7
