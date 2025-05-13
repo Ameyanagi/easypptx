@@ -225,6 +225,22 @@ class Grid:
         self.cols = cols
         self.padding = padding
 
+        # Store template defaults when applied from a template
+        self.template_defaults: dict[str, dict[str, Any]] = {
+            "text": {},
+            "image": {},
+            "pyplot": {},
+            "table": {},
+            "grid": {},
+            "global": {},
+        }
+
+        # Copy template_defaults from parent if it's a Grid and has template_defaults
+        if hasattr(parent, "template_defaults") and isinstance(parent, Grid):
+            # Access parent's template_defaults safely
+            for key, value in parent.template_defaults.items():
+                self.template_defaults[key] = value.copy()
+
         # Store slide dimensions for percentage calculations
         self._slide_width = self._get_slide_width()
         self._slide_height = self._get_slide_height()
@@ -262,7 +278,54 @@ class Grid:
         # Default value if we can't get it (equivalent to 7.5 inches)
         return 6858000  # 7.5 inches in EMUs
 
-    def _create_cells(self) -> list:
+    def apply_template_defaults(self, template_data: dict[str, Any]) -> None:
+        """Apply template defaults to this grid.
+
+        This method extracts default method arguments from a template and stores them
+        for later use by the add_xxx methods.
+
+        Args:
+            template_data: Template data dictionary
+        """
+        # Extract defaults for different element types
+        if "defaults" in template_data:
+            defaults = template_data["defaults"]
+
+            # Apply defaults for each element type
+            for element_type in ["text", "image", "pyplot", "table", "grid", "global"]:
+                if element_type in defaults:
+                    self.template_defaults[element_type] = defaults[element_type]
+
+    def merge_with_defaults(self, method_type: str, kwargs: dict[str, Any]) -> dict[str, Any]:
+        """Merge provided arguments with template defaults.
+
+        Args:
+            method_type: The type of method ("text", "image", etc.)
+            kwargs: Keyword arguments provided to the method
+
+        Returns:
+            Dictionary with merged arguments, where provided args override defaults
+        """
+        # Start with a copy of the method-specific defaults
+        method_defaults: dict[str, Any] = self.template_defaults.get(method_type, {}).copy()
+
+        # Get global defaults
+        global_defaults: dict[str, Any] = self.template_defaults.get("global", {})
+
+        # Create merged defaults: global defaults overridden by method-specific defaults
+        merged_defaults: dict[str, Any] = global_defaults.copy()
+        for key, value in method_defaults.items():
+            merged_defaults[key] = value
+
+        # Override with provided kwargs
+        result: dict[str, Any] = merged_defaults.copy()
+        for key, value in kwargs.items():
+            if value is not None:  # Only override if the value is not None
+                result[key] = value
+
+        return result
+
+    def _create_cells(self) -> list[list[GridCell]]:
         """Create the grid cells based on the layout.
 
         Returns:
@@ -508,6 +571,10 @@ class Grid:
         if cell.is_spanned:
             raise CellMergeError("Cell is part of a merged cell")
 
+        # Merge provided kwargs with template defaults
+        kwargs = {"rows": rows, "cols": cols, "padding": padding}
+        merged_kwargs = self.merge_with_defaults("grid", kwargs)
+
         # Calculate absolute position for the nested grid
         if isinstance(self.x, str) and self.x.endswith("%"):
             grid_x_percent = float(self.x.strip("%"))
@@ -552,10 +619,14 @@ class Grid:
             y=f"{abs_y_percent:.2f}%",
             width=f"{abs_width_percent:.2f}%",
             height=f"{abs_height_percent:.2f}%",
-            rows=rows,
-            cols=cols,
-            padding=padding,
+            rows=merged_kwargs.get("rows", 1),
+            cols=merged_kwargs.get("cols", 1),
+            padding=merged_kwargs.get("padding", 5.0),
         )
+
+        # Pass template defaults to the nested grid
+        for key, value in self.template_defaults.items():
+            nested_grid.template_defaults[key] = value.copy()
 
         # Store the nested grid in the cell
         # Store the nested grid in the cell's content
@@ -686,8 +757,15 @@ class Grid:
         # Add the text parameter to kwargs
         kwargs["text"] = text
 
+        # Merge provided kwargs with template defaults
+        merged_kwargs = self.merge_with_defaults("text", kwargs)
+
+        # Convert list colors to tuples if needed
+        if "color" in merged_kwargs and isinstance(merged_kwargs["color"], list) and len(merged_kwargs["color"]) == 3:
+            merged_kwargs["color"] = tuple(merged_kwargs["color"])
+
         # Call add_to_cell with the parent's add_text method
-        return self.add_to_cell(row, col, self.parent.add_text, **kwargs)
+        return self.add_to_cell(row, col, self.parent.add_text, **merged_kwargs)
 
     def add_image(self, row: int, col: int, image_path: str, **kwargs) -> Any:
         """Add an image to a specific cell in the grid.
@@ -718,8 +796,11 @@ class Grid:
         # Add the image_path parameter to kwargs
         kwargs["image_path"] = image_path
 
+        # Merge provided kwargs with template defaults
+        merged_kwargs = self.merge_with_defaults("image", kwargs)
+
         # Call add_to_cell with the parent's add_image method
-        return self.add_to_cell(row, col, self.parent.add_image, **kwargs)
+        return self.add_to_cell(row, col, self.parent.add_image, **merged_kwargs)
 
     def add_pyplot(self, row: int, col: int, figure, **kwargs) -> Any:
         """Add a matplotlib figure to a specific cell in the grid.
@@ -757,9 +838,12 @@ class Grid:
         import os
         import tempfile
 
+        # Merge provided kwargs with template defaults
+        merged_kwargs = self.merge_with_defaults("pyplot", kwargs)
+
         # Set default values
-        dpi = kwargs.pop("dpi", 300)
-        file_format = kwargs.pop("file_format", "png")
+        dpi = merged_kwargs.pop("dpi", 300)
+        file_format = merged_kwargs.pop("file_format", "png")
 
         # Create a temporary file for the figure
         with tempfile.NamedTemporaryFile(suffix=f".{file_format}", delete=False) as temp_file:
@@ -770,7 +854,7 @@ class Grid:
 
         try:
             # Add the image to the cell
-            image_shape = self.add_image(row, col, image_path=temp_path, **kwargs)
+            image_shape = self.add_image(row, col, image_path=temp_path, **merged_kwargs)
             return image_shape
         finally:
             # Clean up the temporary file
@@ -818,21 +902,36 @@ class Grid:
         # Get the cell to determine the position and dimensions
         cell = self.get_cell(row, col)
 
+        # Merge provided kwargs with template defaults
+        merged_kwargs = self.merge_with_defaults("table", kwargs)
+
         # Create a Table object
         table_obj = Table(self.parent)
 
         # Extract position from the cell
-        kwargs["x"] = cell.x
-        kwargs["y"] = cell.y
-        kwargs["width"] = cell.width
-        kwargs["height"] = cell.height
+        merged_kwargs["x"] = cell.x
+        merged_kwargs["y"] = cell.y
+        merged_kwargs["width"] = cell.width
+        merged_kwargs["height"] = cell.height
 
         # Remove data from kwargs to handle separately
-        kwargs.pop("data", None)
+        merged_kwargs.pop("data", None)
 
         # Handle has_header parameter if provided
-        if "has_header" in kwargs:
-            kwargs["first_row_header"] = kwargs.pop("has_header")
+        if "has_header" in merged_kwargs:
+            merged_kwargs["first_row_header"] = merged_kwargs.pop("has_header")
+
+        # Convert list colors to tuples if needed
+        for style_key in ["header_style", "row_style"]:
+            if style_key in merged_kwargs:
+                style_dict = merged_kwargs[style_key]
+                for color_key in ["bg_color", "text_color"]:
+                    if (
+                        color_key in style_dict
+                        and isinstance(style_dict[color_key], list)
+                        and len(style_dict[color_key]) == 3
+                    ):
+                        style_dict[color_key] = tuple(style_dict[color_key])
 
         # Convert pandas DataFrame to list if needed
         if isinstance(data, pd.DataFrame):
@@ -841,7 +940,7 @@ class Grid:
             table_data = data
 
         # Create the table with the processed data
-        table_shape = table_obj.add(data=table_data, **kwargs)
+        table_shape = table_obj.add(data=table_data, **merged_kwargs)
 
         # Store the table in the cell's content
         cell.content = table_shape
