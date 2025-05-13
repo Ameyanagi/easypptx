@@ -1,5 +1,6 @@
+#!/usr/bin/env python
 """
-Example showing how to use templates with TOML export/import in EasyPPTX.
+003_template_toml_manager.py - Managing TOML Templates
 
 This example demonstrates how to:
 1. Create a custom template
@@ -17,13 +18,15 @@ from pptx.enum.shapes import MSO_SHAPE
 from easypptx import Presentation
 from easypptx.template import TemplateManager
 
-# Create a folder for outputs if it doesn't exist
-output_dir = Path("output")
-output_dir.mkdir(exist_ok=True)
+# Set up paths
+CURRENT_DIR = Path(__file__).parent
+ROOT_DIR = CURRENT_DIR.parent.parent
+OUTPUT_DIR = ROOT_DIR / "output"
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 # Create a folder for templates if it doesn't exist
-template_dir = output_dir / "templates"
-template_dir.mkdir(exist_ok=True)
+EXAMPLE_TEMPLATE_DIR = OUTPUT_DIR / "templates"
+EXAMPLE_TEMPLATE_DIR.mkdir(exist_ok=True)
 
 # Create a new presentation
 pres = Presentation()
@@ -104,7 +107,7 @@ pres.add_text(
 )
 
 # Initialize a template manager
-tm = TemplateManager(template_dir=str(template_dir))
+tm = TemplateManager(template_dir=str(EXAMPLE_TEMPLATE_DIR))
 
 # Create a custom template for a product slide
 product_template = {
@@ -359,11 +362,11 @@ pres.add_text(
 )
 
 # Save the custom templates to TOML and JSON
-product_toml_path = tm.save("product_slide", str(template_dir / "product_slide.toml"), format="toml")
-comparison_json_path = tm.save("comparison_slide", str(template_dir / "comparison_slide.json"), format="json")
+product_toml_path = tm.save("product_slide", str(EXAMPLE_TEMPLATE_DIR / "product_slide.toml"), format="toml")
+comparison_json_path = tm.save("comparison_slide", str(EXAMPLE_TEMPLATE_DIR / "comparison_slide.json"), format="json")
 
 # Also export a built-in template
-title_toml_path = tm.save("title_slide", str(template_dir / "title_slide.toml"), format="toml")
+title_toml_path = tm.save("title_slide", str(EXAMPLE_TEMPLATE_DIR / "title_slide.toml"), format="toml")
 
 # Create a slide to explain template import
 import_slide = pres.add_content_slide(title="Importing Templates")
@@ -488,7 +491,8 @@ pres.add_shape(
 thank_you_slide = pres.add_section_slide(title="Thank You!")
 
 # Save the presentation
-pres.save(output_dir / "template_toml_example.pptx")
-print(f"Presentation saved to {output_dir / 'template_toml_example.pptx'}")
-print(f"Templates saved to {template_dir}")
+output_path = OUTPUT_DIR / "003_template_toml_manager.pptx"
+pres.save(output_path)
+print(f"Saved: {output_path}")
+print(f"Templates saved to {EXAMPLE_TEMPLATE_DIR}")
 print(f"Available templates: {', '.join(tm.list_templates())}")

@@ -117,6 +117,7 @@ class Presentation:
         reference_pptx: str | None = None,
         blank_layout_index: int | None = None,
         default_bg_color: str | tuple[int, int, int] | None = None,
+        template_toml: str | None = None,
     ) -> None:
         """Initialize a new empty presentation.
 
@@ -128,6 +129,7 @@ class Presentation:
             reference_pptx: Path to a custom reference PPTX file to use (default: None)
             blank_layout_index: Index of blank layout in the slide_layouts (default: None, auto-detected)
             default_bg_color: Default background color for slides as string name or RGB tuple (default: None)
+            template_toml: Path to a TOML template file to use for slides (default: None)
 
         Raises:
             ValueError: If an invalid aspect ratio is specified
@@ -141,6 +143,16 @@ class Presentation:
 
         # Track which reference PPTX file we've loaded
         self._loaded_reference = None
+
+        # Store default template name if a TOML template is provided
+        self._default_template = None
+
+        # Load TOML template if provided
+        if template_toml:
+            try:
+                self._default_template = self.template_manager.load(template_toml)
+            except Exception as e:
+                raise FileNotFoundError(f"TOML template file not found or invalid: {e}") from e
 
         if template_path:
             # Use an existing template
@@ -286,28 +298,83 @@ class Presentation:
 
         return presentation
 
-    def add_slide(self, layout_index: int | None = None, bg_color: str | tuple[int, int, int] | None = None) -> Slide:
+    def add_slide(
+        self,
+        layout_index: int | None = None,
+        bg_color: str | tuple[int, int, int] | None = None,
+        title: str | None = None,
+        template_toml: str | None = None,
+    ) -> Slide:
         """Add a new slide to the presentation.
 
         Args:
             layout_index: Index of the slide layout to use (default: None uses blank layout)
             bg_color: Background color for this slide, overrides default (default: None)
+            title: Optional title text for the slide (default: None)
+            template_toml: Path to a TOML template file to use for this slide (default: None)
 
         Returns:
             A new Slide object
         """
-        # Use blank layout by default, or specified layout if provided
-        slide_layout = self.blank_layout if layout_index is None else self.pptx_presentation.slide_layouts[layout_index]
+        # Priority for templates:
+        # 1. If template_toml is explicitly provided for this slide, use it
+        # 2. Otherwise, if there's a default template from __init__, use that
+        # 3. Finally, fall back to a standard slide
 
-        pptx_slide = self.pptx_presentation.slides.add_slide(slide_layout)
-        slide = Slide(pptx_slide)
+        template_name = None
 
-        # Apply background color if specified for this slide or as default
-        color_to_use = bg_color if bg_color is not None else self.default_bg_color
-        if color_to_use is not None:
-            slide.set_background_color(color_to_use)
+        # If a template is directly provided for this slide
+        if template_toml is not None:
+            try:
+                template_name = self.template_manager.load(template_toml)
+            except Exception as e:
+                # If loading fails, print a warning and continue with the default template
+                print(f"Warning: Failed to load TOML template '{template_toml}': {e}")
 
-        return slide
+        # Use the default template if no specific template was provided or if loading failed
+        if template_name is None and self._default_template is not None:
+            template_name = self._default_template
+
+        # If we have a template (either slide-specific or default), use it
+        if template_name is not None:
+            # Use the template
+            slide = self.add_slide_from_template(template_name)
+
+            # Apply title if provided
+            if title is not None:
+                # Find the first text frame to use as title
+                title_shapes = [shape for shape in slide.shapes if shape.has_text_frame]
+                if title_shapes and len(title_shapes) > 0:
+                    title_shape = title_shapes[0]
+                    title_shape.text_frame.text = title
+
+            # Apply custom background color if specified
+            if bg_color is not None:
+                slide.set_background_color(bg_color)
+
+            return slide
+        else:
+            # Use blank layout by default, or specified layout if provided
+            slide_layout = (
+                self.blank_layout if layout_index is None else self.pptx_presentation.slide_layouts[layout_index]
+            )
+
+            pptx_slide = self.pptx_presentation.slides.add_slide(slide_layout)
+            slide = Slide(pptx_slide)
+
+            # Apply background color if specified for this slide or as default
+            color_to_use = bg_color if bg_color is not None else self.default_bg_color
+            if color_to_use is not None:
+                slide.set_background_color(color_to_use)
+
+            # Add title if provided
+            if title is not None:
+                # We don't have add_title method, so use add_text with appropriate positioning
+                slide.add_text(
+                    text=title, x="5%", y="5%", width="90%", height="10%", font_size=32, font_bold=True, align="center"
+                )
+
+            return slide
 
     @property
     def slides(self) -> list[Slide]:

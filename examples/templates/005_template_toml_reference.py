@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Example of using TOML templates with reference PPTX files.
+005_template_toml_reference.py - TOML Templates with Reference PPTX
 
 This example demonstrates:
 1. Loading a template from a TOML file that specifies a reference PPTX
@@ -13,10 +13,12 @@ from pathlib import Path
 from easypptx import Presentation
 from easypptx.template import TemplateManager
 
-# Path to this example file
+# Set up paths
 CURRENT_DIR = Path(__file__).parent
-ROOT_DIR = CURRENT_DIR.parent
+ROOT_DIR = CURRENT_DIR.parent.parent
 TEMPLATE_DIR = ROOT_DIR / "templates"
+OUTPUT_DIR = ROOT_DIR / "output"
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 
 def main():
@@ -69,8 +71,7 @@ def main():
     )
 
     # Save the presentation
-    output_path = CURRENT_DIR / "output" / "toml_reference_template_example.pptx"
-    output_path.parent.mkdir(exist_ok=True, parents=True)
+    output_path = OUTPUT_DIR / "005_template_toml_reference.pptx"
     presentation.save(output_path)
     print(f"Saved: {output_path}")
 

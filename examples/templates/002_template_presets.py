@@ -1,7 +1,8 @@
+#!/usr/bin/env python
 """
-Example demonstrating how to use templates in EasyPPTX.
+002_template_presets.py - Built-in Template Presets
 
-This example shows:
+This example demonstrates:
 1. Using built-in template presets (title_slide, content_slide, etc.)
 2. Creating slides with the template methods
 3. Customizing template presets
@@ -14,9 +15,11 @@ import pandas as pd
 
 from easypptx import Presentation
 
-# Create a folder for outputs if it doesn't exist
-output_dir = Path("output")
-output_dir.mkdir(exist_ok=True)
+# Set up paths
+CURRENT_DIR = Path(__file__).parent
+ROOT_DIR = CURRENT_DIR.parent.parent
+OUTPUT_DIR = ROOT_DIR / "output"
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 # Create a new presentation
 pres = Presentation()
@@ -121,5 +124,6 @@ custom_slide.add_text(
 thank_you_slide = pres.add_section_slide(title="Thank You!", bg_color="green")
 
 # Save the presentation
-pres.save(output_dir / "template_example.pptx")
-print(f"Presentation saved to {output_dir / 'template_example.pptx'}")
+output_path = OUTPUT_DIR / "002_template_presets.pptx"
+pres.save(output_path)
+print(f"Saved: {output_path}")

@@ -24,7 +24,7 @@ A Python library for easily creating and manipulating PowerPoint presentations p
 - Dark theme support with custom background colors
 - Expanded color palette for modern designs
 - Default font settings with Meiryo
-- Support for reference PowerPoint templates
+- Support for reference PowerPoint templates and TOML template files
 - Optimized for use with AI assistants and LLMs
 - Built on top of python-pptx with a more user-friendly interface
 
@@ -112,9 +112,13 @@ pres = Presentation(aspect_ratio="16:10")
 pres = Presentation(width_inches=12, height_inches=9)
 ```
 
-## Custom Reference PPTX Files
+## Reference Templates
 
-You can use custom PPTX files as references for your presentations:
+You can use multiple template formats with EasyPPTX for consistent presentation designs.
+
+### Custom Reference PPTX Files
+
+Use custom PPTX files as references for your presentations:
 
 ```python
 # Use a custom reference PPTX file (keeping all layouts and styles)
@@ -130,6 +134,30 @@ pres = Presentation(
 pres = Presentation.open(
     "path/to/existing.pptx",
     blank_layout_index=4  # Use the fifth layout as blank
+)
+```
+
+### TOML Template Initialization
+
+You can initialize a presentation with a TOML template file, which will be used for all slides by default:
+
+```python
+# Create a presentation with a default template
+pres = Presentation(template_toml="templates/business_title.toml")
+
+# Add a slide - it will automatically use the template
+slide = pres.add_slide(title="Slide with Default Template")
+
+# Add a slide with a different template, overriding the default
+slide2 = pres.add_slide(
+    title="Slide with Different Template",
+    template_toml="templates/tech_dark.toml"
+)
+
+# Add a slide without any template
+slide3 = pres.add_slide(
+    title="Standard Slide",
+    template_toml=None  # Explicitly disable template
 )
 ```
 
@@ -542,6 +570,12 @@ uv run pytest
   - `basic_demo.py` - Introduction to basic features
   - `comprehensive_example.py` - Full-featured business presentation
   - `aspect_ratio_example.py` - Demonstration of aspect ratio options
+  - `templates/` - Template system examples
+    - `001_template_basic.py` - Basic TOML template usage
+    - `002_template_presets.py` - Built-in template presets
+    - `003_template_toml_manager.py` - TOML template management
+    - `004_template_manager.py` - Template Manager API
+    - `005_template_toml_reference.py` - TOML templates with reference PPTX
   - `grid/` - Grid layout examples
     - `001_basic_grid.py` - Basic Grid usage
     - `002_grid_indexing.py` - Grid indexing and iteration

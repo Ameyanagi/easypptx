@@ -1,7 +1,8 @@
+#!/usr/bin/env python
 """
-Example demonstrating how to use the enhanced template management features.
+004_template_manager.py - Template Manager API
 
-This example shows:
+This example demonstrates:
 1. Creating and registering custom templates
 2. Saving templates to and loading templates from files
 3. Using custom templates in presentations
@@ -17,16 +18,18 @@ from easypptx.image import Image
 from easypptx.table import Table
 from easypptx.text import Text
 
-# Create a folder for outputs if it doesn't exist
-output_dir = Path("outputs")
-output_dir.mkdir(exist_ok=True)
+# Set up paths
+CURRENT_DIR = Path(__file__).parent
+ROOT_DIR = CURRENT_DIR.parent.parent
+OUTPUT_DIR = ROOT_DIR / "output"
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 # Create a template directory for this example
-template_dir = output_dir / "templates"
-template_dir.mkdir(exist_ok=True)
+EXAMPLE_TEMPLATE_DIR = OUTPUT_DIR / "template_manager"
+EXAMPLE_TEMPLATE_DIR.mkdir(exist_ok=True)
 
 # 1. Create a TemplateManager with a custom template directory
-tm = TemplateManager(template_dir=str(template_dir))
+tm = TemplateManager(template_dir=str(EXAMPLE_TEMPLATE_DIR))
 
 # 2. Create a custom template for a product slide
 product_template = {
@@ -179,10 +182,12 @@ Text.add(
 )
 
 # Save the presentations
-pres.save(output_dir / "template_manager_example1.pptx")
-pres2.save(output_dir / "template_manager_example2.pptx")
+output_path1 = OUTPUT_DIR / "004_template_manager_example1.pptx"
+output_path2 = OUTPUT_DIR / "004_template_manager_example2.pptx"
+pres.save(output_path1)
+pres2.save(output_path2)
 
-print(f"Presentations saved to: {output_dir}")
+print(f"Presentations saved to: {output_path1} and {output_path2}")
 
 # 10. Demonstrate loading a template from a file
 new_tm = TemplateManager()
@@ -194,5 +199,6 @@ pres3 = Presentation()
 pres3.template_manager = new_tm
 pres3.add_title_slide("Loaded Template Example", "Using a template loaded from a file")
 pres3.add_slide_from_template(loaded_template_name)
-pres3.save(output_dir / "template_loaded_example.pptx")
-print(f"Created presentation with loaded template: {output_dir / 'template_loaded_example.pptx'}")
+output_path3 = OUTPUT_DIR / "004_template_manager_loaded.pptx"
+pres3.save(output_path3)
+print(f"Created presentation with loaded template: {output_path3}")
