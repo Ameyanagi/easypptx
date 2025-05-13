@@ -1,7 +1,7 @@
 # Business Template - Title Slide
 # A professional title slide for business presentations
 
-bg_color = "#003366"  # Dark blue background
+bg_color = [0, 51, 102]  # Dark blue background
 
 [title]
 text = "Presentation Title"
@@ -9,7 +9,7 @@ position = { x = "10%", y = "30%", width = "80%", height = "20%" }
 font = { name = "Meiryo", size = 44, bold = true }
 align = "center"
 vertical = "middle"
-color = "white"
+color = "white"  # This predefined color name is fine
 
 [subtitle]
 text = "Subtitle or Presenter Information"
@@ -17,7 +17,7 @@ position = { x = "10%", y = "55%", width = "80%", height = "10%" }
 font = { name = "Meiryo", size = 24, bold = false }
 align = "center"
 vertical = "middle"
-color = "#66ccff"  # Light blue for subtitle
+color = [102, 204, 255]  # Light blue for subtitle
 
 [logo]
 position = { x = "5%", y = "5%", width = "15%", height = "15%" }
@@ -29,4 +29,4 @@ position = { x = "0%", y = "90%", width = "100%", height = "5%" }
 font = { name = "Meiryo", size = 14, bold = true }
 align = "center"
 vertical = "middle"
-color = "#cceeff"  # Very light blue for footer
+color = [204, 238, 255]  # Very light blue for footer
