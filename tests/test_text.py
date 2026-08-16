@@ -68,10 +68,10 @@ def test_add_paragraph():
     slide.add_text.assert_called_once()
     call_args = slide.add_text.call_args[1]
     assert call_args["text"] == "Test Paragraph"
-    assert call_args["x"] == 1.0
-    assert call_args["y"] == 2.0
-    assert call_args["width"] == 8.0
-    assert call_args["height"] == 1.0
+    assert call_args["x"] == 10
+    assert call_args["y"] == 20
+    assert call_args["width"] == 80
+    assert call_args["height"] == 10
     assert call_args["font_size"] == 18
     assert call_args["font_bold"] is False
     assert call_args["font_italic"] is False

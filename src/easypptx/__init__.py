@@ -5,6 +5,7 @@ from importlib.metadata import PackageNotFoundError, version
 from easypptx.chart import Chart
 from easypptx.grid import Grid
 from easypptx.image import Image
+from easypptx.positioning import in_
 from easypptx.presentation import Presentation
 from easypptx.pyplot import Pyplot
 from easypptx.slide import Slide
@@ -31,4 +32,5 @@ __all__ = [
     "Text",
     "generate_default_template",
     "generate_template_with_comments",
+    "in_",
 ]

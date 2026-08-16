@@ -7,8 +7,10 @@ from typing import IO, TYPE_CHECKING
 
 from PIL import Image as PILImage
 from pptx.shapes.autoshape import Shape as PPTXShape
+from pptx.util import Inches, Length
 
-from easypptx.positioning import PositionType, is_percent, parse_percent
+from easypptx.common import EMU_PER_INCH
+from easypptx.positioning import PositionType, parse_percent
 
 if TYPE_CHECKING:
     from easypptx.slide import Slide
@@ -43,8 +45,8 @@ class Image:
     def add(
         self,
         image_path: str | Path | IO[bytes],
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 5,
         width: PositionType | None = None,
         height: PositionType | None = None,
         maintain_aspect_ratio: bool = True,
@@ -85,12 +87,16 @@ class Image:
 
             if width is not None:
                 # Calculate height based on width
-                height = f"{parse_percent(width) / aspect_ratio}%" if is_percent(width) else float(width) / aspect_ratio
+                if isinstance(width, Length):
+                    height = Inches(int(width) / EMU_PER_INCH / aspect_ratio)
+                else:
+                    height = parse_percent(width) / aspect_ratio
             elif height is not None:
                 # Calculate width based on height
-                width = (
-                    f"{parse_percent(height) * aspect_ratio}%" if is_percent(height) else float(height) * aspect_ratio
-                )
+                if isinstance(height, Length):
+                    width = Inches(int(height) / EMU_PER_INCH * aspect_ratio)
+                else:
+                    width = parse_percent(height) * aspect_ratio
 
         return self.slide.add_image(source, x, y, width, height)
 

@@ -46,8 +46,8 @@ class Table:
     def add(
         self,
         data: list,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 20,
         width: PositionType | None = None,
         height: PositionType | None = None,
         first_row_header: bool = True,
@@ -123,8 +123,8 @@ class Table:
     def from_dataframe(
         self,
         df: pd.DataFrame,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 20,
         width: PositionType | None = None,
         height: PositionType | None = None,
         include_index: bool = False,

@@ -183,10 +183,10 @@ class Slide:
 
         Args:
             text: The text content
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Width in inches or percentage (default: 8.0)
-            height: Height in inches or percentage (default: 1.0)
+            x: X position as percent (number or "N%") or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 5)
+            width: Width as percent or in_() length (default: 90)
+            height: Height as percent or in_() length (default: 10)
             font_size: Font size in points (default: 18)
             font_bold: Whether text should be bold (default: False)
             font_italic: Whether text should be italic (default: False)
@@ -206,10 +206,10 @@ class Slide:
         warn_ignored_kwargs("Slide.add_text", kwargs)
 
         # Resolve parameters: explicit value > template default > fallback
-        x_val = self._template_value("text", "x", x, 1.0)
-        y_val = self._template_value("text", "y", y, 1.0)
-        width_val = self._template_value("text", "width", width, 8.0)
-        height_val = self._template_value("text", "height", height, 1.0)
+        x_val = self._template_value("text", "x", x, 5)
+        y_val = self._template_value("text", "y", y, 5)
+        width_val = self._template_value("text", "width", width, 90)
+        height_val = self._template_value("text", "height", height, 10)
         font_size_val = self._template_value("text", "font_size", font_size, 18)
         font_bold_val = self._template_value("text", "font_bold", font_bold, False)
         font_italic_val = self._template_value("text", "font_italic", font_italic, False)
@@ -258,8 +258,8 @@ class Slide:
     def add_image(
         self,
         image_path: str | IO[bytes],
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 5,
         width: PositionType | None = None,
         height: PositionType | None = None,
         **kwargs: Any,
@@ -317,10 +317,10 @@ class Slide:
     def add_shape(
         self,
         shape_type: MSO_SHAPE | str = MSO_SHAPE.RECTANGLE,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
-        width: PositionType = 5.0,
-        height: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 5,
+        width: PositionType = 40,
+        height: PositionType = 10,
         fill_color: str | tuple[int, int, int] | None = None,
         **kwargs: Any,
     ) -> PPTXShape:
@@ -370,8 +370,8 @@ class Slide:
     def add_table(
         self,
         data: Any,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 20,
         width: PositionType | None = None,
         height: PositionType | None = None,
         has_header: bool = True,
@@ -418,10 +418,10 @@ class Slide:
         self,
         data: Any = None,
         chart_type: str = "column",
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
-        width: PositionType = 6.0,
-        height: PositionType = 4.5,
+        x: PositionType = 10,
+        y: PositionType = 20,
+        width: PositionType = 60,
+        height: PositionType = 60,
         categories: list | None = None,
         values: list | None = None,
         category_column: str | int | None = None,
@@ -534,16 +534,16 @@ class Slide:
 
         cell_width = container_width / cols
         cell_height = container_height / rows
-        obj_width = cell_width * (1 - padding)
-        obj_height = cell_height * (1 - padding)
+        obj_width = Inches(cell_width * (1 - padding))
+        obj_height = Inches(cell_height * (1 - padding))
 
         created_objects = []
 
         for i, obj_data in enumerate(objects_data):
             col = i % cols
             row = i // cols
-            obj_x = container_x + (col * cell_width) + (cell_width * padding / 2)
-            obj_y = container_y + (row * cell_height) + (cell_height * padding / 2)
+            obj_x = Inches(container_x + (col * cell_width) + (cell_width * padding / 2))
+            obj_y = Inches(container_y + (row * cell_height) + (cell_height * padding / 2))
 
             obj_type = obj_data.get("type", "text")
 
