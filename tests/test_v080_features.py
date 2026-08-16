@@ -395,10 +395,12 @@ class TestThemedFigures:
             show_values=True,
             y_title="USD",
         )
-        white = (255, 255, 255)
-        assert chart.value_axis.tick_labels.font.color.rgb == white
-        assert chart.legend.font.color.rgb == white
-        assert chart.plots[0].data_labels.font.color.rgb == white
+        from easypptx.styles import THEMES
+
+        body = THEMES["dark"].body.color
+        assert chart.value_axis.tick_labels.font.color.rgb == body
+        assert chart.legend.font.color.rgb == body
+        assert chart.plots[0].data_labels.font.color.rgb == body
 
     def test_pyplot_chart_transparent_on_theme(self):
         from PIL import Image as PILImage
@@ -455,8 +457,18 @@ class TestPolish084:
         pres = Presentation(theme="dark")
         slide = pres.add_slide()
         chart = slide.add_chart(data=[["Q", "V"], ["a", 1]])
+        from easypptx.styles import THEMES
+
+        body = THEMES["dark"].body.color  # light text -> gridlines dim darker
         dim = chart.value_axis.major_gridlines.format.line.color.rgb
-        assert dim == (int(255 * 0.45),) * 3
+        assert dim == tuple(int(c * 0.45) for c in body)
+
+    def test_light_theme_gridlines_fade_lighter(self):
+        pres = Presentation(theme="light")
+        slide = pres.add_slide()
+        chart = slide.add_chart(data=[["Q", "V"], ["a", 1]])
+        dim = chart.value_axis.major_gridlines.format.line.color.rgb
+        assert min(dim) > 180  # a light gray, never heavy black
 
     def test_legend_defaults_to_bottom(self):
         from pptx.enum.chart import XL_LEGEND_POSITION
@@ -477,3 +489,49 @@ class TestPolish084:
 
         img = PILImage.open(io.BytesIO(shape.image.blob))
         assert img.width > img.height
+
+
+class TestProfessionalDefaults:
+    """0.9.0 design pass: accent bars, themed tables, bullet rhythm."""
+
+    def test_title_accent_bar_drawn(self):
+        from pptx.enum.shapes import MSO_SHAPE_TYPE
+
+        pres = Presentation(theme="corporate")
+        slide = pres.add_slide(title="T")
+        kinds = [s.shape_type for s in slide.shapes]
+        assert MSO_SHAPE_TYPE.AUTO_SHAPE in kinds  # the accent bar
+
+    def test_title_accent_can_be_disabled(self):
+        theme = Theme(bg_color="white", accent_color=(1, 2, 3), title_accent=False)
+        pres = Presentation(theme=theme)
+        slide = pres.add_slide(title="T")
+        from pptx.enum.shapes import MSO_SHAPE_TYPE
+
+        assert MSO_SHAPE_TYPE.AUTO_SHAPE not in [s.shape_type for s in slide.shapes]
+
+    def test_themed_table_header_and_numeric_alignment(self):
+        from pptx.enum.text import PP_ALIGN
+
+        from easypptx.styles import THEMES
+
+        pres = Presentation(theme="light")
+        slide = pres.add_slide()
+        table = slide.add_table([["Item", "Sales"], ["Widgets", 1200], ["Gadgets", 900]])
+        header = table.cell(0, 1)
+        assert header.fill.fore_color.rgb == THEMES["light"].table["header_fill"]
+        # Numeric column right-aligns (body and header)
+        assert table.cell(1, 1).text_frame.paragraphs[0].alignment == PP_ALIGN.RIGHT
+        assert header.text_frame.paragraphs[0].alignment == PP_ALIGN.RIGHT
+        # Text column stays default-aligned
+        assert table.cell(1, 0).text_frame.paragraphs[0].alignment != PP_ALIGN.RIGHT
+
+    def test_bullet_rhythm(self):
+        from pptx.util import Pt
+
+        pres = Presentation()
+        slide = pres.add_slide()
+        shape = slide.add_bullets(["top", ("nested", 1)], font_size=20)
+        p0, p1 = shape.text_frame.paragraphs
+        assert p0.space_after == Pt(7)
+        assert p1.font.size.pt == 18  # nested level steps down

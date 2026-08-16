@@ -370,9 +370,13 @@ class Chart:
                         axis.tick_labels.font.color.rgb = rgb_font
                         if axis.has_title:
                             axis.axis_title.text_frame.paragraphs[0].font.color.rgb = rgb_font
-                    # Dim gridlines derived from the text color, so they are
-                    # visible-but-subtle on the themed background
-                    dim = RGBColor(*(int(c * 0.45) for c in rgb_font))
+                    # Subtle gridlines: light text (dark decks) dims toward
+                    # black, dark text (light decks) fades toward white
+                    luminance = 0.299 * rgb_font[0] + 0.587 * rgb_font[1] + 0.114 * rgb_font[2]
+                    if luminance >= 128:
+                        dim = RGBColor(*(int(c * 0.45) for c in rgb_font))
+                    else:
+                        dim = RGBColor(*(int(255 - (255 - c) * 0.18) for c in rgb_font))
                     if chart_any.value_axis.has_major_gridlines:
                         chart_any.value_axis.major_gridlines.format.line.color.rgb = dim
                 except ValueError:
