@@ -1,6 +1,5 @@
 """Tests for enhanced Grid methods."""
 
-import unittest
 from unittest.mock import MagicMock
 
 from easypptx.grid import Grid
@@ -82,24 +81,19 @@ class TestGridEnhancedMethods:
         assert self.grid.cells[1][1].content == "image_shape"
 
     def test_add_table(self):
-        """Test the add_table method."""
+        """Test the add_table method routes through the parent's add_table."""
         data = [["A", "B"], [1, 2]]
+        self.parent.add_table = MagicMock(return_value="table_shape")
 
-        # Mock the Table class and its add method
-        mock_table = MagicMock()
-        mock_table.add.return_value = "table_shape"
+        result = self.grid.add_table(row=0, col=0, data=data, has_header=True)
 
-        with unittest.mock.patch("easypptx.table.Table", return_value=mock_table):
-            result = self.grid.add_table(row=0, col=0, data=data, has_header=True)
+        self.parent.add_table.assert_called_once()
+        args, kwargs = self.parent.add_table.call_args
+        assert args[0] == data
+        assert kwargs["has_header"] is True
+        # Positioned with the cell's absolute area
+        for key in ("x", "y", "width", "height"):
+            assert key in kwargs
 
-            # Verify that the Table was created
-            mock_table.add.assert_called_once()
-
-            # Check that the correct data was passed
-            call_kwargs = mock_table.add.call_args[1]
-            assert call_kwargs["data"] == data
-            assert call_kwargs["first_row_header"] is True
-
-            # Verify that the result is correct
-            assert result == "table_shape"
-            assert self.grid.cells[0][0].content == "table_shape"
+        assert result == "table_shape"
+        assert self.grid.cells[0][0].content == "table_shape"

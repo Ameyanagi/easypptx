@@ -9,19 +9,20 @@ from easypptx.common import COLORS, apply_shadow
 from easypptx.image import Image
 
 
-def figure_to_stream(figure: Any, dpi: int = 300, file_format: str = "png") -> io.BytesIO:
+def figure_to_stream(figure: Any, dpi: int = 300, file_format: str = "png", transparent: bool = False) -> io.BytesIO:
     """Render a matplotlib figure to an in-memory image stream.
 
     Args:
         figure: Matplotlib figure object
         dpi: Resolution for the figure (default: 300)
         file_format: Image format ("png" or "jpg") (default: "png")
+        transparent: Render with a transparent background (default: False)
 
     Returns:
         A BytesIO stream positioned at the start of the image data
     """
     stream = io.BytesIO()
-    figure.savefig(stream, dpi=dpi, format=file_format, bbox_inches="tight")
+    figure.savefig(stream, dpi=dpi, format=file_format, bbox_inches="tight", transparent=transparent)
     stream.seek(0)
     return stream
 
@@ -73,7 +74,7 @@ class Pyplot:
             style = {"maintain_aspect_ratio": True, "center": True, "border": False}
 
         # Render the figure in memory (no temporary files)
-        stream = figure_to_stream(figure, dpi=dpi, file_format=file_format)
+        stream = figure_to_stream(figure, dpi=dpi, file_format=file_format, transparent=style.get("transparent", False))
 
         img = Image(slide)
         image_shape = img.add(

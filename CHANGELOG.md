@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.2] - 2026-08-16
+
+Driven by rendered-PNG visual QA of generated decks.
+
+### Fixed
+- Native chart text (axis labels, tick values, data labels, legend, axis titles) follows the deck theme's body color — charts on dark themes were nearly unreadable; explicit `font_color=` overrides
+- matplotlib-backed charts on themed decks render with a transparent background and theme-colored text/spines instead of a white panel
+- Grid-cell tables route through `Slide.add_table`, so DataFrames-and-friends, `number_format`, `shade_columns`, and styles work inside grids (previously a TypeError)
+
+### Added
+- `transparent=` on `Slide.add_pyplot` / `figure_to_stream`; `font_color=` on `Slide.add_chart` / `Chart.add`
+
 ## [0.8.1] - 2026-08-16
 
 ### Fixed

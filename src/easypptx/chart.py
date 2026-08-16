@@ -219,6 +219,7 @@ class Chart:
         y_min: float | None = None,
         y_max: float | None = None,
         palette: list | None = None,
+        font_color: Any = None,
         **kwargs: Any,
     ) -> PPTXChart:
         """Add a chart to the slide.
@@ -242,6 +243,8 @@ class Chart:
             y_min: Lower value-axis limit (default: None)
             y_max: Upper value-axis limit (default: None)
             palette: Series colors as color names or RGB tuples (default: None)
+            font_color: Color for all chart text — axes, tick labels, legend,
+                data labels, and title (default: None, PowerPoint defaults)
             **kwargs: Additional chart-specific parameters
 
         Returns:
@@ -335,6 +338,28 @@ class Chart:
                         chart_any.value_axis.maximum_scale = y_max
                 except ValueError as err:
                     warnings.warn(f"Axis options not supported for chart type {chart_type!r}: {err}", stacklevel=2)
+
+        # Chart text color (e.g. light text for dark deck themes)
+        rgb_font = None
+        if font_color is not None:
+            from easypptx.common import resolve_color
+
+            rgb_font = resolve_color(font_color)
+        if rgb_font is not None:
+            if title:
+                chart.chart_title.text_frame.paragraphs[0].font.color.rgb = rgb_font
+            if has_legend:
+                chart.legend.font.color.rgb = rgb_font
+            if show_values or number_format:
+                chart.plots[0].data_labels.font.color.rgb = rgb_font
+            if chart_type != "pie":
+                try:
+                    for axis in (chart_any.category_axis, chart_any.value_axis):
+                        axis.tick_labels.font.color.rgb = rgb_font
+                        if axis.has_title:
+                            axis.axis_title.text_frame.paragraphs[0].font.color.rgb = rgb_font
+                except ValueError:
+                    pass
 
         # Series colors from an explicit palette (e.g. the deck theme)
         if palette:

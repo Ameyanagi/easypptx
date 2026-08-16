@@ -91,8 +91,13 @@ class Theme:
         themed defaults cascade exactly like template defaults.
         """
         template: dict[str, Any] = {"defaults": {"global": self.body.to_kwargs()}}
+        chart_defaults: dict[str, Any] = {}
         if self.palette is not None:
-            template["defaults"]["chart"] = {"palette": list(self.palette)}
+            chart_defaults["palette"] = list(self.palette)
+        if self.body.color is not None:
+            chart_defaults["font_color"] = self.body.color
+        if chart_defaults:
+            template["defaults"]["chart"] = chart_defaults
         if self.bg_color is not None:
             template["bg_color"] = self.bg_color
         return template
