@@ -40,8 +40,9 @@ def main():
     print(f"Template specifies reference PPTX: {reference_pptx}")
     print(f"Template specifies blank layout index: {blank_layout_index}")
 
-    # Create a new presentation
+    # Create a new presentation and attach the template manager
     presentation = Presentation()
+    presentation.template_manager = template_manager
 
     # Add a slide using the template
     # This will automatically use the reference PPTX specified in the template

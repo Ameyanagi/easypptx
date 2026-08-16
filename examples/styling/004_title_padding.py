@@ -5,10 +5,22 @@ This example shows how to control the positioning of titles and content
 using padding parameters in different slide types.
 """
 
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image as PILImage
 
 from easypptx import Presentation
+
+# Create output directories
+output_dir = Path("output")
+image_dir = output_dir / "images"
+image_dir.mkdir(parents=True, exist_ok=True)
+
+# Create a sample logo image for the image slide example
+logo_path = image_dir / "company_logo.png"
+PILImage.new("RGB", (400, 100), color=(255, 255, 255)).save(logo_path)
 
 # Create a new presentation
 pres = Presentation()
@@ -64,7 +76,7 @@ slide5, pyplot = pres.add_pyplot_slide(
 
 # Add an image slide with custom padding
 slide6, image = pres.add_image_gen_slide(
-    image_path="../output/images/company_logo.png",  # Adjust path as needed
+    image_path=str(logo_path),
     title="Image With Custom Padding",
     title_padding="15%",
     content_padding="8%",
@@ -74,5 +86,6 @@ slide6, image = pres.add_image_gen_slide(
 )
 
 # Save the presentation
-pres.save("title_padding_example.pptx")
-print("Presentation saved as 'title_padding_example.pptx'")
+output_path = output_dir / "title_padding_example.pptx"
+pres.save(output_path)
+print(f"Presentation saved as '{output_path}'")

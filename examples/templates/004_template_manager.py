@@ -12,10 +12,10 @@ This example demonstrates:
 from pathlib import Path
 
 import pandas as pd
+from PIL import Image as PILImage
 
 from easypptx import Presentation, TemplateManager
 from easypptx.image import Image
-from easypptx.table import Table
 from easypptx.text import Text
 
 # Set up paths
@@ -115,13 +115,19 @@ product_slide = pres.add_slide_from_template("product_slide")
 
 # Add content to the product slide
 
-# Add a product image
-Image.add(
-    slide=product_slide,
-    image_path="examples/assets/sample_image.jpg",  # Replace with your image path
-    position=product_template["image_area"]["position"],
+# Create a sample product image, then add it to the slide
+image_dir = OUTPUT_DIR / "images"
+image_dir.mkdir(exist_ok=True)
+sample_image_path = image_dir / "sample_product.png"
+PILImage.new("RGB", (800, 600), color=(0x00, 0x70, 0xC0)).save(sample_image_path)
+
+image_position = product_template["image_area"]["position"]
+Image(product_slide).add(
+    image_path=str(sample_image_path),
+    x=image_position["x"],
+    y=image_position["y"],
+    width=image_position["width"],
     maintain_aspect_ratio=True,
-    center=True,
 )
 
 # Add product details
@@ -154,13 +160,15 @@ data = pd.DataFrame({
     "Product C": ["Yes", "Premium", "Yes", "Premium"],
 })
 
-# Add the table
-Table.add(
-    slide=comparison_slide,
+# Add the table (dict-based table styling is not supported by slide.add_table)
+table_position = comparison_template["table_area"]["position"]
+comparison_slide.add_table(
     data=data,
-    position=comparison_template["table_area"]["position"],
+    x=table_position["x"],
+    y=table_position["y"],
+    width=table_position["width"],
+    height=table_position["height"],
     has_header=True,
-    style=comparison_template["table_style"],
 )
 
 # 9. Create another presentation directly using the TemplateManager
@@ -168,7 +176,7 @@ pres2 = Presentation()
 pres2.template_manager = tm
 
 # 9a. Add a section slide using a built-in template
-section_slide = pres2.add_section_slide(title="Direct Template Manager Integration", bg_color="darkblue")
+section_slide = pres2.add_section_slide(title="Direct Template Manager Integration", bg_color="blue")
 
 # 9b. Add a slide using a custom template
 product_slide2 = pres2.add_slide_from_template("product_slide")

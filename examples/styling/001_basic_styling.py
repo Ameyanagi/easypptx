@@ -11,6 +11,8 @@ This example shows:
 from pathlib import Path
 
 import pandas as pd
+from PIL import Image as PILImage
+from pptx.dml.color import RGBColor
 
 from easypptx import Presentation
 
@@ -40,19 +42,20 @@ title_slide = pres.add_title_slide(
 # 2. Add a section slide for image styling
 section_slide1 = pres.add_section_slide(title="Image Styling", bg_color="blue")
 
-# 3. Add an image slide with custom styling
-image_slide = pres.add_image_slide(
+# 3. Create a sample image, then add an image slide with styling
+image_dir = output_dir / "images"
+image_dir.mkdir(exist_ok=True)
+sample_image_path = image_dir / "sample_image.png"
+PILImage.new("RGB", (800, 450), color=(91, 155, 213)).save(sample_image_path)
+
+image_slide, image_shape = pres.add_image_gen_slide(
+    image_path=str(sample_image_path),
     title="Styled Image Example",
-    image_path="examples/assets/sample_image.jpg",  # Replace with your image path
     label="Image with blue border and shadow effect",
-    custom_style={
-        "border": True,
-        "border_color": "blue",
-        "border_width": 2,
-        "shadow": True,
-        "maintain_aspect_ratio": True,
-        "center": True,
-    },
+    border=True,
+    border_color="blue",
+    shadow=True,
+    maintain_aspect_ratio=True,
 )
 
 # 4. Add a section slide for table styling
@@ -97,10 +100,10 @@ chart_slide = pres.add_chart_slide(
         "has_border": True,
         "border_color": "black",
         "palette": [
-            (0x5B, 0x9B, 0xD5),  # Blue
-            (0xED, 0x7D, 0x31),  # Orange
-            (0xA5, 0xA5, 0xA5),  # Gray
-            (0xFF, 0xC0, 0x00),  # Yellow
+            RGBColor(0x5B, 0x9B, 0xD5),  # Blue
+            RGBColor(0xED, 0x7D, 0x31),  # Orange
+            RGBColor(0xA5, 0xA5, 0xA5),  # Gray
+            RGBColor(0xFF, 0xC0, 0x00),  # Yellow
         ],
     },
 )
@@ -135,14 +138,17 @@ custom_template = {
 custom_slide = pres.add_slide_from_template(custom_template)
 custom_slide.add_text(
     text="This slide uses a comprehensive custom template with styling options for images, tables, and charts.",
-    position={"x": "10%", "y": "20%", "width": "80%", "height": "70%"},
+    x="10%",
+    y="20%",
+    width="80%",
+    height="70%",
     font_size=16,
     align="center",
     vertical="middle",
 )
 
 # 10. Add a "thank you" slide
-thank_you_slide = pres.add_slide_from_template("thank_you_slide")
+thank_you_slide = pres.add_section_slide(title="Thank You!")
 
 # Save the presentation
 pres.save(output_dir / "styling_example.pptx")

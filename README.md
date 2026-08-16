@@ -14,17 +14,13 @@ A Python library for easily creating and manipulating PowerPoint presentations p
 ## Features
 
 - Simple, intuitive API for PowerPoint manipulation
-- Create slides with text, images, tables, and charts
-- Format elements with easy-to-use styling options
-- Default 16:9 aspect ratio with support for multiple ratio options
-- Percentage-based positioning for responsive layouts
-- Auto-alignment of multiple objects (grid, horizontal, vertical)
-- Advanced Grid layout system with convenience methods
-- Grid iteration, indexing, and nested grid capabilities
-- Dark theme support with custom background colors
-- Expanded color palette for modern designs
-- Default font settings with Meiryo
+- Grid-first layout system: spans, weighted rows/columns, auto-flow, cell styling
+- Markdown → deck conversion (`Presentation.from_markdown`)
+- Percentage positions as plain numbers (`x=10` is 10%); inches via `in_(1.5)`
+- Bullet lists with nesting, speaker notes, and multi-series charts
+- Reusable style objects and built-in themes (light / dark / corporate)
 - Support for reference PowerPoint templates and TOML template files
+- Loud, predictable errors — unknown parameters warn instead of vanishing
 - Optimized for use with AI assistants and LLMs
 - Built on top of python-pptx with a more user-friendly interface
 
@@ -54,10 +50,66 @@ slide, grid = pres.add_grid_slide(rows=2, cols=2, title="Quarterly Review")
 
 grid[0, 0].add_text("Revenue up 12%", font_size=20, align="center", vertical="middle")
 grid[0, 1].add_table([["Region", "Sales"], ["East", 120], ["West", 95]], has_header=True)
-grid[1, 0].add_image(image_path="chart.png")
-grid[1, 1].add_text("Next steps: expand pilot", font_size=18)
+grid[1, :].add_text("Next steps: expand pilot", font_size=18)  # spans the bottom row
 
 pres.save("review.pptx")
+```
+
+Positions are percentages — as plain numbers or strings — and physical
+units use `in_()`:
+
+```python
+from easypptx import in_
+
+slide.add_text("Centered band", x=10, y=45, width=80, height=10)   # 10% / 45% / ...
+slide.add_image(image_path="logo.png", x=in_(0.5), width=in_(1.5))  # absolute inches
+```
+
+### Markdown → deck
+
+```python
+from easypptx import Presentation
+
+pres = Presentation.from_markdown("deck.md")   # or a markdown string
+pres.save("deck.pptx")
+```
+
+```markdown
+---
+theme: dark
+---
+
+# Q3 Review
+
+Finance team
+
+## Highlights <!-- notes: keep this section short -->
+
+- Revenue up 12%
+  - EMEA strongest region
+- Costs down 3%
+
+::: columns
+![trend](trend.png)
+
+| Region | Sales |
+|--------|-------|
+| East   | 120   |
+:::
+```
+
+### Themes and styles
+
+```python
+from easypptx import Presentation, TextStyle
+
+pres = Presentation(theme="dark")              # light / dark / corporate, or a custom Theme
+heading = TextStyle(font_size=28, font_bold=True, color="cyan")
+
+slide = pres.add_slide(title="Styled")
+slide.add_text("Reusable styling", style=heading)
+slide.add_bullets(["First point", ("Nested detail", 1), "Second point"])
+slide.notes = "Speaker notes go here."
 ```
 
 Content can also be placed directly on a slide with percentage-based positions:

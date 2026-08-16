@@ -1,0 +1,10 @@
+
+# Template with left-aligned title
+
+[title]
+text = "Presentation Title"
+position = { x = "10%", y = "5%", width = "80%", height = "10%" }
+font = { name = "Meiryo", size = 44, bold = true }
+align = "left"
+vertical = "middle"
+color = "black"

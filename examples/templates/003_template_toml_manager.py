@@ -44,8 +44,7 @@ section_slide = pres.add_section_slide(title="Built-in Templates")
 builtin_slide = pres.add_content_slide(title="Working with Built-in Templates")
 
 # Add text explaining built-in templates
-pres.add_text(
-    slide=builtin_slide,
+builtin_slide.add_text(
     text=(
         "EasyPPTX comes with several built-in templates:\n\n"
         "• title_slide: For presentation title slides\n"
@@ -68,8 +67,7 @@ pres.add_text(
 example_title_slide = pres.add_title_slide(title="Title Slide Template", subtitle="Used for introductory slides")
 
 example_content_slide = pres.add_content_slide(title="Content Slide Template")
-pres.add_text(
-    slide=example_content_slide,
+example_content_slide.add_text(
     text="Regular content slides have a title, optional bar, and content area.",
     x="10%",
     y="20%",
@@ -86,8 +84,7 @@ section_slide = pres.add_section_slide(title="Custom Templates")
 
 # Create a slide to explain custom templates
 custom_template_slide = pres.add_content_slide(title="Creating Custom Templates")
-pres.add_text(
-    slide=custom_template_slide,
+custom_template_slide.add_text(
     text=(
         "You can create custom templates by:\n\n"
         "1. Building a template dictionary manually\n"
@@ -142,7 +139,7 @@ product_template = {
     },
     "price_box": {
         "position": {"x": "50%", "y": "65%", "width": "45%", "height": "15%"},
-        "shape_type": MSO_SHAPE.ROUNDED_RECTANGLE,
+        "shape_type": "ROUNDED_RECTANGLE",  # string name so the template serializes to TOML/JSON
         "fill_color": "blue",
         "text_color": "white",
         "font": {"name": "Meiryo", "size": 24, "bold": True},
@@ -192,8 +189,7 @@ tm.register("comparison_slide", comparison_template)
 
 # Create slides to demonstrate the custom templates
 custom_slide1 = pres.add_slide()
-pres.add_text(
-    slide=custom_slide1,
+custom_slide1.add_text(
     text="Product Template (Registered)",
     x="5%",
     y="5%",
@@ -206,21 +202,26 @@ pres.add_text(
 )
 
 # Use elements from the product template
-pres.add_shape(
-    slide=custom_slide1,
+custom_slide1.add_shape(
     shape_type=MSO_SHAPE.RECTANGLE,
     x="5%",
     y="20%",
     width="40%",
     height="70%",
     fill_color="lightgray",
+)
+custom_slide1.add_text(
     text="Product Image\nArea",
     font_size=18,
-    text_align="center",
+    x="5%",
+    y="20%",
+    width="40%",
+    height="70%",
+    align="center",
+    vertical="middle",
 )
 
-pres.add_text(
-    slide=custom_slide1,
+custom_slide1.add_text(
     text="Key Features",
     x="50%",
     y="20%",
@@ -232,8 +233,7 @@ pres.add_text(
     color="blue",
 )
 
-pres.add_text(
-    slide=custom_slide1,
+custom_slide1.add_text(
     text="• Feature 1\n• Feature 2\n• Feature 3\n• Feature 4",
     x="50%",
     y="32%",
@@ -243,25 +243,30 @@ pres.add_text(
     align="left",
 )
 
-pres.add_shape(
-    slide=custom_slide1,
+custom_slide1.add_shape(
     shape_type=MSO_SHAPE.ROUNDED_RECTANGLE,
     x="50%",
     y="65%",
     width="45%",
     height="15%",
     fill_color="blue",
+)
+custom_slide1.add_text(
     text="$99.99",
     font_size=24,
     font_bold=True,
-    font_color="white",
-    text_align="center",
+    color="white",
+    x="50%",
+    y="65%",
+    width="45%",
+    height="15%",
+    align="center",
+    vertical="middle",
 )
 
 # Create a slide for the comparison template
 custom_slide2 = pres.add_slide()
-pres.add_text(
-    slide=custom_slide2,
+custom_slide2.add_text(
     text="Comparison Template (Registered)",
     x="5%",
     y="5%",
@@ -272,8 +277,7 @@ pres.add_text(
     align="center",
 )
 
-pres.add_text(
-    slide=custom_slide2,
+custom_slide2.add_text(
     text="VS",
     x="45%",
     y="40%",
@@ -285,8 +289,7 @@ pres.add_text(
     color="gray",
 )
 
-pres.add_text(
-    slide=custom_slide2,
+custom_slide2.add_text(
     text="Option A",
     x="5%",
     y="20%",
@@ -298,8 +301,7 @@ pres.add_text(
     color="blue",
 )
 
-pres.add_text(
-    slide=custom_slide2,
+custom_slide2.add_text(
     text="Option B",
     x="55%",
     y="20%",
@@ -311,30 +313,42 @@ pres.add_text(
     color="green",
 )
 
-pres.add_shape(
-    slide=custom_slide2,
+custom_slide2.add_shape(
     shape_type=MSO_SHAPE.RECTANGLE,
     x="5%",
     y="32%",
     width="40%",
     height="60%",
     fill_color="lightgray",
+)
+custom_slide2.add_text(
     text="Left Content Area",
     font_size=18,
-    text_align="center",
+    x="5%",
+    y="32%",
+    width="40%",
+    height="60%",
+    align="center",
+    vertical="middle",
 )
 
-pres.add_shape(
-    slide=custom_slide2,
+custom_slide2.add_shape(
     shape_type=MSO_SHAPE.RECTANGLE,
     x="55%",
     y="32%",
     width="40%",
     height="60%",
     fill_color="lightgray",
+)
+custom_slide2.add_text(
     text="Right Content Area",
     font_size=18,
-    text_align="center",
+    x="55%",
+    y="32%",
+    width="40%",
+    height="60%",
+    align="center",
+    vertical="middle",
 )
 
 # 3. Export Templates to TOML and JSON
@@ -343,15 +357,14 @@ section_slide = pres.add_section_slide(title="Template Export & Import")
 
 # Create a slide to explain template export
 export_slide = pres.add_content_slide(title="Exporting Templates")
-pres.add_text(
-    slide=export_slide,
+export_slide.add_text(
     text=(
         "Templates can be exported to TOML or JSON format:\n\n"
         "• TOML is the default format (more readable)\n"
         "• JSON is also supported\n\n"
         "Built-in templates and custom templates can be exported:\n\n"
-        'template_manager.save("template_name", file_path, format="toml")\n'
-        'template_manager.save("custom_template", file_path, format="json")\n\n'
+        'template_manager.save("template_name", file_path, file_format="toml")\n'
+        'template_manager.save("custom_template", file_path, file_format="json")\n\n'
         "If file_path is None, templates are saved to the template directory."
     ),
     x="10%",
@@ -362,16 +375,17 @@ pres.add_text(
 )
 
 # Save the custom templates to TOML and JSON
-product_toml_path = tm.save("product_slide", str(EXAMPLE_TEMPLATE_DIR / "product_slide.toml"), format="toml")
-comparison_json_path = tm.save("comparison_slide", str(EXAMPLE_TEMPLATE_DIR / "comparison_slide.json"), format="json")
+product_toml_path = tm.save("product_slide", str(EXAMPLE_TEMPLATE_DIR / "product_slide.toml"), file_format="toml")
+comparison_json_path = tm.save(
+    "comparison_slide", str(EXAMPLE_TEMPLATE_DIR / "comparison_slide.json"), file_format="json"
+)
 
 # Also export a built-in template
-title_toml_path = tm.save("title_slide", str(EXAMPLE_TEMPLATE_DIR / "title_slide.toml"), format="toml")
+title_toml_path = tm.save("title_slide", str(EXAMPLE_TEMPLATE_DIR / "title_slide.toml"), file_format="toml")
 
 # Create a slide to explain template import
 import_slide = pres.add_content_slide(title="Importing Templates")
-pres.add_text(
-    slide=import_slide,
+import_slide.add_text(
     text=(
         "Templates can be imported from TOML or JSON files:\n\n"
         "• File format is detected by extension (.toml or .json)\n"
@@ -401,8 +415,7 @@ template_names = tm.list_templates()
 
 # Create a slide showing the loaded templates
 loaded_slide = pres.add_content_slide(title="Loaded Templates")
-pres.add_text(
-    slide=loaded_slide,
+loaded_slide.add_text(
     text=(
         f"Successfully loaded templates:\n\n"
         f"• {product_name} (from TOML)\n"
@@ -418,12 +431,13 @@ pres.add_text(
 )
 
 # Create a slide using a template from a file
-# Use the add_slide_from_template method which works with TemplateManager
+# Register the loaded template with the presentation's own TemplateManager,
+# then use the add_slide_from_template method
+pres.template_manager.register("product_slide", tm.get("product_slide"))
 product_slide = pres.add_slide_from_template("product_slide")
 
 # Manually add content based on template positions
-pres.add_text(
-    slide=product_slide,
+product_slide.add_text(
     text="Product: Premium Headphones",
     x="5%",
     y="5%",
@@ -435,21 +449,26 @@ pres.add_text(
     color="blue",
 )
 
-pres.add_shape(
-    slide=product_slide,
+product_slide.add_shape(
     shape_type=MSO_SHAPE.RECTANGLE,
     x="5%",
     y="20%",
     width="40%",
     height="70%",
     fill_color="lightgray",
+)
+product_slide.add_text(
     text="Product Image",
     font_size=18,
-    text_align="center",
+    x="5%",
+    y="20%",
+    width="40%",
+    height="70%",
+    align="center",
+    vertical="middle",
 )
 
-pres.add_text(
-    slide=product_slide,
+product_slide.add_text(
     text="Key Features",
     x="50%",
     y="20%",
@@ -461,8 +480,7 @@ pres.add_text(
     color="blue",
 )
 
-pres.add_text(
-    slide=product_slide,
+product_slide.add_text(
     text="• Noise cancellation\n• 30-hour battery life\n• High-quality sound\n• Comfortable fit",
     x="50%",
     y="32%",
@@ -472,19 +490,25 @@ pres.add_text(
     align="left",
 )
 
-pres.add_shape(
-    slide=product_slide,
+product_slide.add_shape(
     shape_type=MSO_SHAPE.ROUNDED_RECTANGLE,
     x="50%",
     y="65%",
     width="45%",
     height="15%",
     fill_color="blue",
+)
+product_slide.add_text(
     text="$299.99",
     font_size=24,
     font_bold=True,
-    font_color="white",
-    text_align="center",
+    color="white",
+    x="50%",
+    y="65%",
+    width="45%",
+    height="15%",
+    align="center",
+    vertical="middle",
 )
 
 # Create a Thank You slide

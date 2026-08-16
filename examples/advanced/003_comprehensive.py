@@ -20,7 +20,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from easypptx import Chart, Image, Presentation, Table
+from easypptx import Chart, Image, Presentation, Table, in_
 
 # -----------------------------------------------------------------------------
 # Setup
@@ -119,40 +119,37 @@ slide1 = pres.add_slide()
 # Add centered title and subtitle with responsive positioning
 slide1.add_text(
     text="Annual Business Report",
-    x="50%",
+    x="10%",
     y="30%",
     width="80%",
     height="15%",
     font_size=44,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 slide1.add_text(
     text="Fiscal Year 2023",
-    x="50%",
+    x="20%",
     y="45%",
     width="60%",
     height="10%",
     font_size=24,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 slide1.add_text(
     text="Created with EasyPPTX",
-    x="50%",
+    x="20%",
     y="55%",
     width="60%",
     height="10%",
     font_size=18,
     font_italic=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add company logo
 img = Image(slide1)
-img.add(str(logo_path), x="80%", y="10%", width="15%", h_align="center")
+img.add(str(logo_path), x="72.5%", y="10%", width="15%")
 
 # Add date
 today = date.today().strftime("%B %d, %Y")
@@ -166,14 +163,13 @@ slide2 = pres.add_slide()
 # Add centered title with responsive positioning
 slide2.add_text(
     text="Agenda",
-    x="50%",
+    x="10%",
     y="10%",
     width="80%",
     height="15%",
     font_size=44,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add agenda items with bullet points using percentage-based positioning
@@ -196,19 +192,18 @@ slide3 = pres.add_slide()
 # Centered title with responsive positioning
 slide3.add_text(
     text="Company Overview",
-    x="50%",
+    x="10%",
     y="10%",
     width="80%",
     height="10%",
     font_size=32,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add team photo
 img = Image(slide3)
-img.add(str(team_photo_path), x=1, y=1.5, width=8)
+img.add(str(team_photo_path), x=in_(1), y=in_(1.5), width=in_(8))
 
 # Add key metrics
 metrics = [
@@ -222,7 +217,7 @@ metrics = [
 # Create a simple table for metrics
 table = Table(slide3)
 table_data = [["Metric", "Value"], *metrics]
-table.add(table_data, x=1, y=4.5, width=8, first_row_header=True)
+table.add(table_data, x=in_(1), y=in_(4.5), width=in_(8), first_row_header=True)
 
 # -----------------------------------------------------------------------------
 # Slide 4: Annual Sales Performance
@@ -231,14 +226,13 @@ slide4 = pres.add_slide()
 # Centered title with responsive positioning
 slide4.add_text(
     text="Annual Sales Performance",
-    x="50%",
+    x="10%",
     y="10%",
     width="80%",
     height="10%",
     font_size=32,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add line chart for monthly sales
@@ -247,10 +241,10 @@ chart.add(
     chart_type="line",
     categories=months,
     values=sales_values,
-    x=1,
-    y=1.5,
-    width=8,
-    height=4,
+    x=in_(1),
+    y=in_(1.5),
+    width=in_(8),
+    height=in_(4),
     title="Monthly Sales (in $1,000s)",
 )
 
@@ -259,7 +253,7 @@ total_sales = sum(sales_values)
 avg_sales = total_sales / len(sales_values)
 slide4.add_text(
     text=f"Total Annual Sales: ${total_sales}k",
-    x="25%",
+    x="5%",
     y="80%",
     width="40%",
     height="10%",
@@ -269,7 +263,7 @@ slide4.add_text(
 )
 slide4.add_text(
     text=f"Average Monthly Sales: ${avg_sales:.1f}k",
-    x="75%",
+    x="55%",
     y="80%",
     width="40%",
     height="10%",
@@ -284,23 +278,22 @@ slide5 = pres.add_slide()
 # Centered title with responsive positioning
 slide5.add_text(
     text="Product Analysis - Performance",
-    x="50%",
+    x="10%",
     y="10%",
     width="80%",
     height="10%",
     font_size=32,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Convert the DataFrame to a table
 table = Table(slide5)
-table.from_dataframe(product_df, x=0.5, y=1.5, width=9, first_row_header=True)
+table.from_dataframe(product_df, x=in_(0.5), y=in_(1.5), width=in_(9), first_row_header=True)
 
 # Add a product image
 img = Image(slide5)
-img.add(str(product_image_path), x=7.5, y=5, width=2)
+img.add(str(product_image_path), x=in_(7.5), y=in_(5), width=in_(2))
 
 # -----------------------------------------------------------------------------
 # Slide 6: Product Analysis - Charts
@@ -309,14 +302,13 @@ slide6 = pres.add_slide()
 # Centered title with responsive positioning
 slide6.add_text(
     text="Product Analysis - Visualization",
-    x="50%",
+    x="10%",
     y="10%",
     width="80%",
     height="10%",
     font_size=32,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add a bar chart for product revenue
@@ -326,10 +318,10 @@ chart.from_dataframe(
     chart_type="bar",
     category_column="Product",
     value_column="Revenue",
-    x=0.5,
-    y=1.5,
-    width=4.5,
-    height=3,
+    x=in_(0.5),
+    y=in_(1.5),
+    width=in_(4.5),
+    height=in_(3),
     title="Revenue by Product",
 )
 
@@ -339,10 +331,10 @@ chart.from_dataframe(
     chart_type="column",
     category_column="Product",
     value_column="Profit",
-    x=5.5,
-    y=1.5,
-    width=4,
-    height=3,
+    x=in_(5.5),
+    y=in_(1.5),
+    width=in_(4),
+    height=in_(3),
     title="Profit by Product",
 )
 
@@ -350,7 +342,7 @@ chart.from_dataframe(
 most_profitable = product_df.loc[product_df["Profit"].idxmax()]["Product"]
 slide6.add_text(
     text=f"Key Insight: {most_profitable} is our most profitable product.",
-    x="50%",
+    x="10%",
     y="80%",
     width="80%",
     height="10%",
@@ -358,7 +350,6 @@ slide6.add_text(
     font_bold=True,
     color=(0, 100, 0),  # Dark green
     align="center",
-    h_align="center",
 )
 
 # -----------------------------------------------------------------------------
@@ -368,14 +359,13 @@ slide7 = pres.add_slide()
 # Centered title with responsive positioning
 slide7.add_text(
     text="Regional Sales Breakdown",
-    x="50%",
+    x="10%",
     y="10%",
     width="80%",
     height="10%",
     font_size=32,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add a pie chart
@@ -385,10 +375,10 @@ chart.from_dataframe(
     chart_type="pie",
     category_column="Region",
     value_column="Sales",
-    x=2,
-    y=1.5,
-    width=6,
-    height=4,
+    x=in_(2),
+    y=in_(1.5),
+    width=in_(6),
+    height=in_(4),
     title="Sales by Region",
 )
 
@@ -402,7 +392,7 @@ for i, region in enumerate(regions):
     percentage_data.append([region, f"${region_sales[i]:,}", f"{region_percentages[i]}%"])
 
 table = Table(slide7)
-table.add(percentage_data, x=1.5, y=5.5, width=7, first_row_header=True)
+table.add(percentage_data, x=in_(1.5), y=in_(5.5), width=in_(7), first_row_header=True)
 
 # -----------------------------------------------------------------------------
 # Slide 8: Customer Satisfaction
@@ -411,14 +401,13 @@ slide8 = pres.add_slide()
 # Centered title with responsive positioning
 slide8.add_text(
     text="Customer Satisfaction",
-    x="50%",
+    x="10%",
     y="10%",
     width="80%",
     height="10%",
     font_size=32,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add a column chart
@@ -428,10 +417,10 @@ chart.from_dataframe(
     chart_type="column",
     category_column="Category",
     value_column="Percentage",
-    x=1.5,
-    y=1.5,
-    width=7,
-    height=3.5,
+    x=in_(1.5),
+    y=in_(1.5),
+    width=in_(7),
+    height=in_(3.5),
     title="Customer Satisfaction Survey Results (%)",
 )
 
@@ -441,14 +430,13 @@ score = sum([satisfaction_values[i] * (5 - i) for i in range(5)]) / sum(satisfac
 # Add summary text
 slide8.add_text(
     text=f"Overall satisfaction score: {score:.1f}/5.0",
-    x="50%",
+    x="20%",
     y="75%",
     width="60%",
     height="10%",
     font_size=20,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add interpretation
@@ -464,14 +452,13 @@ else:
 
 slide8.add_text(
     text=interpretation,
-    x="50%",
+    x="20%",
     y="85%",
     width="60%",
     height="10%",
     font_size=20,
     color=color,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # -----------------------------------------------------------------------------
@@ -481,14 +468,13 @@ slide9 = pres.add_slide()
 # Centered title with responsive positioning
 slide9.add_text(
     text="Future Outlook",
-    x="50%",
+    x="10%",
     y="10%",
     width="80%",
     height="10%",
     font_size=32,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add bullet points as text objects with percentage-based positioning
@@ -517,10 +503,10 @@ chart.add(
     chart_type="column",
     categories=projected_years,
     values=projected_sales,
-    x=5.5,
-    y=2,
-    width=4,
-    height=3,
+    x=in_(5.5),
+    y=in_(2),
+    width=in_(4),
+    height=in_(3),
     title="Projected Annual Sales ($k)",
 )
 
@@ -531,63 +517,58 @@ slide10 = pres.add_slide()
 # Centered title with responsive positioning
 slide10.add_text(
     text="Thank You!",
-    x="50%",
+    x="10%",
     y="20%",
     width="80%",
     height="15%",
     font_size=44,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 # Centered subtitle with responsive positioning
 slide10.add_text(
     text="Questions?",
-    x="50%",
+    x="20%",
     y="50%",
     width="60%",
     height="15%",
     font_size=40,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add contact information with responsive positioning
 slide10.add_text(
     text="For more information:",
-    x="50%",
+    x="20%",
     y="70%",
     width="60%",
     height="5%",
     font_size=14,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 slide10.add_text(
     text="email@example.com",
-    x="50%",
+    x="20%",
     y="75%",
     width="60%",
     height="5%",
     font_size=14,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 slide10.add_text(
     text="www.example.com",
-    x="50%",
+    x="20%",
     y="80%",
     width="60%",
     height="5%",
     font_size=14,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add a small logo with responsive positioning
 img = Image(slide10)
-img.add(str(logo_path), x="80%", y="85%", width="15%", h_align="center")
+img.add(str(logo_path), x="72.5%", y="85%", width="15%")
 
 # -----------------------------------------------------------------------------
 # Save the presentation

@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-08-16
+
+### Added
+- **Markdown → deck**: `Presentation.from_markdown()` converts a markdown document into a presentation — frontmatter (`theme`, `template`, `aspect_ratio`), `#` title slide with subtitle, `##` slide breaks, nested bullet lists, images, GFM tables, fenced code blocks, `<!-- notes: ... -->` speaker notes, `::: columns` side-by-side layout, and `---` forced breaks
+- **Grid upgrades**: slice spans (`grid[1, :]`, `grid[0:2, 1]` merge and return the region), weighted tracks (`Grid(rows=[2, 1])`), auto-flow (`grid.next()` fills the next free cell and grows the grid), and per-cell styling (`grid[r, c].style(fill=..., border_color=..., padding=...)`)
+- **Content**: `Slide.add_bullets()` with nesting levels (real bullets or plain stacked paragraphs), `Slide.notes` speaker-notes property, `Slide.add_pyplot()`, and multi-series charts (`value_columns=[...]` plots every listed column; `Chart.add(series={...})`)
+- **Styling**: `TextStyle`/`TableStyle`/`ChartStyle` objects accepted by the Slide content methods (explicit arguments always win), and `Theme` with built-in presets — `Presentation(theme="dark")` (also "light", "corporate")
+- `in_()` helper for absolute inch positions, exported from the package root
+
+### Changed
+- **BREAKING — positions**: bare numbers are now percentages (`x=10` means 10%, identical to `"10%"`); absolute inches require `in_(1.5)`. Content-method defaults converted to clean percentages (e.g. `add_text` defaults to x=5, y=5, width=90, height=10)
+- **BREAKING — removed the APIs deprecated in 0.6.0**: `Presentation.add_text/add_image/add_shape/add_table/add_chart/add_pyplot` (pass-through variants) and `add_matplotlib_slide`/`add_seaborn_slide`/`add_plot`/`add_image_slide`. Use the `Slide` methods and `add_pyplot_slide`/`add_image_gen_slide`
+- `Slide.add_chart` parameters `chart_type`/`has_legend`/`legend_position` accept None (resolved from ChartStyle, then defaults)
+
+### Removed
+- AI-workflow scaffolding from the repository (ai_docs/, .states/, specs/, CLAUDE.md, cookiecutter leftovers)
+
 ## [0.6.0] - 2026-08-16
 
 ### Added

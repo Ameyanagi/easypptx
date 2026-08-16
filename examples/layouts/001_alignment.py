@@ -115,11 +115,10 @@ Text.add(
     align="right",
 )
 
-# Test Case 3: Using the Presentation's add_text method
+# Test Case 3: Using the Slide's add_text method on another slide
 slide3 = presentation.add_slide()
-presentation.add_text(
-    slide=slide3,
-    text="Slide 3: presentation.add_text - center aligned",
+slide3.add_text(
+    text="Slide 3: slide.add_text - center aligned",
     x="0%",
     y="10%",
     width="100%",
@@ -129,9 +128,8 @@ presentation.add_text(
     align="center",
 )
 
-presentation.add_text(
-    slide=slide3,
-    text="presentation.add_text - left aligned",
+slide3.add_text(
+    text="slide.add_text - left aligned",
     x="0%",
     y="30%",
     width="100%",
@@ -141,9 +139,8 @@ presentation.add_text(
     align="left",
 )
 
-presentation.add_text(
-    slide=slide3,
-    text="presentation.add_text - right aligned",
+slide3.add_text(
+    text="slide.add_text - right aligned",
     x="0%",
     y="50%",
     width="100%",
@@ -197,6 +194,6 @@ grid.add_to_cell(
 
 # Save the presentation
 # Ensure output directory exists
-os.makedirs("../output", exist_ok=True)
-presentation.save("../output/test_alignment.pptx")
-print("Presentation saved as ../output/test_alignment.pptx")
+os.makedirs("output", exist_ok=True)
+presentation.save("output/test_alignment.pptx")
+print("Presentation saved as output/test_alignment.pptx")
