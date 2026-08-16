@@ -1,16 +1,18 @@
 """Table handling module for EasyPPTX."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
-import pandas as pd
 from pptx.table import Table as PPTXTable
 from pptx.util import Inches, Pt
 
-if TYPE_CHECKING:
-    from easypptx.slide import Slide
+from easypptx.positioning import PositionType
 
-# Type for position parameters - accepts either percentage or absolute values
-PositionType = float | str
+if TYPE_CHECKING:
+    import pandas as pd
+
+    from easypptx.slide import Slide
 
 
 class Table:
@@ -33,7 +35,7 @@ class Table:
         ```
     """
 
-    def __init__(self, slide_obj: "Slide") -> None:
+    def __init__(self, slide_obj: Slide) -> None:
         """Initialize a Table object.
 
         Args:
@@ -50,6 +52,7 @@ class Table:
         height: PositionType | None = None,
         first_row_header: bool = True,
         style: int | None = None,
+        has_header: bool | None = None,
     ) -> PPTXTable:
         """Add a table to the slide.
 
@@ -61,10 +64,13 @@ class Table:
             height: Total height in inches or percentage (default: None, auto-sized)
             first_row_header: Whether to format the first row as a header (default: True)
             style: Table style ID (default: None)
+            has_header: Alias for first_row_header; takes precedence when given (default: None)
 
         Returns:
             The created table object
         """
+        if has_header is not None:
+            first_row_header = has_header
         if not data:
             raise ValueError("Table data cannot be empty")
 
@@ -110,13 +116,13 @@ class Table:
 
         # Apply table style if specified
         if style is not None:
-            table.style = style
+            table.style = style  # ty: ignore[unresolved-attribute]
 
         return table
 
     def from_dataframe(
         self,
-        df: "pd.DataFrame",
+        df: pd.DataFrame,
         x: PositionType = 1.0,
         y: PositionType = 1.0,
         width: PositionType | None = None,
@@ -142,7 +148,8 @@ class Table:
         """
         # Convert DataFrame to list format
         if include_index:
-            data = [list(df.columns)]
+            # The header row needs a leading cell for the index column
+            data = [[df.index.name or "", *list(df.columns)]]
             for idx, row in df.iterrows():
                 data.append([str(idx), *list(row)])
         else:

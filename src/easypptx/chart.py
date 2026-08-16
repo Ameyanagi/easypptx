@@ -1,18 +1,85 @@
 """Chart handling module for EasyPPTX."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import pandas as pd
 from pptx.chart.chart import Chart as PPTXChart
 from pptx.chart.data import CategoryChartData
 from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
 from pptx.util import Inches
 
+from easypptx.common import is_dataframe
+from easypptx.positioning import PositionType
+
 if TYPE_CHECKING:
+    import pandas as pd
+
     from easypptx.slide import Slide
 
-# Type for position parameters - accepts either percentage or absolute values
-PositionType = float | str
+
+def extract_categories_values(
+    data: Any,
+    category_column: str | int | None = None,
+    value_columns: str | list[str] | int | list[int] | None = None,
+) -> tuple[list, list]:
+    """Extract category and value lists from tabular chart data.
+
+    Args:
+        data: A pandas DataFrame, or a list of lists whose first row is a header
+        category_column: Name or index of the category column (default: first column)
+        value_columns: Name(s) or index(es) of the value column(s); only the
+            first is used (default: second column)
+
+    Returns:
+        A (categories, values) tuple of lists
+
+    Raises:
+        ValueError: If a named column is missing or the data has too few columns
+    """
+    first_value = value_columns[0] if isinstance(value_columns, list) else value_columns
+
+    if is_dataframe(data):
+        if category_column is None:
+            category_column = data.columns[0]
+        if first_value is None:
+            if len(data.columns) < 2:
+                raise ValueError("DataFrame must have at least two columns for automatic value extraction")
+            first_value = data.columns[1]
+
+        def df_column(column: Any, kind: str) -> Any:
+            # Prefer label lookup; fall back to positional access for ints
+            if column in data.columns:
+                return data[column]
+            if isinstance(column, int) and 0 <= column < len(data.columns):
+                return data.iloc[:, column]
+            raise ValueError(f"{kind} column '{column}' not found in DataFrame")
+
+        return df_column(category_column, "Category").tolist(), df_column(first_value, "Value").tolist()
+
+    if not data or len(data) < 2:
+        return [], []
+
+    header = data[0]
+
+    def column_index(column: str | int | None, default: int, kind: str) -> int:
+        if column is None:
+            return default
+        if isinstance(column, int):
+            return column
+        try:
+            return header.index(column)
+        except ValueError:
+            raise ValueError(f"{kind} column '{column}' not found in header") from None
+
+    cat_idx = column_index(category_column, 0, "Category")
+    if first_value is None and len(header) < 2:
+        raise ValueError("Data must have at least two columns for automatic value extraction")
+    val_idx = column_index(first_value, 1, "Value")
+
+    categories = [row[cat_idx] for row in data[1:]]
+    values = [row[val_idx] for row in data[1:]]
+    return categories, values
 
 
 class Chart:
@@ -56,7 +123,7 @@ class Chart:
         "corner": XL_LEGEND_POSITION.CORNER,
     }
 
-    def __init__(self, slide_obj: "Slide") -> None:
+    def __init__(self, slide_obj: Slide) -> None:
         """Initialize a Chart object.
 
         Args:
@@ -125,10 +192,10 @@ class Chart:
             Inches(y_inches),
             Inches(width_inches),
             Inches(height_inches),
-            chart_data,
+            chart_data,  # ty: ignore[invalid-argument-type]
         )
 
-        chart = chart_shape.chart
+        chart = chart_shape.chart  # ty: ignore[unresolved-attribute]
 
         # Set chart title if provided
         if title:
@@ -262,7 +329,7 @@ class Chart:
 
     def from_dataframe(
         self,
-        df: "pd.DataFrame",
+        df: pd.DataFrame,
         chart_type: str,
         category_column: str,
         value_column: str,

@@ -2,13 +2,14 @@
 
 import json
 import os
+import tomllib
 from pathlib import Path
 from typing import Any, cast
 
-import tomli
 import tomli_w
 from pptx.dml.color import RGBColor
-from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
+
+from easypptx.common import ALIGN, COLORS, DEFAULT_FONT, VERTICAL
 
 
 class Template:
@@ -16,11 +17,11 @@ class Template:
 
     def __init__(self) -> None:
         """Initialize a Template object with predefined presets."""
-        # Define text alignment mappings
-        self.align_dict = {"left": PP_ALIGN.LEFT, "center": PP_ALIGN.CENTER, "right": PP_ALIGN.RIGHT}
+        # Text alignment mappings (shared library-wide)
+        self.align_dict = ALIGN
 
-        # Define vertical alignment mappings
-        self.vertical_dict = {"top": MSO_ANCHOR.TOP, "middle": MSO_ANCHOR.MIDDLE, "bottom": MSO_ANCHOR.BOTTOM}
+        # Vertical alignment mappings (shared library-wide)
+        self.vertical_dict = VERTICAL
 
         # Store reference PPTX paths for presets
         self.preset_references: dict[str, str] = {}
@@ -28,21 +29,8 @@ class Template:
         # Store blank layout indices for presets
         self.preset_blank_layouts: dict[str, int] = {}
 
-        # Define standard colors
-        self.color_dict = {
-            "black": RGBColor(0x40, 0x40, 0x40),
-            "darkgray": RGBColor(0x40, 0x40, 0x40),
-            "gray": RGBColor(0x80, 0x80, 0x80),
-            "lightgray": RGBColor(0xD0, 0xD0, 0xD0),
-            "red": RGBColor(0xFF, 0x40, 0x40),
-            "green": RGBColor(0x40, 0xFF, 0x40),
-            "blue": RGBColor(0x40, 0x40, 0xFF),
-            "white": RGBColor(0xFF, 0xFF, 0xFF),
-            "yellow": RGBColor(0xFF, 0xD7, 0x00),
-            "cyan": RGBColor(0x00, 0xE5, 0xFF),
-            "magenta": RGBColor(0xFF, 0x00, 0xFF),
-            "orange": RGBColor(0xFF, 0xA5, 0x00),
-        }
+        # Standard colors (shared library-wide)
+        self.color_dict = COLORS
 
         # Define default image styling
         self.default_image_style = {
@@ -67,7 +55,7 @@ class Template:
             "header_border_width": 2,
             "text_align": "center",
             "header_align": "center",
-            "font_name": "Meiryo",
+            "font_name": DEFAULT_FONT,
             "font_size": 12,
             "header_font_size": 14,
         }
@@ -100,7 +88,7 @@ class Template:
                 "title": {
                     "text": "Presentation Title",
                     "position": {"x": "10%", "y": "25%", "width": "80%", "height": "30%"},
-                    "font": {"name": "Meiryo", "size": 44, "bold": True},
+                    "font": {"name": DEFAULT_FONT, "size": 44, "bold": True},
                     "align": "center",
                     "vertical": "middle",
                     "color": "black",
@@ -108,7 +96,7 @@ class Template:
                 "subtitle": {
                     "text": "Subtitle or Author",
                     "position": {"x": "20%", "y": "60%", "width": "60%", "height": "20%"},
-                    "font": {"name": "Meiryo", "size": 24, "bold": False},
+                    "font": {"name": DEFAULT_FONT, "size": 24, "bold": False},
                     "align": "center",
                     "vertical": "middle",
                     "color": "black",
@@ -119,7 +107,7 @@ class Template:
                 "title": {
                     "text": "Content Slide",
                     "position": {"x": "1%", "y": "2%", "width": "95%", "height": "5%"},
-                    "font": {"name": "Meiryo", "size": 30, "bold": True},
+                    "font": {"name": DEFAULT_FONT, "size": 30, "bold": True},
                     "align": "left",
                     "vertical": "top",
                     "color": "black",
@@ -140,7 +128,7 @@ class Template:
                 "title": {
                     "text": "Section Title",
                     "position": {"x": "10%", "y": "40%", "width": "80%", "height": "20%"},
-                    "font": {"name": "Meiryo", "size": 44, "bold": True},
+                    "font": {"name": DEFAULT_FONT, "size": 44, "bold": True},
                     "align": "center",
                     "vertical": "middle",
                     "color": "white",
@@ -151,7 +139,7 @@ class Template:
                 "title": {
                     "text": "Image Title",
                     "position": {"x": "10%", "y": "5%", "width": "80%", "height": "10%"},
-                    "font": {"name": "Meiryo", "size": 30, "bold": True},
+                    "font": {"name": DEFAULT_FONT, "size": 30, "bold": True},
                     "align": "center",
                     "vertical": "middle",
                     "color": "black",
@@ -173,7 +161,7 @@ class Template:
                 "title": {
                     "text": "Table Title",
                     "position": {"x": "10%", "y": "5%", "width": "80%", "height": "10%"},
-                    "font": {"name": "Meiryo", "size": 30, "bold": True},
+                    "font": {"name": DEFAULT_FONT, "size": 30, "bold": True},
                     "align": "center",
                     "vertical": "middle",
                     "color": "black",
@@ -192,7 +180,7 @@ class Template:
                 "title": {
                     "text": "Chart Title",
                     "position": {"x": "10%", "y": "5%", "width": "80%", "height": "10%"},
-                    "font": {"name": "Meiryo", "size": 30, "bold": True},
+                    "font": {"name": DEFAULT_FONT, "size": 30, "bold": True},
                     "align": "center",
                     "vertical": "middle",
                     "color": "black",
@@ -211,7 +199,7 @@ class Template:
                 "title": {
                     "text": "Comparison",
                     "position": {"x": "10%", "y": "5%", "width": "80%", "height": "10%"},
-                    "font": {"name": "Meiryo", "size": 30, "bold": True},
+                    "font": {"name": DEFAULT_FONT, "size": 30, "bold": True},
                     "align": "center",
                     "vertical": "middle",
                     "color": "black",
@@ -375,11 +363,13 @@ class TemplateManager:
         # Dictionary for blank layout indices associated with templates
         self.blank_layout_indices: dict[str, int] = {}
 
-        # Set the template directory
-        self.template_dir = template_dir
-        if self.template_dir is None:
-            # Use default directory in user's home directory
-            self.template_dir = os.path.join(str(Path.home()), ".easypptx", "templates")
+        # Cache of loaded template files: absolute path -> (mtime, registered name)
+        self._load_cache: dict[str, tuple[float, str]] = {}
+
+        # Set the template directory (defaults to ~/.easypptx/templates)
+        self.template_dir: str = (
+            template_dir if template_dir is not None else os.path.join(str(Path.home()), ".easypptx", "templates")
+        )
 
         # Create the template directory if it doesn't exist
         os.makedirs(self.template_dir, exist_ok=True)
@@ -513,6 +503,13 @@ class TemplateManager:
         if template_name is None:
             template_name = os.path.splitext(os.path.basename(file_path))[0]
 
+        # Serve unchanged files from the cache (avoids re-parsing per slide)
+        abs_path = os.path.abspath(file_path)
+        mtime = os.path.getmtime(abs_path)
+        cached = self._load_cache.get(abs_path)
+        if cached is not None and cached[0] == mtime and cached[1] == template_name:
+            return template_name
+
         # Determine the file format from extension
         file_extension = os.path.splitext(file_path)[1].lower()
 
@@ -523,7 +520,7 @@ class TemplateManager:
         if file_extension == ".toml":
             # Load TOML
             with open(file_path, "rb") as f:
-                template_data = tomli.load(f)
+                template_data = tomllib.load(f)
         elif file_extension == ".json":
             # Load JSON
             with open(file_path) as f:
@@ -553,6 +550,7 @@ class TemplateManager:
 
         # Register the template
         self.register(template_name, template)
+        self._load_cache[abs_path] = (mtime, template_name)
 
         return template_name
 

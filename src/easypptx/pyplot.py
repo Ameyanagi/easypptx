@@ -1,10 +1,29 @@
 """Pyplot integration module for EasyPPTX."""
 
-import os
-import tempfile
+from __future__ import annotations
+
+import io
 from typing import Any
 
+from easypptx.common import COLORS, apply_shadow
 from easypptx.image import Image
+
+
+def figure_to_stream(figure: Any, dpi: int = 300, file_format: str = "png") -> io.BytesIO:
+    """Render a matplotlib figure to an in-memory image stream.
+
+    Args:
+        figure: Matplotlib figure object
+        dpi: Resolution for the figure (default: 300)
+        file_format: Image format ("png" or "jpg") (default: "png")
+
+    Returns:
+        A BytesIO stream positioned at the start of the image data
+    """
+    stream = io.BytesIO()
+    figure.savefig(stream, dpi=dpi, format=file_format, bbox_inches="tight")
+    stream.seek(0)
+    return stream
 
 
 class Pyplot:
@@ -12,13 +31,13 @@ class Pyplot:
 
     @staticmethod
     def add(
-        slide,
-        figure,
+        slide: Any,
+        figure: Any,
         position: dict[str, float | str],
         dpi: int = 300,
         file_format: str = "png",
         style: dict[str, Any] | None = None,
-    ):
+    ) -> Any:
         """Add a matplotlib or seaborn figure to a slide.
 
         Args:
@@ -35,88 +54,57 @@ class Pyplot:
         Example:
             ```python
             import matplotlib.pyplot as plt
-            from easypptx import Presentation, Plot
+            from easypptx import Presentation, Pyplot
 
-            # Create a matplotlib figure
             plt.figure(figsize=(10, 6))
             plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
-            plt.title('Sample Plot')
 
-            # Add it to a slide
             pres = Presentation()
             slide = pres.add_slide()
 
-            Plot.add(
+            Pyplot.add(
                 slide=slide,
                 figure=plt.gcf(),
                 position={"x": "10%", "y": "20%", "width": "80%", "height": "70%"}
             )
             ```
         """
-        # Apply default styling if not provided
         if style is None:
             style = {"maintain_aspect_ratio": True, "center": True, "border": False}
 
-        # Create a temporary file to save the figure
-        with tempfile.NamedTemporaryFile(suffix=f".{file_format}", delete=False) as tmp:
-            temp_path = tmp.name
+        # Render the figure in memory (no temporary files)
+        stream = figure_to_stream(figure, dpi=dpi, file_format=file_format)
 
-        try:
-            # Save the figure to the temporary file
-            figure.savefig(temp_path, dpi=dpi, format=file_format, bbox_inches="tight")
+        img = Image(slide)
+        image_shape = img.add(
+            image_path=stream,
+            x=position.get("x", "10%"),
+            y=position.get("y", "20%"),
+            width=position.get("width", "80%"),
+            height=position.get("height", "70%"),
+            maintain_aspect_ratio=style.get("maintain_aspect_ratio", True),
+        )
 
-            # Add the image with styling
-            img = Image(slide)
-            x = position.get("x", "10%")
-            y = position.get("y", "20%")
-            width = position.get("width", "80%")
-            height = position.get("height", "70%")
+        # Apply border if specified
+        if style.get("border", False):
+            image_shape.line.color.rgb = COLORS.get(style.get("border_color", "black"), COLORS["black"])
+            image_shape.line.width = style.get("border_width", 1)
 
-            image_shape = img.add(
-                image_path=temp_path,
-                x=x,
-                y=y,
-                width=width,
-                height=height,
-                maintain_aspect_ratio=style.get("maintain_aspect_ratio", True),
-            )
+        # Apply shadow if specified
+        if style.get("shadow", False):
+            apply_shadow(image_shape)
 
-            # Apply any additional styling options from the slide's presentation
-            if hasattr(slide, "pptx_slide") and hasattr(slide.pptx_slide, "shapes"):
-                # Access the presentation to get color definitions
-                from easypptx.presentation import Presentation
-
-                # Apply border if specified
-                if style.get("border", False):
-                    image_shape.line.color.rgb = Presentation.COLORS.get(
-                        style.get("border_color", "black"), Presentation.COLORS["black"]
-                    )
-                    image_shape.line.width = style.get("border_width", 1)
-
-                # Apply shadow if specified
-                if style.get("shadow", False):
-                    image_shape.shadow.inherit = False
-                    image_shape.shadow.visible = True
-                    image_shape.shadow.blur_radius = 5
-                    image_shape.shadow.distance = 3
-                    image_shape.shadow.angle = 45
-
-            return image_shape
-
-        finally:
-            # Clean up the temporary file
-            if os.path.exists(temp_path):
-                os.unlink(temp_path)
+        return image_shape
 
     @staticmethod
     def add_from_seaborn(
-        slide,
-        seaborn_plot,
+        slide: Any,
+        seaborn_plot: Any,
         position: dict[str, float | str],
         dpi: int = 300,
         file_format: str = "png",
         style: dict[str, Any] | None = None,
-    ):
+    ) -> Any:
         """Add a seaborn plot to a slide.
 
         Args:
@@ -129,26 +117,6 @@ class Pyplot:
 
         Returns:
             Image shape object
-
-        Example:
-            ```python
-            import seaborn as sns
-            from easypptx import Presentation, Plot
-
-            # Create a seaborn plot
-            tips = sns.load_dataset("tips")
-            sns_plot = sns.barplot(x="day", y="total_bill", data=tips)
-
-            # Add it to a slide
-            pres = Presentation()
-            slide = pres.add_slide()
-
-            Plot.add_from_seaborn(
-                slide=slide,
-                seaborn_plot=sns_plot,
-                position={"x": "10%", "y": "20%", "width": "80%", "height": "70%"}
-            )
-            ```
         """
         # Get the figure from the seaborn plot
         if hasattr(seaborn_plot, "figure"):
@@ -158,12 +126,11 @@ class Pyplot:
         else:
             try:
                 import matplotlib.pyplot as plt
-
-                figure = plt.gcf()
             except ImportError as err:
                 raise ImportError(
                     "Matplotlib is required for plots with no figure attribute. "
-                    "Please install matplotlib or use a plot object with a figure attribute."
+                    "Install it with: pip install 'easypptx[plot]'"
                 ) from err
+            figure = plt.gcf()
 
         return Pyplot.add(slide=slide, figure=figure, position=position, dpi=dpi, file_format=file_format, style=style)

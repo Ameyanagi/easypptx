@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, cast
 
-import pandas as pd
 from pptx import Presentation as PPTXPresentation
 from pptx.chart.chart import Chart as PPTXChart
 from pptx.dml.color import RGBColor
@@ -14,19 +14,29 @@ from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.shapes.autoshape import Shape as PPTXShape
 from pptx.util import Inches, Pt
 
+from easypptx import common
+from easypptx.grid import Grid
 from easypptx.image import Image
+from easypptx.positioning import (
+    apply_content_padding,
+    pct,
+    resolve_padding,
+    shift_band,
+    to_percent,
+)
 from easypptx.pyplot import Pyplot
 from easypptx.slide import Slide
 from easypptx.table import Table
 from easypptx.template import Template, TemplateManager
 from easypptx.text import Text
 
-# Use TYPE_CHECKING to avoid circular imports at runtime
 if TYPE_CHECKING:
-    from easypptx.grid import Grid
-else:
-    # Import at top level for runtime but avoid circular imports
-    from easypptx.grid import Grid
+    import pandas as pd
+
+
+def _deprecated(old: str, new: str) -> None:
+    """Emit a DeprecationWarning pointing callers at the replacement API."""
+    warnings.warn(f"{old} is deprecated; use {new} instead", DeprecationWarning, stacklevel=3)
 
 
 class Presentation:
@@ -79,34 +89,11 @@ class Presentation:
         "LETTER": (11, 8.5),  # US Letter paper size
     }
 
-    # Default colors dictionary
-    COLORS: ClassVar[dict[str, RGBColor]] = {
-        "black": RGBColor(0x10, 0x10, 0x10),
-        "darkgray": RGBColor(0x40, 0x40, 0x40),
-        "gray": RGBColor(0x80, 0x80, 0x80),
-        "lightgray": RGBColor(0xD0, 0xD0, 0xD0),
-        "red": RGBColor(0xFF, 0x40, 0x40),
-        "green": RGBColor(0x40, 0xFF, 0x40),
-        "blue": RGBColor(0x40, 0x40, 0xFF),
-        "white": RGBColor(0xFF, 0xFF, 0xFF),
-        "yellow": RGBColor(0xFF, 0xD7, 0x00),
-        "cyan": RGBColor(0x00, 0xE5, 0xFF),
-        "magenta": RGBColor(0xFF, 0x00, 0xFF),
-        "orange": RGBColor(0xFF, 0xA5, 0x00),
-    }
-
-    # Text alignment dictionary
-    ALIGN: ClassVar[dict[str, PP_ALIGN]] = {"left": PP_ALIGN.LEFT, "center": PP_ALIGN.CENTER, "right": PP_ALIGN.RIGHT}
-
-    # Vertical alignment dictionary
-    VERTICAL: ClassVar[dict[str, MSO_ANCHOR]] = {
-        "top": MSO_ANCHOR.TOP,
-        "middle": MSO_ANCHOR.MIDDLE,
-        "bottom": MSO_ANCHOR.BOTTOM,
-    }
-
-    # Default font settings
-    DEFAULT_FONT = "Meiryo"
+    # Shared constants (single source of truth in easypptx.common)
+    COLORS: ClassVar[dict[str, RGBColor]] = common.COLORS
+    ALIGN: ClassVar[dict[str, PP_ALIGN]] = common.ALIGN
+    VERTICAL: ClassVar[dict[str, MSO_ANCHOR]] = common.VERTICAL
+    DEFAULT_FONT = common.DEFAULT_FONT
 
     def __init__(
         self,
@@ -147,20 +134,23 @@ class Presentation:
         # Store default template name if a TOML template is provided
         self._default_template = None
 
-        # Load TOML template if provided
+        # Cache of Slide wrappers keyed by slide id, so repeated access
+        # returns the same object (preserving user_data and identity)
+        self._slide_cache: dict[int, Slide] = {}
+
+        # Load TOML template if provided (raises FileNotFoundError/ValueError)
         if template_toml:
-            try:
-                self._default_template = self.template_manager.load(template_toml)
-            except Exception as e:
-                raise FileNotFoundError(f"TOML template file not found or invalid: {e}") from e
+            self._default_template = self.template_manager.load(template_toml)
 
         if template_path:
             # Use an existing template
+            if not Path(template_path).exists():
+                raise FileNotFoundError(f"Template file not found: {template_path}")
             try:
                 self.pptx_presentation = PPTXPresentation(template_path)
                 self._loaded_reference = str(template_path)
             except Exception as e:
-                raise FileNotFoundError(f"Template file not found or invalid: {e}") from e
+                raise ValueError(f"Invalid template file '{template_path}': {e}") from e
         elif reference_pptx:
             # Use a custom reference PPTX file
             reference_path = Path(reference_pptx)
@@ -171,7 +161,7 @@ class Presentation:
                 self.pptx_presentation = PPTXPresentation(str(reference_path))
                 self._loaded_reference = str(reference_path)
             except Exception as e:
-                raise FileNotFoundError(f"Reference PPTX file not found or invalid: {e}") from e
+                raise ValueError(f"Invalid reference PPTX file '{reference_pptx}': {e}") from e
         else:
             # Check if we should use a reference template based on aspect ratio
             reference_template = None
@@ -187,6 +177,7 @@ class Presentation:
             if reference_template and reference_template.exists():
                 # Use the appropriate reference template
                 self.pptx_presentation = PPTXPresentation(str(reference_template))
+                self._loaded_reference = str(reference_template)
             else:
                 # Create a new presentation without a template
                 self.pptx_presentation = PPTXPresentation()
@@ -215,6 +206,31 @@ class Presentation:
         else:
             # Auto-detect the blank layout (typically index 6, but can vary)
             self.blank_layout = self._find_blank_layout() or self.pptx_presentation.slide_layouts[6]
+
+    @property
+    def _slide_width_emu(self) -> int:
+        """Slide width in EMUs (falls back to 16:9 default)."""
+        width = self.pptx_presentation.slide_width
+        return int(width) if width is not None else 12192768
+
+    @property
+    def _slide_height_emu(self) -> int:
+        """Slide height in EMUs (falls back to 16:9 default)."""
+        height = self.pptx_presentation.slide_height
+        return int(height) if height is not None else 6858000
+
+    def _wrap_slide(self, pptx_slide: Any) -> Slide:
+        """Return the cached Slide wrapper for a python-pptx slide, creating it if needed."""
+        key = pptx_slide.slide_id
+        slide = self._slide_cache.get(key)
+        if slide is None:
+            slide = Slide(
+                pptx_slide,
+                slide_width=self._slide_width_emu,
+                slide_height=self._slide_height_emu,
+            )
+            self._slide_cache[key] = slide
+        return slide
 
     def _find_blank_layout(self) -> Any:
         """Find the blank layout in the presentation.
@@ -248,8 +264,8 @@ class Presentation:
             width_inches: Width in inches
             height_inches: Height in inches
         """
-        self.pptx_presentation.slide_width = int(Inches(width_inches))
-        self.pptx_presentation.slide_height = int(Inches(height_inches))
+        self.pptx_presentation.slide_width = Inches(width_inches)
+        self.pptx_presentation.slide_height = Inches(height_inches)
 
     @classmethod
     def open(cls, file_path: str | Path, blank_layout_index: int | None = None) -> Presentation:
@@ -303,7 +319,7 @@ class Presentation:
         layout_index: int | None = None,
         bg_color: str | tuple[int, int, int] | None = None,
         title: str | None = None,
-        template_toml: str | None = None,
+        template_toml: str | Literal[False] | None = None,
         title_padding: str | float | None = None,
         title_x_padding: str | float | None = "5%",
         title_y_padding: str | float | None = "5%",
@@ -311,6 +327,7 @@ class Presentation:
         title_height: str | float | None = "10%",
         title_font_size: int = 32,
         title_align: str = "center",
+        title_color: str | tuple[int, int, int] | None = None,
     ) -> Slide:
         """Add a new slide to the presentation.
 
@@ -318,7 +335,9 @@ class Presentation:
             layout_index: Index of the slide layout to use (default: None uses blank layout)
             bg_color: Background color for this slide, overrides default (default: None)
             title: Optional title text for the slide (default: None)
-            template_toml: Path to a TOML template file to use for this slide (default: None)
+            template_toml: Path to a TOML template file to use for this slide.
+                Pass False to opt out of the presentation's default template
+                for this slide (default: None, uses the default template if set)
             title_padding: Padding around the title (applies to both x and y if specified) (default: None)
             title_x_padding: Horizontal padding for title (default: "5%")
             title_y_padding: Vertical padding for title (default: "5%")
@@ -326,27 +345,29 @@ class Presentation:
             title_height: Height of the title area (default: "10%")
             title_font_size: Font size for the title (default: 32)
             title_align: Text alignment for the title (default: "center")
+            title_color: Title color as a name from COLORS or an RGB tuple (default: None)
 
         Returns:
             A new Slide object
+
+        Raises:
+            FileNotFoundError: If template_toml points to a missing file
+            ValueError: If the template file is invalid
         """
         # Priority for templates:
         # 1. If template_toml is explicitly provided for this slide, use it
-        # 2. Otherwise, if there's a default template from __init__, use that
-        # 3. Finally, fall back to a standard slide
+        # 2. If template_toml is False, use no template for this slide
+        # 3. Otherwise, if there's a default template from __init__, use that
+        # 4. Finally, fall back to a standard slide
 
         template_name = None
 
         # If a template is directly provided for this slide
-        if template_toml is not None:
-            try:
-                template_name = self.template_manager.load(template_toml)
-            except Exception as e:
-                # If loading fails, print a warning and continue with the default template
-                print(f"Warning: Failed to load TOML template '{template_toml}': {e}")
+        if template_toml:
+            template_name = self.template_manager.load(template_toml)
 
-        # Use the default template if no specific template was provided or if loading failed
-        if template_name is None and self._default_template is not None:
+        # Use the default template unless templates are opted out for this slide
+        if template_name is None and template_toml is not False and self._default_template is not None:
             template_name = self._default_template
 
         # If we have a template (either slide-specific or default), use it
@@ -374,7 +395,7 @@ class Presentation:
             )
 
             pptx_slide = self.pptx_presentation.slides.add_slide(slide_layout)
-            slide = Slide(pptx_slide)
+            slide = self._wrap_slide(pptx_slide)
 
             # Apply background color if specified for this slide or as default
             color_to_use = bg_color if bg_color is not None else self.default_bg_color
@@ -397,6 +418,7 @@ class Presentation:
                     font_size=title_font_size,
                     font_bold=True,
                     align=title_align,
+                    color=title_color,
                 )
 
             return slide
@@ -406,9 +428,10 @@ class Presentation:
         """Get a list of all slides in the presentation.
 
         Returns:
-            List of Slide objects
+            List of Slide objects. Repeated access returns the same wrapper
+            objects, so state like user_data is preserved.
         """
-        return [Slide(slide) for slide in self.pptx_presentation.slides]
+        return [self._wrap_slide(slide) for slide in self.pptx_presentation.slides]
 
     def save(self, file_path: str | Path) -> None:
         """Save the presentation to a file.
@@ -416,7 +439,7 @@ class Presentation:
         Args:
             file_path: Path where the presentation should be saved
         """
-        self.pptx_presentation.save(file_path)
+        self.pptx_presentation.save(str(file_path))
 
     def add_slide_from_template(self, template_data: str | dict) -> Slide:
         """Add a slide using a template preset.
@@ -453,8 +476,23 @@ class Presentation:
                 reference_pptx = self.template.get_reference_pptx(template_name)
                 blank_layout_index = self.template.get_blank_layout_index(template_name)
 
-            # If a reference PPTX is specified and we haven't loaded it yet, create a new Presentation with it
-            if reference_pptx is not None and self._loaded_reference != reference_pptx:
+            # If a reference PPTX is specified and we haven't loaded it yet, switch to it.
+            # This replaces the underlying presentation, so it is only allowed
+            # before any slides have been added. Compare resolved paths so the
+            # same file referenced two ways doesn't trigger a needless swap.
+            already_loaded = (
+                reference_pptx is not None
+                and self._loaded_reference is not None
+                and Path(self._loaded_reference).resolve() == Path(reference_pptx).resolve()
+            )
+            if reference_pptx is not None and not already_loaded:
+                if len(self.pptx_presentation.slides) > 0:
+                    raise ValueError(
+                        f"Template requires reference PPTX '{reference_pptx}', but the presentation "
+                        "already contains slides. Pass the reference PPTX (or template_toml) to "
+                        "Presentation() at construction instead."
+                    )
+
                 # Save current properties we want to preserve
                 current_width = self.pptx_presentation.slide_width
                 current_height = self.pptx_presentation.slide_height
@@ -462,22 +500,24 @@ class Presentation:
                 # Load the reference PPTX
                 try:
                     self.pptx_presentation = PPTXPresentation(reference_pptx)
-                    self._loaded_reference = reference_pptx
+                except Exception as e:
+                    raise ValueError(f"Invalid reference PPTX file '{reference_pptx}': {e}") from e
+                self._loaded_reference = reference_pptx
+                self._slide_cache.clear()
 
-                    # Restore dimensions
+                # Restore dimensions
+                if current_width is not None:
                     self.pptx_presentation.slide_width = current_width
+                if current_height is not None:
                     self.pptx_presentation.slide_height = current_height
 
-                    # Update blank layout
-                    if blank_layout_index is not None:
-                        if 0 <= blank_layout_index < len(self.pptx_presentation.slide_layouts):
-                            self.blank_layout = self.pptx_presentation.slide_layouts[blank_layout_index]
-                        else:
-                            self.blank_layout = self._find_blank_layout() or self.pptx_presentation.slide_layouts[0]
-                    else:
-                        self.blank_layout = self._find_blank_layout() or self.pptx_presentation.slide_layouts[6]
-                except Exception as e:
-                    print(f"Warning: Failed to load reference PPTX '{reference_pptx}': {e}")
+                # Update blank layout
+                if blank_layout_index is not None and 0 <= blank_layout_index < len(
+                    self.pptx_presentation.slide_layouts
+                ):
+                    self.blank_layout = self.pptx_presentation.slide_layouts[blank_layout_index]
+                else:
+                    self.blank_layout = self._find_blank_layout() or self.pptx_presentation.slide_layouts[6]
 
         # Get background color if specified
         bg_color = preset.get("bg_color", None)
@@ -490,7 +530,7 @@ class Presentation:
         # Use the blank layout or specified layout if provided
         slide_layout = self.blank_layout
         pptx_slide = self.pptx_presentation.slides.add_slide(slide_layout)
-        slide = Slide(pptx_slide)
+        slide = self._wrap_slide(pptx_slide)
 
         # Apply background color if specified for this slide
         if bg_color is not None:
@@ -823,40 +863,25 @@ class Presentation:
         """
         # Create a new slide
         slide = self.add_slide(bg_color=bg_color)
+        slide_height_emu = self._slide_height_emu
 
         # Calculate positions and dimensions
         adjusted_y = y
         adjusted_height = height
 
         # Determine content x-padding
-        content_x_val = x
-        if content_padding is not None or content_x_padding is not None:
-            content_x_val = content_padding if content_padding is not None else content_x_padding
-            if content_x_val is not None:
-                content_x_val = content_x_val
+        content_x_pad = resolve_padding(content_padding, content_x_padding)
+        content_x_val = content_x_pad if content_x_pad is not None else x
 
         # Add title if provided
         if title:
-            # Calculate title position with padding
-            title_x = "0%"
-            title_y = "0%"
+            title_x = resolve_padding(title_padding, title_x_padding)
+            title_y = resolve_padding(title_padding, title_y_padding)
 
-            # Apply title padding if specified
-            if title_padding is not None or title_x_padding is not None:
-                title_x_val = title_padding if title_padding is not None else title_x_padding
-                if title_x_val is not None:
-                    title_x = str(title_x_val)
-
-            if title_padding is not None or title_y_padding is not None:
-                title_y_val = title_padding if title_padding is not None else title_y_padding
-                if title_y_val is not None:
-                    title_y = str(title_y_val)
-
-            # Add the title to the slide
             slide.add_text(
                 text=title,
-                x=title_x,
-                y=title_y,
+                x=str(title_x) if title_x is not None else "0%",
+                y=str(title_y) if title_y is not None else "0%",
                 width="100%",
                 height=title_height,
                 font_size=title_font_size,
@@ -865,38 +890,18 @@ class Presentation:
                 vertical="middle",
             )
 
-            # Adjust y position for what comes next
-            if isinstance(y, str) and y.endswith("%"):
-                y_percent = float(y.strip("%"))
-                title_height_percent = float(str(title_height).strip("%"))
-                adjusted_y = f"{(y_percent + title_height_percent):.2f}%"
-
-                # Adjust height to account for title
-                if isinstance(height, str) and height.endswith("%"):
-                    height_percent = float(height.strip("%"))
-                    adjusted_height = f"{(height_percent - title_height_percent):.2f}%"
+            # Reserve the title band above the content area
+            adjusted_y, adjusted_height = shift_band(y, height, title_height, slide_height_emu)
 
         # Add subtitle if provided
         if subtitle:
-            # Calculate subtitle position with padding
-            subtitle_x = "0%"
-            subtitle_y = adjusted_y
+            subtitle_x = resolve_padding(subtitle_padding, subtitle_x_padding)
+            subtitle_y = resolve_padding(subtitle_padding, subtitle_y_padding)
 
-            # Apply subtitle padding if specified
-            if subtitle_padding is not None or subtitle_x_padding is not None:
-                subtitle_x_val = subtitle_padding if subtitle_padding is not None else subtitle_x_padding
-                if subtitle_x_val is not None:
-                    subtitle_x = str(subtitle_x_val)
-
-            if subtitle_padding is not None or subtitle_y_padding is not None:
-                subtitle_y_val = subtitle_padding if subtitle_padding is not None else subtitle_y_padding
-                subtitle_y = subtitle_y_val if subtitle_y_val is not None else adjusted_y
-
-            # Add the subtitle to the slide
             slide.add_text(
                 text=subtitle,
-                x=subtitle_x,
-                y=subtitle_y,
+                x=str(subtitle_x) if subtitle_x is not None else "0%",
+                y=subtitle_y if subtitle_y is not None else adjusted_y,
                 width="100%",
                 height=subtitle_height,
                 font_size=subtitle_font_size,
@@ -904,39 +909,13 @@ class Presentation:
                 vertical="middle",
             )
 
-            # Adjust y position for the image
-            if isinstance(adjusted_y, str) and adjusted_y.endswith("%"):
-                y_percent = float(adjusted_y.strip("%"))
-                subtitle_height_percent = float(str(subtitle_height).strip("%"))
-                adjusted_y = f"{(y_percent + subtitle_height_percent):.2f}%"
-
-                # Adjust height to account for subtitle
-                if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
-                    height_percent = float(adjusted_height.strip("%"))
-                    adjusted_height = f"{(height_percent - subtitle_height_percent):.2f}%"
+            # Reserve the subtitle band above the content area
+            adjusted_y, adjusted_height = shift_band(adjusted_y, adjusted_height, subtitle_height, slide_height_emu)
 
         # Apply content y padding if specified
-        image_y = adjusted_y
-        if content_padding is not None or content_y_padding is not None:
-            content_y = content_padding if content_padding is not None else content_y_padding
-            if content_y is not None:
-                # If content_y is provided as a percentage, add it to the adjusted_y
-                if (
-                    isinstance(content_y, str)
-                    and content_y.endswith("%")
-                    and isinstance(adjusted_y, str)
-                    and adjusted_y.endswith("%")
-                ):
-                    content_y_percent = float(content_y.strip("%"))
-                    adjusted_y_percent = float(adjusted_y.strip("%"))
-                    image_y = f"{(adjusted_y_percent + content_y_percent):.2f}%"
-
-                    # Also adjust the height accordingly
-                    if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
-                        adjusted_height_percent = float(adjusted_height.strip("%"))
-                        adjusted_height = f"{(adjusted_height_percent - content_y_percent):.2f}%"
-                else:
-                    image_y = content_y
+        image_y, adjusted_height = apply_content_padding(
+            adjusted_y, adjusted_height, content_padding, content_y_padding, slide_height_emu
+        )
 
         # Add the image to the slide
         img = Image(slide)
@@ -956,52 +935,23 @@ class Presentation:
 
         # Apply shadow if specified
         if shadow:
-            image_shape.shadow.inherit = False
-            image_shape.shadow.visible = True
-            image_shape.shadow.blur_radius = 5
-            image_shape.shadow.distance = 3
-            image_shape.shadow.angle = 45
+            common.apply_shadow(image_shape)
 
         # Add label if specified
         if label:
-            # Calculate the position below the image with padding
-            label_x = "0%"
+            label_x = resolve_padding(label_padding, label_x_padding)
+            label_y_pad = resolve_padding(label_padding, label_y_padding)
 
-            # Apply label_x_padding if specified
-            if label_padding is not None or label_x_padding is not None:
-                label_x_val = label_padding if label_padding is not None else label_x_padding
-                if label_x_val is not None:
-                    label_x = str(label_x_val)
+            # Place the label just below the image
+            label_y = pct(
+                to_percent(image_y, slide_height_emu)
+                + to_percent(adjusted_height, slide_height_emu)
+                + (to_percent(label_y_pad, slide_height_emu) if label_y_pad is not None else 1.0)
+            )
 
-            # Calculate label Y position with proper padding
-            if (
-                isinstance(image_y, str)
-                and image_y.endswith("%")
-                and isinstance(adjusted_height, str)
-                and adjusted_height.endswith("%")
-            ):
-                image_y_percent = float(image_y.strip("%"))
-                image_height_percent = float(adjusted_height.strip("%"))
-
-                # Apply label_y_padding
-                label_y_pad = label_y_padding
-                if label_padding is not None:
-                    label_y_pad = label_padding
-
-                if isinstance(label_y_pad, str) and label_y_pad.endswith("%"):
-                    label_pad_percent = float(label_y_pad.strip("%"))
-                    label_y = f"{(image_y_percent + image_height_percent + label_pad_percent):.2f}%"
-                else:
-                    # Default gap
-                    label_y = f"{(image_y_percent + image_height_percent + 1):.2f}%"
-            else:
-                # Fall back to a reasonable default if we can't calculate exactly
-                label_y = "95%"
-
-            # Add the label text
             slide.add_text(
                 text=label,
-                x=label_x,
+                x=str(label_x) if label_x is not None else "0%",
                 y=label_y,
                 width="100%",
                 height="5%",
@@ -1026,6 +976,7 @@ class Presentation:
         Returns:
             A new Slide object configured as an image slide
         """
+        _deprecated("Presentation.add_image_slide", "Presentation.add_image_gen_slide")
         # Get the image slide preset
         preset = self.template.get_preset("image_slide")
 
@@ -1066,19 +1017,16 @@ class Presentation:
 
         # Apply shadow if specified
         if image_style.get("shadow", False):
-            image_shape.shadow.inherit = False
-            image_shape.shadow.visible = True
-            image_shape.shadow.blur_radius = 5
-            image_shape.shadow.distance = 3
-            image_shape.shadow.angle = 45
+            common.apply_shadow(image_shape)
 
         # Apply brightness/contrast if specified
         if "brightness" in image_style or "contrast" in image_style:
             brightness = image_style.get("brightness", 0)
             contrast = image_style.get("contrast", 0)
             if hasattr(image_shape, "brightness_contrast"):
-                image_shape.brightness_contrast.brightness = brightness
-                image_shape.brightness_contrast.contrast = contrast
+                bc: Any = image_shape.brightness_contrast
+                bc.brightness = brightness
+                bc.contrast = contrast
 
         # Add label if specified
         if label:
@@ -1217,13 +1165,11 @@ class Presentation:
         height = table_position.get("height", "60%")
 
         # Convert pandas DataFrame to list if needed
-        table_data: list[list[Any]] = []
-        if hasattr(data, "to_dict") and callable(getattr(data, "to_dict", None)) and isinstance(data, pd.DataFrame):
-            # It's a pandas DataFrame
-            table_data = [list(data.columns), *data.values.tolist()]
+        if common.is_dataframe(data):
+            df = cast("pd.DataFrame", data)
+            table_data: list[list[Any]] = [list(df.columns), *df.values.tolist()]
         else:
-            # It's already a list of lists
-            table_data = data  # type: ignore[assignment]
+            table_data = cast("list[list[Any]]", data)
 
         # Add the table
         table.add(
@@ -1295,9 +1241,9 @@ class Presentation:
         values: list[Any] = []
 
         # Simple extraction of categories and values for the example
-        if hasattr(data, "to_dict") and callable(getattr(data, "to_dict", None)) and isinstance(data, pd.DataFrame):
+        if common.is_dataframe(data):
             # It's a pandas DataFrame
-            df_data: pd.DataFrame = data  # Create a properly typed reference
+            df_data = cast("pd.DataFrame", data)
             if category_column is not None and category_column in df_data.columns:
                 categories = df_data[category_column].tolist()
             else:
@@ -1337,8 +1283,9 @@ class Presentation:
         )
 
         # Apply additional styling if applicable
+        chart_any: Any = chart
         if hasattr(chart, "format") and chart_style.get("has_border", True):
-            chart.format.line.color.rgb = self.COLORS.get(
+            chart_any.format.line.color.rgb = self.COLORS.get(
                 chart_style.get("border_color", "black"), self.COLORS["black"]
             )
 
@@ -1390,6 +1337,7 @@ class Presentation:
             )
             ```
         """
+        _deprecated("Presentation.add_matplotlib_slide", "Presentation.add_pyplot_slide")
         # Create a new slide using the image slide preset
         slide = self.add_slide_from_template("image_slide")
 
@@ -1476,6 +1424,7 @@ class Presentation:
             )
             ```
         """
+        _deprecated("Presentation.add_seaborn_slide", "Presentation.add_pyplot_slide")
         # Extract the figure from the seaborn plot
         if hasattr(seaborn_plot, "figure"):
             figure = seaborn_plot.figure
@@ -1544,6 +1493,7 @@ class Presentation:
             )
             ```
         """
+        _deprecated("Presentation.add_plot", "Presentation.add_pyplot_slide or Presentation.add_chart_slide")
         if plot_type == "matplotlib":
             if plot is None:
                 raise ValueError("'plot' argument is required for matplotlib plots")
@@ -1632,6 +1582,7 @@ class Presentation:
             pres.add_text(slide, "Centered Title", x="50%", y="5%", align="center")
             ```
         """
+        _deprecated("Presentation.add_text", "Slide.add_text")
         if font_name is None:
             font_name = self.DEFAULT_FONT
 
@@ -1695,8 +1646,21 @@ class Presentation:
             pres.add_image(slide, "path/to/image.jpg", x="50%", y="30%", width="80%", center=True)
             ```
         """
-        # Use the slide's native add_image method
-        image_shape = slide.add_image(image_path=image_path, x=x, y=y, width=width, height=height)
+        _deprecated("Presentation.add_image", "Slide.add_image")
+        if crop:
+            warnings.warn("The 'crop' parameter is not implemented and will be removed", stacklevel=2)
+        if not center:
+            warnings.warn("The 'center' parameter is not implemented and will be removed", stacklevel=2)
+
+        # Route through Image.add so maintain_aspect_ratio takes effect
+        image_shape = Image(slide).add(
+            image_path=image_path,
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            maintain_aspect_ratio=maintain_aspect_ratio,
+        )
 
         # Apply styling
         if border:
@@ -1704,18 +1668,14 @@ class Presentation:
             image_shape.line.width = border_width
 
         if shadow:
-            image_shape.shadow.inherit = False
-            image_shape.shadow.visible = True
-            image_shape.shadow.blur_radius = 5
-            image_shape.shadow.distance = 3
-            image_shape.shadow.angle = 45
+            common.apply_shadow(image_shape)
 
         return image_shape
 
     def add_shape(
         self,
         slide: Slide,
-        shape_type: int = MSO_SHAPE.RECTANGLE,
+        shape_type: MSO_SHAPE | str = MSO_SHAPE.RECTANGLE,
         x: float | str = 1.0,
         y: float | str = 1.0,
         width: float | str = 2.0,
@@ -1780,6 +1740,7 @@ class Presentation:
             )
             ```
         """
+        _deprecated("Presentation.add_shape", "Slide.add_shape")
         # Use the slide's native add_shape method
         shape = slide.add_shape(shape_type=shape_type, x=x, y=y, width=width, height=height, fill_color=fill_color)
 
@@ -1831,7 +1792,7 @@ class Presentation:
         height: float | str = 4.0,
         has_header: bool = True,
         style: dict | None = None,
-    ) -> PPTXShape:
+    ) -> Any:
         """Add a table directly to a slide.
 
         Args:
@@ -1854,31 +1815,10 @@ class Presentation:
             pres.add_table(slide, data, x="10%", y="20%", width="80%", height="60%")
             ```
         """
-        from easypptx.table import Table
-
-        table_obj = Table(slide)
-
-        # Get default styling if not provided
+        _deprecated("Presentation.add_table", "Slide.add_table")
         if style is None:
             style = self.template.default_table_style.copy()
-
-        # Convert the style parameter to int for table.add compatibility
-        table_style_id = None
-        if isinstance(style, dict) and "style_id" in style:
-            table_style_id = style.get("style_id")
-
-        # Convert pandas DataFrame to list if needed
-        table_data: list[list[Any]] = []
-        if hasattr(data, "to_dict") and callable(getattr(data, "to_dict", None)) and isinstance(data, pd.DataFrame):
-            # It's a pandas DataFrame
-            table_data = [list(data.columns), *data.values.tolist()]
-        else:
-            # It's already a list of lists
-            table_data = data  # type: ignore[assignment]
-
-        return table_obj.add(
-            data=table_data, x=x, y=y, width=width, height=height, first_row_header=has_header, style=table_style_id
-        )
+        return slide.add_table(data, x=x, y=y, width=width, height=height, has_header=has_header, style=style)
 
     def add_chart(
         self,
@@ -1936,115 +1876,20 @@ class Presentation:
             )
             ```
         """
-        from easypptx.chart import Chart
-
-        chart_obj = Chart(slide)
-
-        # Check if data is a pandas DataFrame
-        if hasattr(data, "to_dict") and callable(getattr(data, "to_dict", None)):
-            # Use from_dataframe method
-            # Handle multi-column case for pandas DataFrames
-            # Get the first column for the chart - we'll need to implement multi-series charts in the future
-            first_value_column = value_columns[0] if isinstance(value_columns, list) else value_columns
-
-            if category_column is None and hasattr(data, "columns"):
-                # Use the first column as the category column
-                # Only for pandas DataFrames
-                category_column = str(data.columns[0])
-
-            if first_value_column is None and hasattr(data, "columns"):
-                # Use the second column as the value column
-                # Only for pandas DataFrames
-                if len(data.columns) > 1:
-                    first_value_column = str(data.columns[1])
-                else:
-                    raise ValueError("DataFrame must have at least two columns for automatic value extraction")
-
-            # Convert category_column and value_column to strings for type compatibility
-            if category_column is not None:
-                category_column = str(category_column)
-            if first_value_column is not None:
-                first_value_column = str(first_value_column)
-
-            # Make sure we're working with a proper pandas DataFrame
-            # Import pandas locally to avoid circular import
-            import pandas as pd
-
-            # Convert data to DataFrame if it's not already using ternary operator
-            df = pd.DataFrame(data) if not isinstance(data, pd.DataFrame) else data
-
-            return chart_obj.from_dataframe(
-                df=df,
-                chart_type=chart_type,
-                category_column=category_column,
-                value_column=first_value_column,
-                x=x,
-                y=y,
-                width=width,
-                height=height,
-                title=chart_title,
-                has_legend=has_legend,
-                legend_position=legend_position,
-            )
-        else:
-            # If it's a list of lists, convert to categories and values
-            categories = []
-            values = []
-
-            if data and len(data) > 1:
-                if category_column is not None:
-                    # Extract column data using the provided column index or name
-                    if isinstance(category_column, int):
-                        categories = [row[category_column] for row in data[1:]]
-                    else:
-                        # Find the column index by name
-                        header = data[0]
-                        try:
-                            col_idx = header.index(category_column)
-                            categories = [row[col_idx] for row in data[1:]]
-                        except ValueError:
-                            raise ValueError(f"Category column '{category_column}' not found in header") from None
-                else:
-                    # Default to first column
-                    categories = [row[0] for row in data[1:]]
-
-                if value_columns is not None:
-                    # Extract values from the specified column(s)
-                    if isinstance(value_columns, int | str):
-                        # Single column
-                        if isinstance(value_columns, int):
-                            values = [row[value_columns] for row in data[1:]]
-                        else:
-                            # Find column by name
-                            header = data[0]
-                            try:
-                                col_idx = header.index(value_columns)
-                                values = [row[col_idx] for row in data[1:]]
-                            except ValueError:
-                                raise ValueError(f"Value column '{value_columns}' not found in header") from None
-                    else:
-                        # Multiple columns not supported in simple list format
-                        raise ValueError(
-                            "Multiple value columns not supported for list data. Use pandas DataFrame instead."
-                        )
-                else:
-                    # Default to second column
-                    if len(data[0]) > 1:
-                        values = [row[1] for row in data[1:]]
-                    else:
-                        raise ValueError("Data must have at least two columns for automatic value extraction")
-
-            return chart_obj.add(
-                chart_type=chart_type,
-                categories=categories,
-                values=values,
-                x=x,
-                y=y,
-                width=width,
-                height=height,
-                title=chart_title,
-                has_legend=has_legend,
-            )
+        _deprecated("Presentation.add_chart", "Slide.add_chart")
+        return slide.add_chart(
+            data=data,
+            chart_type=chart_type,
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            category_column=category_column,
+            value_columns=value_columns,
+            title=chart_title,
+            has_legend=has_legend,
+            legend_position=legend_position,
+        )
 
     def add_grid(
         self,
@@ -2162,14 +2007,7 @@ class Presentation:
             )
 
             # Adjust grid position and height to account for title
-            grid_y = str(title_height)
-
-            # Calculate grid height by subtracting title height
-            if isinstance(title_height, str) and title_height.endswith("%"):
-                title_height_value = float(title_height.strip("%"))
-                grid_height = f"{100 - title_height_value}%"
-            else:
-                grid_height = f"{100 - float(title_height)}%"
+            grid_y, grid_height = shift_band("0%", "100%", title_height, self._slide_height_emu)
 
             # Create the grid
             grid = self.add_grid(
@@ -2273,16 +2111,8 @@ class Presentation:
             adjusted_height = height
 
             if title:
-                if isinstance(y, str) and y.endswith("%"):
-                    y_percent = float(y.strip("%"))
-                    title_height_percent = float(str(title_height).strip("%"))
-                    # Adjust y position for the grid
-                    adjusted_y = f"{(y_percent + title_height_percent):.2f}%"
-
-                    # Adjust height to account for title
-                    if isinstance(height, str) and height.endswith("%"):
-                        height_percent = float(height.strip("%"))
-                        adjusted_height = f"{(height_percent - title_height_percent):.2f}%"
+                # Reserve the title band above the grid
+                adjusted_y, adjusted_height = shift_band(y, height, title_height, self._slide_height_emu)
 
                 # Add the title to the slide
                 slide.add_text(
@@ -2447,6 +2277,7 @@ class Presentation:
 
         # Create a new slide
         slide = self.add_slide(bg_color=bg_color_val)
+        slide_height_emu = self._slide_height_emu
 
         # Calculate positions and dimensions
         adjusted_y = y_val
@@ -2540,21 +2371,8 @@ class Presentation:
                 vertical=title_vertical,
             )
 
-            # Adjust y position for what comes next
-            if (
-                isinstance(y_val, str)
-                and y_val.endswith("%")
-                and isinstance(title_height_val, str)
-                and title_height_val.endswith("%")
-            ):
-                y_percent = float(y_val.strip("%"))
-                title_height_percent = float(title_height_val.strip("%"))
-                adjusted_y = f"{(y_percent + title_height_percent):.2f}%"
-
-                # Adjust height to account for title
-                if isinstance(height_val, str) and height_val.endswith("%"):
-                    height_percent = float(height_val.strip("%"))
-                    adjusted_height = f"{(height_percent - title_height_percent):.2f}%"
+            # Reserve the title band above the grid
+            adjusted_y, adjusted_height = shift_band(y_val, height_val, title_height_val, slide_height_emu)
 
         # Add subtitle if provided
         if subtitle:
@@ -2609,7 +2427,11 @@ class Presentation:
                                 subtitle_align_val = template_data["defaults"]["global"].get("align")
 
                         # If still None, check dedicated subtitle section alignment
-                        if subtitle_align_val is None and "subtitle" in template_data and "align" in template_data["subtitle"]:
+                        if (
+                            subtitle_align_val is None
+                            and "subtitle" in template_data
+                            and "align" in template_data["subtitle"]
+                        ):
                             subtitle_align_val = template_data["subtitle"]["align"]
                     except (ValueError, KeyError):
                         pass
@@ -2635,69 +2457,17 @@ class Presentation:
                 vertical=subtitle_vertical,
             )
 
-            # Adjust y position for the grid
-            if (
-                isinstance(adjusted_y, str)
-                and adjusted_y.endswith("%")
-                and isinstance(subtitle_height_val, str)
-                and subtitle_height_val.endswith("%")
-            ):
-                y_percent = float(adjusted_y.strip("%"))
-                subtitle_height_percent = float(subtitle_height_val.strip("%"))
-                adjusted_y = f"{(y_percent + subtitle_height_percent):.2f}%"
+            # Reserve the subtitle band above the grid
+            adjusted_y, adjusted_height = shift_band(adjusted_y, adjusted_height, subtitle_height_val, slide_height_emu)
 
-                # Adjust height to account for subtitle
-                if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
-                    height_percent = float(adjusted_height.strip("%"))
-                    adjusted_height = f"{(height_percent - subtitle_height_percent):.2f}%"
-
-        # Apply content y padding if specified
-        grid_y = adjusted_y
-        if content_padding is not None or content_y_padding is not None:
-            content_y = content_padding if content_padding is not None else content_y_padding
-            if content_y is not None:
-                # If content_y is provided as a percentage, add it to the adjusted_y
-                if (
-                    isinstance(content_y, str)
-                    and content_y.endswith("%")
-                    and isinstance(adjusted_y, str)
-                    and adjusted_y.endswith("%")
-                ):
-                    content_y_percent = float(content_y.strip("%"))
-                    adjusted_y_percent = float(adjusted_y.strip("%"))
-                    grid_y = f"{(adjusted_y_percent + content_y_percent):.2f}%"
-
-                    # Also adjust the height accordingly
-                    if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
-                        adjusted_height_percent = float(adjusted_height.strip("%"))
-                        adjusted_height = f"{(adjusted_height_percent - content_y_percent):.2f}%"
-                else:
-                    grid_y = str(content_y)
-
-        # Get content y padding value
+        # Apply content y padding if specified (explicit parameters win over
+        # template defaults; the padding is applied exactly once)
         content_y_padding_val = (
             content_y_padding if content_y_padding is not None else template_defaults.get("content_y_padding")
         )
-        if content_padding_val is not None or content_y_padding_val is not None:
-            content_y = content_padding_val if content_padding_val is not None else content_y_padding_val
-            if content_y is not None:
-                # If content_y is provided as a percentage, add it to the adjusted_y
-                if (
-                    isinstance(content_y, str)
-                    and content_y.endswith("%")
-                    and isinstance(adjusted_y, str)
-                    and adjusted_y.endswith("%")
-                ):
-                    content_y_percent = float(content_y.strip("%"))
-                    adjusted_y_percent = float(adjusted_y.strip("%"))
-                    grid_y = f"{(adjusted_y_percent + content_y_percent):.2f}%"
-
-                    # Also adjust the height accordingly
-                    if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
-                        adjusted_height_percent = float(adjusted_height.strip("%"))
-                        adjusted_height = f"{(adjusted_height_percent - content_y_percent):.2f}%"
-                else:
-                    grid_y = str(content_y)
+        grid_y, adjusted_height = apply_content_padding(
+            adjusted_y, adjusted_height, content_padding_val, content_y_padding_val, slide_height_emu
+        )
 
         # Create the grid
         grid = Grid(
@@ -2801,6 +2571,7 @@ class Presentation:
         """
         # Create a new slide
         slide = self.add_slide(bg_color=bg_color)
+        slide_height_emu = self._slide_height_emu
 
         # If content_funcs is None and rows/cols are provided, ensure they have values
         if content_funcs is None and (rows is None or cols is None):
@@ -2808,39 +2579,23 @@ class Presentation:
             cols = cols or 1
 
         # Set default grid position and dimensions
-        grid_x = "0%"
-        grid_y = "0%"
-        grid_width = "100%"
-        grid_height = "100%"
+        grid_y: str | float = "0%"
+        grid_height: str | float = "100%"
 
-        # Apply content padding if specified (for grid positioning)
-        if content_padding is not None or content_x_padding is not None:
-            content_x = content_padding if content_padding is not None else content_x_padding
-            if content_x is not None:
-                grid_x = str(content_x)
+        # Apply content x padding if specified (for grid positioning)
+        content_x = resolve_padding(content_padding, content_x_padding)
+        grid_x = str(content_x) if content_x is not None else "0%"
 
-        # Create the autogrid (without title, we'll add it separately to the slide)
         if title:
             # Calculate title position with padding
-            title_x = "0%"
-            title_y = "0%"
-
-            # Apply title padding if specified
-            if title_padding is not None or title_x_padding is not None:
-                title_x_val = title_padding if title_padding is not None else title_x_padding
-                if title_x_val is not None:
-                    title_x = str(title_x_val)
-
-            if title_padding is not None or title_y_padding is not None:
-                title_y_val = title_padding if title_padding is not None else title_y_padding
-                if title_y_val is not None:
-                    title_y = str(title_y_val)
+            title_x = resolve_padding(title_padding, title_x_padding)
+            title_y = resolve_padding(title_padding, title_y_padding)
 
             # Add the title to the slide
             slide.add_text(
                 text=title,
-                x=title_x,
-                y=title_y,
+                x=str(title_x) if title_x is not None else "0%",
+                y=str(title_y) if title_y is not None else "0%",
                 width="100%",
                 height=title_height,
                 font_size=title_font_size,
@@ -2849,102 +2604,38 @@ class Presentation:
                 vertical="middle",
             )
 
-            # Calculate grid dimensions - preserve the original title_height format
-            grid_y = str(title_height)
+            # Reserve the title band above the grid
+            grid_y, grid_height = shift_band("0%", "100%", title_height, slide_height_emu)
 
-            # Calculate grid height by subtracting title height
-            if isinstance(title_height, str) and title_height.endswith("%"):
-                title_height_value = float(title_height.strip("%"))
-                grid_height = f"{100 - title_height_value}%"
-            else:
-                grid_height = f"{100 - float(title_height)}%"
+        # Apply content y padding if specified
+        grid_y, grid_height = apply_content_padding(
+            grid_y, grid_height, content_padding, content_y_padding, slide_height_emu
+        )
 
-            # Apply content y padding if specified
-            if content_padding is not None or content_y_padding is not None:
-                content_y = content_padding if content_padding is not None else content_y_padding
-                if content_y is not None:
-                    # If content_y is provided as a percentage, add it to the grid_y
-                    if (
-                        isinstance(content_y, str)
-                        and content_y.endswith("%")
-                        and isinstance(grid_y, str)
-                        and grid_y.endswith("%")
-                    ):
-                        content_y_percent = float(content_y.strip("%"))
-                        grid_y_percent = float(grid_y.strip("%"))
-                        grid_y = f"{(grid_y_percent + content_y_percent):.2f}%"
+        # Create the autogrid without its own title (added above if requested)
+        grid = self.add_autogrid(
+            slide=slide,
+            content_funcs=content_funcs,
+            rows=rows,
+            cols=cols,
+            x=grid_x,
+            y=grid_y,
+            width="100%",
+            height=grid_height,
+            padding=padding,
+            title=None,
+            title_align=title_align,
+            column_major=column_major,
+        )
 
-                        # Also adjust the height accordingly
-                        if isinstance(grid_height, str) and grid_height.endswith("%"):
-                            grid_height_percent = float(grid_height.strip("%"))
-                            grid_height = f"{(grid_height_percent - content_y_percent):.2f}%"
-                    else:
-                        grid_y = str(content_y)
-
-            # Create the autogrid without its own title (we already added it)
-            grid = self.add_autogrid(
-                slide=slide,
-                content_funcs=content_funcs,
-                rows=rows,
-                cols=cols,
-                x=grid_x,
-                y=grid_y,
-                width=grid_width,
-                height=grid_height,
-                padding=padding,
-                title=None,  # No separate title for the grid
-                title_align=title_align,
-                column_major=column_major,
-            )
-
-            # Apply template defaults to grid if available
-            if self._default_template is not None:
-                try:
-                    template = self.template_manager.get(self._default_template)
-                    grid.apply_template_defaults(template)
-                except (ValueError, KeyError):
-                    # If template lookup fails, proceed without template defaults
-                    pass
-        else:
-            # If no title, apply content padding if specified
-            if content_padding is not None or content_y_padding is not None:
-                content_y = content_padding if content_padding is not None else content_y_padding
-                if content_y is not None:
-                    grid_y = str(content_y)
-
-                    # Adjust height if necessary
-                    if (
-                        isinstance(content_y, str)
-                        and content_y.endswith("%")
-                        and isinstance(grid_height, str)
-                        and grid_height.endswith("%")
-                    ):
-                        content_y_percent = float(content_y.strip("%"))
-                        grid_height = f"{(100 - content_y_percent):.2f}%"
-
-            # Create the autogrid with full slide dimensions
-            grid = self.add_autogrid(
-                slide=slide,
-                content_funcs=content_funcs,
-                rows=rows,
-                cols=cols,
-                x=grid_x,
-                y=grid_y,
-                width=grid_width,
-                height=grid_height,
-                padding=padding,
-                title=None,  # No title
-                column_major=column_major,
-            )
-
-            # Apply template defaults to grid if available
-            if self._default_template is not None:
-                try:
-                    template = self.template_manager.get(self._default_template)
-                    grid.apply_template_defaults(template)
-                except (ValueError, KeyError):
-                    # If template lookup fails, proceed without template defaults
-                    pass
+        # Apply template defaults to grid if available
+        if self._default_template is not None:
+            try:
+                template = self.template_manager.get(self._default_template)
+                grid.apply_template_defaults(template)
+            except (ValueError, KeyError):
+                # If template lookup fails, proceed without template defaults
+                pass
 
         return slide, grid
 
@@ -3056,40 +2747,25 @@ class Presentation:
         """
         # Create a new slide
         slide = self.add_slide(bg_color=bg_color)
+        slide_height_emu = self._slide_height_emu
 
         # Calculate positions and dimensions
         adjusted_y = y
         adjusted_height = height
 
         # Determine content x-padding
-        content_x_val = x
-        if content_padding is not None or content_x_padding is not None:
-            content_x_val = content_padding if content_padding is not None else content_x_padding
-            if content_x_val is not None:
-                content_x_val = content_x_val
+        content_x_pad = resolve_padding(content_padding, content_x_padding)
+        content_x_val = content_x_pad if content_x_pad is not None else x
 
         # Add title if provided
         if title:
-            # Calculate title position with padding
-            title_x = "0%"
-            title_y = "0%"
+            title_x = resolve_padding(title_padding, title_x_padding)
+            title_y = resolve_padding(title_padding, title_y_padding)
 
-            # Apply title padding if specified
-            if title_padding is not None or title_x_padding is not None:
-                title_x_val = title_padding if title_padding is not None else title_x_padding
-                if title_x_val is not None:
-                    title_x = str(title_x_val)
-
-            if title_padding is not None or title_y_padding is not None:
-                title_y_val = title_padding if title_padding is not None else title_y_padding
-                if title_y_val is not None:
-                    title_y = str(title_y_val)
-
-            # Add the title to the slide
             slide.add_text(
                 text=title,
-                x=title_x,
-                y=title_y,
+                x=str(title_x) if title_x is not None else "0%",
+                y=str(title_y) if title_y is not None else "0%",
                 width="100%",
                 height=title_height,
                 font_size=title_font_size,
@@ -3098,38 +2774,18 @@ class Presentation:
                 vertical="middle",
             )
 
-            # Adjust y position for what comes next
-            if isinstance(y, str) and y.endswith("%"):
-                y_percent = float(y.strip("%"))
-                title_height_percent = float(str(title_height).strip("%"))
-                adjusted_y = f"{(y_percent + title_height_percent):.2f}%"
-
-                # Adjust height to account for title
-                if isinstance(height, str) and height.endswith("%"):
-                    height_percent = float(height.strip("%"))
-                    adjusted_height = f"{(height_percent - title_height_percent):.2f}%"
+            # Reserve the title band above the figure
+            adjusted_y, adjusted_height = shift_band(y, height, title_height, slide_height_emu)
 
         # Add subtitle if provided
         if subtitle:
-            # Calculate subtitle position with padding
-            subtitle_x = "0%"
-            subtitle_y = adjusted_y
+            subtitle_x = resolve_padding(subtitle_padding, subtitle_x_padding)
+            subtitle_y = resolve_padding(subtitle_padding, subtitle_y_padding)
 
-            # Apply subtitle padding if specified
-            if subtitle_padding is not None or subtitle_x_padding is not None:
-                subtitle_x_val = subtitle_padding if subtitle_padding is not None else subtitle_x_padding
-                if subtitle_x_val is not None:
-                    subtitle_x = str(subtitle_x_val)
-
-            if subtitle_padding is not None or subtitle_y_padding is not None:
-                subtitle_y_val = subtitle_padding if subtitle_padding is not None else subtitle_y_padding
-                subtitle_y = subtitle_y_val if subtitle_y_val is not None else adjusted_y
-
-            # Add the subtitle to the slide
             slide.add_text(
                 text=subtitle,
-                x=subtitle_x,
-                y=subtitle_y,
+                x=str(subtitle_x) if subtitle_x is not None else "0%",
+                y=subtitle_y if subtitle_y is not None else adjusted_y,
                 width="100%",
                 height=subtitle_height,
                 font_size=subtitle_font_size,
@@ -3137,39 +2793,13 @@ class Presentation:
                 vertical="middle",
             )
 
-            # Adjust y position for the pyplot
-            if isinstance(adjusted_y, str) and adjusted_y.endswith("%"):
-                y_percent = float(adjusted_y.strip("%"))
-                subtitle_height_percent = float(str(subtitle_height).strip("%"))
-                adjusted_y = f"{(y_percent + subtitle_height_percent):.2f}%"
-
-                # Adjust height to account for subtitle
-                if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
-                    height_percent = float(adjusted_height.strip("%"))
-                    adjusted_height = f"{(height_percent - subtitle_height_percent):.2f}%"
+            # Reserve the subtitle band above the figure
+            adjusted_y, adjusted_height = shift_band(adjusted_y, adjusted_height, subtitle_height, slide_height_emu)
 
         # Apply content y padding if specified
-        figure_y = adjusted_y
-        if content_padding is not None or content_y_padding is not None:
-            content_y = content_padding if content_padding is not None else content_y_padding
-            if content_y is not None:
-                # If content_y is provided as a percentage, add it to the adjusted_y
-                if (
-                    isinstance(content_y, str)
-                    and content_y.endswith("%")
-                    and isinstance(adjusted_y, str)
-                    and adjusted_y.endswith("%")
-                ):
-                    content_y_percent = float(content_y.strip("%"))
-                    adjusted_y_percent = float(adjusted_y.strip("%"))
-                    figure_y = f"{(adjusted_y_percent + content_y_percent):.2f}%"
-
-                    # Also adjust the height accordingly
-                    if isinstance(adjusted_height, str) and adjusted_height.endswith("%"):
-                        adjusted_height_percent = float(adjusted_height.strip("%"))
-                        adjusted_height = f"{(adjusted_height_percent - content_y_percent):.2f}%"
-                else:
-                    figure_y = content_y
+        figure_y, adjusted_height = apply_content_padding(
+            adjusted_y, adjusted_height, content_padding, content_y_padding, slide_height_emu
+        )
 
         # Create a style dictionary for the pyplot
         style = {
@@ -3196,44 +2826,19 @@ class Presentation:
 
         # Add label if specified
         if label:
-            # Calculate the position below the figure with padding
-            label_x = "0%"
+            label_x = resolve_padding(label_padding, label_x_padding)
+            label_y_pad = resolve_padding(label_padding, label_y_padding)
 
-            # Apply label_x_padding if specified
-            if label_padding is not None or label_x_padding is not None:
-                label_x_val = label_padding if label_padding is not None else label_x_padding
-                if label_x_val is not None:
-                    label_x = str(label_x_val)
+            # Place the label just below the figure
+            label_y = pct(
+                to_percent(figure_y, slide_height_emu)
+                + to_percent(adjusted_height, slide_height_emu)
+                + (to_percent(label_y_pad, slide_height_emu) if label_y_pad is not None else 1.0)
+            )
 
-            # Calculate label Y position with proper padding
-            if (
-                isinstance(figure_y, str)
-                and figure_y.endswith("%")
-                and isinstance(adjusted_height, str)
-                and adjusted_height.endswith("%")
-            ):
-                figure_y_percent = float(figure_y.strip("%"))
-                figure_height_percent = float(adjusted_height.strip("%"))
-
-                # Apply label_y_padding
-                label_y_pad = label_y_padding
-                if label_padding is not None:
-                    label_y_pad = label_padding
-
-                if isinstance(label_y_pad, str) and label_y_pad.endswith("%"):
-                    label_pad_percent = float(label_y_pad.strip("%"))
-                    label_y = f"{(figure_y_percent + figure_height_percent + label_pad_percent):.2f}%"
-                else:
-                    # Default gap
-                    label_y = f"{(figure_y_percent + figure_height_percent + 1):.2f}%"
-            else:
-                # Fall back to a reasonable default if we can't calculate exactly
-                label_y = "95%"
-
-            # Add the label text
             slide.add_text(
                 text=label,
-                x=label_x,
+                x=str(label_x) if label_x is not None else "0%",
                 y=label_y,
                 width="100%",
                 height="5%",
@@ -3305,6 +2910,7 @@ class Presentation:
             )
             ```
         """
+        _deprecated("Presentation.add_pyplot", "Pyplot.add or GridCellProxy.add_pyplot")
         position = {"x": x, "y": y, "width": width, "height": height}
         style = {
             "border": border,
@@ -3316,6 +2922,3 @@ class Presentation:
         }
 
         return Pyplot.add(slide=slide, figure=figure, position=position, dpi=dpi, file_format=file_format, style=style)
-
-
-# The Grid class is now imported properly at the top of the file
