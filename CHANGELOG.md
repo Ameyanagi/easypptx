@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-08-16
+
+### Added
+- `Slide.add_table` and `Slide.add_chart` — content methods now live on `Slide`, so `slide.add_table(...)` / `slide.add_chart(...)` work as the README always showed
+- `Slide.add_shape` (and `Presentation.add_shape`) accept string shape names such as `"ROUNDED_RECTANGLE"` in addition to `MSO_SHAPE` enums
+- `Presentation.add_slide` gained `title_color`; `template_toml=False` opts a single slide out of the presentation's default template
+- New shared modules: `easypptx.positioning` (percent/inch conversion and layout arithmetic) and `easypptx.common` (colors, alignment, font constants)
+- Common parameter aliases are accepted: `has_header`/`first_row_header`, `value_column`/`value_columns`, `vertical`/`vertical_align`, `chart_title`/`title`
+- `py.typed` marker — the library's annotations are now visible to downstream type checkers
+- Optional dependency extras: `easypptx[dataframe]` (pandas), `easypptx[plot]` (matplotlib), `easypptx[all]`
+
+### Changed
+- Unknown keyword arguments now emit a warning instead of being silently discarded (reverts the silent `**kwargs` behavior from 0.5.6); out-of-range percentages are clamped with a warning
+- Invalid or missing template files now raise `FileNotFoundError`/`ValueError` instead of printing a warning and silently falling back to the default template
+- `Presentation.slides` returns cached `Slide` wrappers, so `user_data` and object identity are preserved across accesses
+- matplotlib figures are embedded via in-memory streams instead of temporary files
+- TOML templates are cached by path and mtime, so per-slide `template_toml` no longer re-reads the file for every slide
+- pandas, matplotlib, and seaborn are no longer hard dependencies; pandas/matplotlib moved to extras and seaborn was dropped (pass a seaborn plot's figure to `add_pyplot_slide`)
+- Title/subtitle/content layout arithmetic now works with inch values as well as percent strings
+- Tooling: mypy replaced by `ty`, pre-commit replaced by `lefthook`, tox removed; CI matrix now matches `requires-python` (3.12/3.13)
+
+### Deprecated
+- `Presentation.add_text/add_image/add_shape/add_table/add_chart/add_pyplot` (pass-through variants taking a `slide` argument) — use the `Slide` methods directly
+- `Presentation.add_matplotlib_slide`, `add_seaborn_slide`, `add_plot` — use `add_pyplot_slide`
+- `Presentation.add_image_slide` — use `add_image_gen_slide`
+
+### Fixed
+- `content_y_padding` was applied twice in `add_grid_slide`, shifting and shrinking the grid double
+- `Presentation.add_image`'s documented `maintain_aspect_ratio` parameter now actually takes effect (routed through `Image.add`); `crop`/`center` warn that they are unimplemented
+- `add_slide_from_template` no longer silently replaces the presentation (discarding existing slides) when a template names a different reference PPTX — it now raises if slides exist
+- `Table.from_dataframe(include_index=True)` no longer raises a column-count error
+- `Grid.add_table` and grid-cell content are now positioned absolutely on the slide (previously cell-relative coordinates were used as slide coordinates)
+- `Grid.autogrid` passes the computed cell position to content functions that can accept it (previously all positions were dropped)
+- `__version__` is derived from package metadata instead of a hardcoded, out-of-date string
+- Fixed latent `None`-arithmetic in `Grid.autogrid` row/column inference
+- Color constants unified: "black" is 0x101010 everywhere (the template module's diverged copy was removed)
+
 ## [0.5.6] - 2025-05-14
 
 ### Fixed

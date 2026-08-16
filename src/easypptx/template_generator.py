@@ -1,6 +1,7 @@
 """Module for generating default templates."""
 
 import os
+import warnings
 from pathlib import Path
 
 import tomli_w
@@ -90,8 +91,11 @@ def generate_default_template(output_path: str | Path | None = None) -> dict:
         with open(output_path, "wb") as f:
             tomli_w.dump(template, f)
 
-        print(f"Default template saved to: {output_path}")
-        print("Edit the template file directly to add comments and customize settings.")
+        warnings.warn(
+            f"Default template saved to: {output_path}. "
+            "Edit the template file directly to add comments and customize settings.",
+            stacklevel=2,
+        )
 
     return template
 
@@ -248,7 +252,7 @@ def generate_template_with_comments(output_path: str | Path) -> None:
         f.write("# size = 12\n")
         f.write("# bold = false\n\n")
 
-    print(f"Added commented sections to template: {output_path}")
+    warnings.warn(f"Added commented sections to template: {output_path}", stacklevel=2)
 
 
 # Example usage

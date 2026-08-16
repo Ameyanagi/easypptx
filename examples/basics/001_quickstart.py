@@ -20,27 +20,25 @@ pres = Presentation()
 
 # Slide 1: Title slide with responsive positioning
 slide1 = pres.add_slide()
-# Use percentage-based positioning with h_align for responsive centering
+# Use percentage-based positioning with align for centering
 slide1.add_text(
     text="Getting Started with EasyPPTX",
-    x="50%",
+    x="10%",
     y="30%",
     width="80%",
     height="15%",
     font_size=44,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 slide1.add_text(
     text="A simple PowerPoint creation library for Python",
-    x="50%",
+    x="20%",
     y="50%",
     width="60%",
     height="10%",
     font_size=24,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Slide 2: Text formatting examples with responsive centered title
@@ -48,14 +46,13 @@ slide2 = pres.add_slide()
 # Centered title with responsive positioning
 slide2.add_text(
     text="Text Formatting",
-    x="50%",
+    x="10%",
     y="10%",
     width="80%",
     height="10%",
     font_size=32,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add different formatted text examples with percentage-based positioning
@@ -73,14 +70,13 @@ slide3 = pres.add_slide()
 # Centered title with responsive positioning
 slide3.add_text(
     text="Tables",
-    x="50%",
+    x="10%",
     y="10%",
     width="80%",
     height="10%",
     font_size=32,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Create a simple table with percentage-based positioning
@@ -107,14 +103,13 @@ slide4 = pres.add_slide()
 # Centered title with responsive positioning
 slide4.add_text(
     text="Charts",
-    x="50%",
+    x="10%",
     y="10%",
     width="80%",
     height="10%",
     font_size=32,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add charts with percentage-based positioning
@@ -154,53 +149,49 @@ slide5 = pres.add_slide()
 # Centered title with responsive positioning
 slide5.add_text(
     text="Responsive Positioning",
-    x="50%",
+    x="10%",
     y="10%",
     width="80%",
     height="10%",
     font_size=32,
     font_bold=True,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add explanation with responsive positioning
 slide5.add_text(
     text=(
-        "EasyPPTX supports responsive positioning that adapts to different aspect ratios. "
-        'Elements with h_align="center" automatically adjust their position based on the '
-        "aspect ratio, ensuring your content looks great in any format (16:9, 4:3, etc)."
+        "EasyPPTX supports percentage-based positioning that adapts to different aspect ratios. "
+        "Elements positioned with percentages keep their relative position in any format "
+        "(16:9, 4:3, etc)."
     ),
-    x="50%",
+    x="10%",
     y="25%",
     width="80%",
     height="15%",
     font_size=16,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add a centered shape
 slide5.add_shape(
     shape_type=1,  # Rectangle
-    x="50%",
+    x="25%",
     y="45%",
     width="50%",
     height="20%",
     fill_color="blue",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Add caption with responsive positioning
 slide5.add_text(
     text="This shape stays centered in any aspect ratio",
-    x="50%",
+    x="20%",
     y="70%",
     width="60%",
     height="10%",
     font_size=16,
     align="center",
-    h_align="center",  # Enable responsive positioning
 )
 
 # Save the presentation

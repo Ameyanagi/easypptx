@@ -8,11 +8,13 @@ EasyPPTX comes with sensible defaults:
 
 - **Default font**: Meiryo
 - **Default color scheme**:
-  - Black: RGB(0x40, 0x40, 0x40)
+  - Black: RGB(0x10, 0x10, 0x10)
   - Red: RGB(0xFF, 0x40, 0x40)
   - Green: RGB(0x40, 0xFF, 0x40)
   - Blue: RGB(0x40, 0x40, 0xFF)
   - White: RGB(0xFF, 0xFF, 0xFF)
+
+These constants are defined in `easypptx.common` (`COLORS`, `ALIGN`, `VERTICAL`, `DEFAULT_FONT`). The `Presentation.COLORS` alias still works.
 
 ## Text Formatting
 

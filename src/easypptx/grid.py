@@ -1,9 +1,12 @@
 """Grid layout module for EasyPPTX."""
 
-from collections.abc import Callable
-from typing import Any, overload
+from __future__ import annotations
 
-from easypptx.slide import PositionType
+from collections.abc import Callable
+from typing import IO, Any, overload
+
+from easypptx.common import filter_to_signature, is_dataframe, merge_defaults
+from easypptx.positioning import PositionType, pct, shift_band, to_percent
 
 # Using forward annotations (PEP 563) to avoid circular references
 
@@ -54,6 +57,21 @@ class GridCell:
         )
 
 
+def _accepts_position(func: Callable) -> bool:
+    """Return True if func can receive x/y/width/height keyword arguments."""
+    import inspect
+
+    try:
+        sig = inspect.signature(func)
+    except (TypeError, ValueError):
+        return True
+    params = list(sig.parameters.values())
+    if any(p.kind is inspect.Parameter.VAR_KEYWORD for p in params):
+        return True
+    names = {p.name for p in params}
+    return {"x", "y", "width", "height"} <= names
+
+
 class OutOfBoundsError(IndexError):
     """Exception raised when grid coordinates are out of bounds."""
 
@@ -74,7 +92,7 @@ class GridCellProxy:
         col: The column index of this cell
     """
 
-    def __init__(self, grid: "Grid", row: int, col: int):
+    def __init__(self, grid: Grid, row: int, col: int):
         """Initialize a GridCellProxy.
 
         Args:
@@ -98,7 +116,7 @@ class GridCellProxy:
         """
         return self.grid.add_textbox(self.row, self.col, text=text, **kwargs)
 
-    def add_image(self, image_path: str, **kwargs) -> Any:
+    def add_image(self, image_path: str | IO[bytes], **kwargs) -> Any:
         """Add an image to this cell.
 
         Args:
@@ -134,7 +152,7 @@ class GridCellProxy:
         """
         return self.grid.add_table(self.row, self.col, data=data, **kwargs)
 
-    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0, **kwargs) -> "Grid":
+    def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0, **kwargs) -> Grid:
         """Add a nested grid to this cell.
 
         Args:
@@ -261,8 +279,8 @@ class Grid:
         # If parent is another Grid, use its slide width
         elif hasattr(self.parent, "_get_slide_width"):
             return self.parent._get_slide_width()
-        # Default value if we can't get it (equivalent to 10 inches)
-        return 9144000  # 10 inches in EMUs
+        # Default value if we can't get it: standard 16:9 width
+        return 12192768  # 13.33 inches in EMUs
 
     def _get_slide_height(self) -> int:
         """Get the slide height in EMUs from the parent.
@@ -307,24 +325,7 @@ class Grid:
         Returns:
             Dictionary with merged arguments, where provided args override defaults
         """
-        # Start with a copy of the method-specific defaults
-        method_defaults: dict[str, Any] = self.template_defaults.get(method_type, {}).copy()
-
-        # Get global defaults
-        global_defaults: dict[str, Any] = self.template_defaults.get("global", {})
-
-        # Create merged defaults: global defaults overridden by method-specific defaults
-        merged_defaults: dict[str, Any] = global_defaults.copy()
-        for key, value in method_defaults.items():
-            merged_defaults[key] = value
-
-        # Override with provided kwargs
-        result: dict[str, Any] = merged_defaults.copy()
-        for key, value in kwargs.items():
-            if value is not None:  # Only override if the value is not None
-                result[key] = value
-
-        return result
+        return merge_defaults(self.template_defaults, method_type, kwargs)
 
     def _create_cells(self) -> list[list[GridCell]]:
         """Create the grid cells based on the layout.
@@ -463,8 +464,32 @@ class Grid:
 
         return first_cell
 
+    def _cell_area(self, cell: GridCell) -> tuple[str, str, str, str]:
+        """Compute a cell's absolute slide position as percent strings.
+
+        The grid's own position may be given in percent or inches; cell
+        positions are always percentages of the grid area.
+
+        Returns:
+            (x, y, width, height) as percentage strings
+        """
+        grid_x = to_percent(self.x, self._slide_width)
+        grid_y = to_percent(self.y, self._slide_height)
+        grid_w = to_percent(self.width, self._slide_width)
+        grid_h = to_percent(self.height, self._slide_height)
+
+        abs_x = grid_x + (to_percent(cell.x, self._slide_width) * grid_w / 100)
+        abs_y = grid_y + (to_percent(cell.y, self._slide_height) * grid_h / 100)
+        abs_w = to_percent(cell.width, self._slide_width) * grid_w / 100
+        abs_h = to_percent(cell.height, self._slide_height) * grid_h / 100
+
+        return pct(abs_x), pct(abs_y), pct(abs_w), pct(abs_h)
+
     def add_to_cell(self, row: int, col: int, content_func: Callable, **kwargs) -> Any:
         """Add content to a specific cell in the grid.
+
+        The content function is called with x/y/width/height keyword arguments
+        holding the cell's absolute position as percentage strings.
 
         Args:
             row: Row index (0-based)
@@ -479,66 +504,15 @@ class Grid:
             OutOfBoundsError: If row or column is out of bounds
             CellMergeError: If the cell is part of a merged cell
         """
-        # Get the cell
         cell = self.get_cell(row, col)
 
-        # Check if the cell is part of a merged cell
         if cell.is_spanned:
             raise CellMergeError("Cell is part of a merged cell")
 
-        # Calculate the absolute position based on the grid's position
-        # Convert grid position percentage to float
-        if isinstance(self.x, str) and self.x.endswith("%"):
-            grid_x_percent = float(self.x.strip("%"))
-        else:
-            # Convert inches to percentage based on actual slide width
-            slide_width_inches = self._slide_width / 914400  # Convert EMUs to inches
-            grid_x_percent = (float(self.x) / slide_width_inches) * 100
+        kwargs["x"], kwargs["y"], kwargs["width"], kwargs["height"] = self._cell_area(cell)
 
-        if isinstance(self.y, str) and self.y.endswith("%"):
-            grid_y_percent = float(self.y.strip("%"))
-        else:
-            # Convert inches to percentage based on actual slide height
-            slide_height_inches = self._slide_height / 914400  # Convert EMUs to inches
-            grid_y_percent = (float(self.y) / slide_height_inches) * 100
-
-        # Calculate absolute position
-        cell_x_percent = float(cell.x.strip("%"))
-        cell_y_percent = float(cell.y.strip("%"))
-
-        # Handle the width/height values to correctly handle both string and float types
-        width_value = (
-            float(self.width.strip("%")) if isinstance(self.width, str) and "%" in self.width else float(self.width)
-        )
-        height_value = (
-            float(self.height.strip("%")) if isinstance(self.height, str) and "%" in self.height else float(self.height)
-        )
-
-        abs_x_percent = grid_x_percent + (cell_x_percent * width_value / 100)
-        abs_y_percent = grid_y_percent + (cell_y_percent * height_value / 100)
-
-        # Calculate absolute width and height
-        cell_width_percent = float(cell.width.strip("%"))
-        cell_height_percent = float(cell.height.strip("%"))
-
-        abs_width_percent = cell_width_percent * width_value / 100
-        abs_height_percent = cell_height_percent * height_value / 100
-
-        # Format as percentage strings
-        kwargs["x"] = f"{abs_x_percent:.2f}%"
-        kwargs["y"] = f"{abs_y_percent:.2f}%"
-        kwargs["width"] = f"{abs_width_percent:.2f}%"
-        kwargs["height"] = f"{abs_height_percent:.2f}%"
-
-        # We previously were going to set word_wrap, but slide.add_text doesn't accept this parameter
-        # The word_wrap flag is now set internally in the add_text method
-
-        # Call the content function with the calculated position
         content = content_func(**kwargs)
-
-        # Store the content in the cell
         cell.content = content
-
         return content
 
     def add_grid_to_cell(
@@ -549,7 +523,7 @@ class Grid:
         cols: int = 1,
         padding: float = 5.0,
         **kwargs,  # Accept any additional parameters
-    ) -> "Grid":
+    ) -> Grid:
         """Add a nested grid to a specific cell.
 
         Args:
@@ -575,53 +549,18 @@ class Grid:
             raise CellMergeError("Cell is part of a merged cell")
 
         # Merge provided kwargs with template defaults
-        kwargs = {"rows": rows, "cols": cols, "padding": padding}
-        merged_kwargs = self.merge_with_defaults("grid", kwargs)
+        merged_kwargs = self.merge_with_defaults("grid", {"rows": rows, "cols": cols, "padding": padding})
 
         # Calculate absolute position for the nested grid
-        if isinstance(self.x, str) and self.x.endswith("%"):
-            grid_x_percent = float(self.x.strip("%"))
-        else:
-            # Convert inches to percentage based on actual slide width
-            slide_width_inches = self._slide_width / 914400  # Convert EMUs to inches
-            grid_x_percent = (float(self.x) / slide_width_inches) * 100
-
-        if isinstance(self.y, str) and self.y.endswith("%"):
-            grid_y_percent = float(self.y.strip("%"))
-        else:
-            # Convert inches to percentage based on actual slide height
-            slide_height_inches = self._slide_height / 914400  # Convert EMUs to inches
-            grid_y_percent = (float(self.y) / slide_height_inches) * 100
-
-        # Calculate absolute position
-        cell_x_percent = float(cell.x.strip("%"))
-        cell_y_percent = float(cell.y.strip("%"))
-
-        # Handle the width/height values to correctly handle both string and float types
-        width_value = (
-            float(self.width.strip("%")) if isinstance(self.width, str) and "%" in self.width else float(self.width)
-        )
-        height_value = (
-            float(self.height.strip("%")) if isinstance(self.height, str) and "%" in self.height else float(self.height)
-        )
-
-        abs_x_percent = grid_x_percent + (cell_x_percent * width_value / 100)
-        abs_y_percent = grid_y_percent + (cell_y_percent * height_value / 100)
-
-        # Calculate absolute width and height
-        cell_width_percent = float(cell.width.strip("%"))
-        cell_height_percent = float(cell.height.strip("%"))
-
-        abs_width_percent = cell_width_percent * width_value / 100
-        abs_height_percent = cell_height_percent * height_value / 100
+        abs_x, abs_y, abs_width, abs_height = self._cell_area(cell)
 
         # Create the nested grid
         nested_grid = Grid(
             parent=self.parent,
-            x=f"{abs_x_percent:.2f}%",
-            y=f"{abs_y_percent:.2f}%",
-            width=f"{abs_width_percent:.2f}%",
-            height=f"{abs_height_percent:.2f}%",
+            x=abs_x,
+            y=abs_y,
+            width=abs_width,
+            height=abs_height,
             rows=merged_kwargs.get("rows", 1),
             cols=merged_kwargs.get("cols", 1),
             padding=merged_kwargs.get("padding", 5.0),
@@ -760,8 +699,9 @@ class Grid:
         # Add the text parameter to kwargs
         kwargs["text"] = text
 
-        # Merge provided kwargs with template defaults
-        merged_kwargs = self.merge_with_defaults("text", kwargs)
+        # Merge provided kwargs with template defaults, dropping default keys
+        # that the text method does not accept (e.g. slide-factory defaults)
+        merged_kwargs = filter_to_signature(self.parent.add_text, self.merge_with_defaults("text", kwargs), kwargs)
 
         # Convert list colors to tuples if needed
         if "color" in merged_kwargs and isinstance(merged_kwargs["color"], list) and len(merged_kwargs["color"]) == 3:
@@ -771,7 +711,7 @@ class Grid:
         # The parent's add_text method now accepts **kwargs which will handle any extra parameters
         return self.add_to_cell(row, col, self.parent.add_text, **merged_kwargs)
 
-    def add_image(self, row: int, col: int, image_path: str, **kwargs) -> Any:
+    def add_image(self, row: int, col: int, image_path: str | IO[bytes], **kwargs) -> Any:
         """Add an image to a specific cell in the grid.
 
         This is a convenience method that calls add_to_cell with the parent's
@@ -800,8 +740,9 @@ class Grid:
         # Add the image_path parameter to kwargs
         kwargs["image_path"] = image_path
 
-        # Merge provided kwargs with template defaults
-        merged_kwargs = self.merge_with_defaults("image", kwargs)
+        # Merge provided kwargs with template defaults, dropping default keys
+        # that the image method does not accept
+        merged_kwargs = filter_to_signature(self.parent.add_image, self.merge_with_defaults("image", kwargs), kwargs)
 
         # Call add_to_cell with the parent's add_image method
         return self.add_to_cell(row, col, self.parent.add_image, **merged_kwargs)
@@ -839,8 +780,7 @@ class Grid:
             grid.add_pyplot(0, 1, plt.gcf(), dpi=300)
             ```
         """
-        import os
-        import tempfile
+        from easypptx.pyplot import figure_to_stream
 
         # Merge provided kwargs with template defaults
         merged_kwargs = self.merge_with_defaults("pyplot", kwargs)
@@ -849,24 +789,13 @@ class Grid:
         dpi = merged_kwargs.pop("dpi", 300)
         file_format = merged_kwargs.pop("file_format", "png")
 
-        # Create a temporary file for the figure
-        with tempfile.NamedTemporaryFile(suffix=f".{file_format}", delete=False) as temp_file:
-            temp_path = temp_file.name
+        # Drop template-default keys the image method does not accept, so they
+        # don't get forwarded as if the caller passed them explicitly
+        merged_kwargs = filter_to_signature(self.parent.add_image, merged_kwargs, kwargs)
 
-        # Save the figure to the temporary file
-        figure.savefig(temp_path, dpi=dpi, format=file_format, bbox_inches="tight")
-
-        try:
-            # Add the image to the cell
-            image_shape = self.add_image(row, col, image_path=temp_path, **merged_kwargs)
-            return image_shape
-        finally:
-            # Clean up the temporary file
-            try:
-                if os.path.exists(temp_path):
-                    os.unlink(temp_path)
-            except OSError:
-                pass
+        # Render the figure in memory and add it to the cell
+        stream = figure_to_stream(figure, dpi=dpi, file_format=file_format)
+        return self.add_image(row, col, image_path=stream, **merged_kwargs)
 
     def add_table(self, row: int, col: int, data, **kwargs) -> Any:
         """Add a table to a specific cell in the grid.
@@ -899,24 +828,21 @@ class Grid:
             grid.add_table(1, 1, df)
             ```
         """
-        import pandas as pd
-
         from easypptx.table import Table
+        from easypptx.table import Table as _Table
 
         # Get the cell to determine the position and dimensions
         cell = self.get_cell(row, col)
 
-        # Merge provided kwargs with template defaults
-        merged_kwargs = self.merge_with_defaults("table", kwargs)
+        # Merge provided kwargs with template defaults, dropping default keys
+        # that Table.add does not accept
+        merged_kwargs = filter_to_signature(_Table.add, self.merge_with_defaults("table", kwargs), kwargs)
 
         # Create a Table object
         table_obj = Table(self.parent)
 
-        # Extract position from the cell
-        merged_kwargs["x"] = cell.x
-        merged_kwargs["y"] = cell.y
-        merged_kwargs["width"] = cell.width
-        merged_kwargs["height"] = cell.height
+        # Use the cell's absolute position on the slide
+        merged_kwargs["x"], merged_kwargs["y"], merged_kwargs["width"], merged_kwargs["height"] = self._cell_area(cell)
 
         # Remove data from kwargs to handle separately
         merged_kwargs.pop("data", None)
@@ -938,10 +864,7 @@ class Grid:
                         style_dict[color_key] = tuple(style_dict[color_key])
 
         # Convert pandas DataFrame to list if needed
-        if isinstance(data, pd.DataFrame):
-            table_data = [list(data.columns)] + [list(row) for _, row in data.iterrows()]
-        else:
-            table_data = data
+        table_data = [list(data.columns), *data.values.tolist()] if is_dataframe(data) else data
 
         # Create the table with the processed data
         table_shape = table_obj.add(data=table_data, **merged_kwargs)
@@ -1068,7 +991,7 @@ class Grid:
         title_align: str = "center",
         column_major: bool = True,  # Use column-major order by default
         **kwargs,  # Accept any additional parameters
-    ) -> "Grid":
+    ) -> Grid:
         """Create a grid and automatically place content into cells.
 
         This method automatically determines the appropriate grid dimensions
@@ -1103,29 +1026,25 @@ class Grid:
 
         if rows is None and cols is None:
             # Determine optimal grid dimensions
-            cols = max(1, int(num_items**0.5))
-            rows = (num_items + cols - 1) // cols
-        elif rows is None:
-            rows = (num_items + cols - 1) // cols
-        elif cols is None:
-            cols = (num_items + rows - 1) // rows
+            n_cols = max(1, int(num_items**0.5))
+            n_rows = (num_items + n_cols - 1) // n_cols
+        elif rows is None and cols is not None:
+            n_cols = cols
+            n_rows = (num_items + n_cols - 1) // n_cols
+        elif cols is None and rows is not None:
+            n_rows = rows
+            n_cols = (num_items + n_rows - 1) // n_rows
+        else:
+            n_rows, n_cols = rows or 1, cols or 1
 
         # Adjust grid position and dimensions if a title is provided
-        adjusted_y = y
-        adjusted_height = height
+        adjusted_y: PositionType = y
+        adjusted_height: PositionType = height
+        title_y: PositionType = y
 
-        if title and isinstance(y, str) and y.endswith("%"):
-            y_percent = float(y.strip("%"))
-            title_height_percent = float(str(title_height).strip("%"))
-            # Adjust y position and height for the grid
-            adjusted_y = f"{y_percent:.2f}%"
-            title_y = adjusted_y
-            adjusted_y = f"{(y_percent + title_height_percent):.2f}%"
-
-            # Adjust height to account for title
-            if isinstance(height, str) and height.endswith("%"):
-                height_percent = float(height.strip("%"))
-                adjusted_height = f"{(height_percent - title_height_percent):.2f}%"
+        if title:
+            slide_height_emu = getattr(parent, "_slide_height", 6858000)
+            adjusted_y, adjusted_height = shift_band(y, height, title_height, slide_height_emu)
 
         # Create the grid
         grid = cls(
@@ -1134,8 +1053,8 @@ class Grid:
             y=adjusted_y,
             width=width,
             height=adjusted_height,
-            rows=rows,
-            cols=cols,
+            rows=n_rows,
+            cols=n_cols,
             padding=padding,
         )
 
@@ -1159,15 +1078,9 @@ class Grid:
         row_idx = 0
 
         for func in content_funcs:
-            # Create a wrapper function factory to properly capture the current func
-            def create_wrapper(content_func):
-                def position_agnostic_wrapper(**kwargs):
-                    return content_func()
-
-                return position_agnostic_wrapper
-
-            # Create a wrapper specifically for this function
-            wrapper = create_wrapper(func)
+            # Content functions that can receive x/y/width/height get the
+            # cell position; zero-argument functions are called as-is.
+            wrapper = func if _accepts_position(func) else (lambda _f=func, **kwargs: _f())
 
             # Add content to the current cell using the wrapper
             grid.add_to_cell(
@@ -1178,12 +1091,12 @@ class Grid:
 
             # Move to next cell (column-major order: increment row first, then column)
             row_idx += 1
-            if row_idx >= rows:
+            if row_idx >= n_rows:
                 row_idx = 0
                 col_idx += 1
 
             # Stop if we've filled the grid
-            if col_idx >= cols:
+            if col_idx >= n_cols:
                 break
 
         return grid
@@ -1207,7 +1120,7 @@ class Grid:
         file_format: str = "png",
         column_major: bool = True,  # Use column-major order by default
         **kwargs,  # Accept any additional parameters
-    ) -> "Grid":
+    ) -> Grid:
         """Create a grid and automatically place matplotlib figures into cells.
 
         This method automatically determines the appropriate grid dimensions
@@ -1237,68 +1150,40 @@ class Grid:
         Returns:
             The created Grid object
         """
-        import os
-        import tempfile
+        from easypptx.pyplot import figure_to_stream
 
-        # Create content functions from matplotlib figures
+        # Render each figure in memory and create content functions
         content_funcs = []
-
-        # Save each figure to a temporary file and create content functions
-        temp_files = []
         for fig in figures:
-            # Create a temporary file using context manager
-            with tempfile.NamedTemporaryFile(suffix=f".{file_format}", delete=False) as temp_file:
-                temp_path = temp_file.name
-                temp_files.append(temp_path)
+            stream = figure_to_stream(fig, dpi=dpi, file_format=file_format)
 
-            # Save the figure to the temporary file
-            fig.savefig(temp_path, dpi=dpi, format=file_format, bbox_inches="tight")
+            # Bind the stream via a default argument to avoid loop-variable capture
+            def add_image_func(image_stream=stream, **kwargs):
+                return parent.add_image(
+                    image_path=image_stream,
+                    x=kwargs.get("x", "10%"),
+                    y=kwargs.get("y", "10%"),
+                    width=kwargs.get("width", "80%"),
+                    height=kwargs.get("height", "80%"),
+                )
 
-            # Create a closure with an explicit parameter to avoid loop variable capture issues
-            def create_content_func(image_path):
-                def add_image_func(**kwargs):
-                    return parent.add_image(
-                        image_path=image_path,
-                        x=kwargs.get("x", "10%"),
-                        y=kwargs.get("y", "10%"),
-                        width=kwargs.get("width", "80%"),
-                        height=kwargs.get("height", "80%"),
-                    )
+            content_funcs.append(add_image_func)
 
-                return add_image_func
-
-            # Add the content function to the list with temp_path bound to a parameter
-            content_funcs.append(create_content_func(image_path=temp_path))
-
-        # Create the grid
-        try:
-            grid = cls.autogrid(
-                parent=parent,
-                content_funcs=content_funcs,
-                rows=rows,
-                cols=cols,
-                x=x,
-                y=y,
-                width=width,
-                height=height,
-                padding=padding,
-                title=title,
-                title_height=title_height,
-                title_align=title_align,
-                column_major=column_major,
-            )
-        finally:
-            # Clean up temporary files
-            for temp_file_path in temp_files:
-                try:
-                    if os.path.exists(temp_file_path):
-                        os.unlink(temp_file_path)
-                except OSError as e:
-                    import logging
-
-                    logging.warning(f"Failed to remove temporary file {temp_file_path}: {e}")
-
-        return grid
+        return cls.autogrid(
+            parent=parent,
+            content_funcs=content_funcs,
+            rows=rows,
+            cols=cols,
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            padding=padding,
+            title=title,
+            title_height=title_height,
+            title_align=title_align,
+            column_major=column_major,
+        )
 
 
 class GridFlatIterator:

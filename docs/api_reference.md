@@ -13,7 +13,10 @@ class Presentation:
                  width_inches: Optional[float] = None,
                  height_inches: Optional[float] = None,
                  template_path: Optional[str] = None,
-                 default_bg_color: Optional[Union[str, Tuple[int, int, int]]] = None) -> None:
+                 reference_pptx: Optional[str] = None,
+                 blank_layout_index: Optional[int] = None,
+                 default_bg_color: Optional[Union[str, Tuple[int, int, int]]] = None,
+                 template_toml: Optional[str] = None) -> None:
         """Initialize a new empty presentation.
 
         Args:
@@ -21,7 +24,10 @@ class Presentation:
             width_inches: Custom width in inches (overrides aspect_ratio if specified)
             height_inches: Custom height in inches (overrides aspect_ratio if specified)
             template_path: Path to a reference PowerPoint template to use for styles (default: None)
+            reference_pptx: Path to a custom reference PPTX file to use (default: None)
+            blank_layout_index: Index of blank layout in the slide_layouts (default: None, auto-detected)
             default_bg_color: Default background color for slides as string name or RGB tuple (default: None)
+            template_toml: Path to a TOML template used as the default for all new slides (default: None)
 
         Raises:
             ValueError: If an invalid aspect ratio is specified
@@ -43,12 +49,38 @@ class Presentation:
             ValueError: If the file is not a valid PowerPoint file
         """
 
-    def add_slide(self, layout_index: int = None, bg_color: Optional[Union[str, Tuple[int, int, int]]] = None) -> Slide:
+    def add_slide(
+        self,
+        layout_index: Optional[int] = None,
+        bg_color: Optional[Union[str, Tuple[int, int, int]]] = None,
+        title: Optional[str] = None,
+        template_toml: Union[str, Literal[False], None] = None,
+        title_padding: Optional[Union[str, float]] = None,
+        title_x_padding: Optional[Union[str, float]] = "5%",
+        title_y_padding: Optional[Union[str, float]] = "5%",
+        title_width: Optional[Union[str, float]] = "90%",
+        title_height: Optional[Union[str, float]] = "10%",
+        title_font_size: int = 32,
+        title_align: str = "center",
+        title_color: Optional[Union[str, Tuple[int, int, int]]] = None,
+    ) -> Slide:
         """Add a new slide to the presentation.
 
         Args:
             layout_index: Index of the slide layout to use (default: None uses blank layout)
             bg_color: Background color for this slide, overrides default (default: None)
+            title: Optional title text for the slide (default: None)
+            template_toml: Path to a TOML template file for this slide.
+                Pass False to opt out of the presentation's default template;
+                None means "use the default template if one is set" (default: None)
+            title_padding: Padding around the title, applies to both x and y (default: None)
+            title_x_padding: Horizontal padding for the title (default: "5%")
+            title_y_padding: Vertical padding for the title (default: "5%")
+            title_width: Width of the title area (default: "90%")
+            title_height: Height of the title area (default: "10%")
+            title_font_size: Font size for the title (default: 32)
+            title_align: Text alignment for the title (default: "center")
+            title_color: Title color as a name from COLORS or an RGB tuple (default: None)
 
         Returns:
             A new Slide object
@@ -59,7 +91,8 @@ class Presentation:
         """Get a list of all slides in the presentation.
 
         Returns:
-            List of Slide objects
+            List of Slide objects. Repeated access returns the same cached
+            wrapper objects, so state like user_data persists.
         """
 
     def save(self, file_path: Union[str, Path]) -> None:
@@ -144,7 +177,7 @@ class Slide:
 
     def add_shape(
         self,
-        shape_type: MSO_SHAPE = MSO_SHAPE.RECTANGLE,
+        shape_type: Union[MSO_SHAPE, str] = MSO_SHAPE.RECTANGLE,
         x: PositionType = 1.0,
         y: PositionType = 1.0,
         width: PositionType = 5.0,
@@ -154,7 +187,8 @@ class Slide:
         """Add a shape to the slide.
 
         Args:
-            shape_type: The shape type (default: MSO_SHAPE.RECTANGLE)
+            shape_type: The shape type, as an MSO_SHAPE value or its name,
+                e.g. "ROUNDED_RECTANGLE" (default: MSO_SHAPE.RECTANGLE)
             x: X position in inches or percentage (default: 1.0)
             y: Y position in inches or percentage (default: 1.0)
             width: Width in inches or percentage (default: 5.0)
@@ -163,6 +197,78 @@ class Slide:
 
         Returns:
             The created shape object
+
+        Raises:
+            ValueError: If shape_type is a string that is not an MSO_SHAPE name
+        """
+
+    def add_table(
+        self,
+        data: Any,
+        x: PositionType = 1.0,
+        y: PositionType = 1.0,
+        width: Optional[PositionType] = None,
+        height: Optional[PositionType] = None,
+        has_header: bool = True,
+        style: Optional[Union[int, dict]] = None,
+    ) -> PPTXTable:
+        """Add a table to the slide.
+
+        Args:
+            data: Table data as a list of lists or pandas DataFrame
+            x: X position in inches or percentage (default: 1.0)
+            y: Y position in inches or percentage (default: 1.0)
+            width: Total width in inches or percentage (default: None, auto-sized)
+            height: Total height in inches or percentage (default: None, auto-sized)
+            has_header: Whether the first row is a header (default: True)
+            style: Table style ID, or a style dict with a "style_id" key (default: None)
+
+        Returns:
+            The created table object
+        """
+
+    def add_chart(
+        self,
+        data: Any = None,
+        chart_type: str = "column",
+        x: PositionType = 1.0,
+        y: PositionType = 1.0,
+        width: PositionType = 6.0,
+        height: PositionType = 4.5,
+        categories: Optional[list] = None,
+        values: Optional[list] = None,
+        category_column: Optional[Union[str, int]] = None,
+        value_columns: Optional[Union[str, List[str], int, List[int]]] = None,
+        title: Optional[str] = None,
+        has_legend: bool = True,
+        legend_position: str = "right",
+    ) -> PPTXChart:
+        """Add a chart to the slide.
+
+        Either pass explicit categories and values lists, or pass data
+        (a list of lists with a header row, or a pandas DataFrame)
+        together with optional category_column / value_columns.
+
+        Args:
+            data: Chart data as a list of lists or pandas DataFrame (default: None)
+            chart_type: Type of chart ('column', 'bar', 'line', 'pie', 'area', 'scatter')
+            x: X position in inches or percentage (default: 1.0)
+            y: Y position in inches or percentage (default: 1.0)
+            width: Width in inches or percentage (default: 6.0)
+            height: Height in inches or percentage (default: 4.5)
+            categories: Explicit list of category labels (default: None)
+            values: Explicit list of data values (default: None)
+            category_column: Name or index of the column to use as categories (default: None)
+            value_columns: Name(s) or index(es) of column(s) to use as values (default: None)
+            title: Chart title (default: None)
+            has_legend: Whether to show legend (default: True)
+            legend_position: Legend position (default: "right")
+
+        Returns:
+            The created chart object
+
+        Raises:
+            ValueError: If neither data nor categories/values are provided
         """
 
     def add_multiple_objects(
@@ -217,6 +323,12 @@ class Slide:
             color: Background color as string name from COLORS dict or RGB tuple
         """
 ```
+
+Notes:
+
+- `slide.add_chart` accepts `value_column` (singular) as an alias for `value_columns`, and `chart_title` as an alias for `title`. `slide.add_table` accepts `first_row_header` as an alias for `has_header`.
+- Unknown parameters passed to Slide content methods trigger a warning instead of being silently ignored. Out-of-range percentages (e.g. `"150%"`) are clamped with a warning.
+- The pass-through variants on `Presentation` that take a slide as the first argument (`pres.add_text(slide, ...)`, `pres.add_image(slide, ...)`, `pres.add_shape(slide, ...)`, `pres.add_table(slide, ...)`, `pres.add_chart(slide, ...)`, `pres.add_pyplot(slide, ...)`) are deprecated. They still work but emit a `DeprecationWarning`; use the `Slide` methods instead. `Presentation.add_matplotlib_slide`, `add_seaborn_slide`, and `add_plot` are deprecated in favor of `add_pyplot_slide`, and `add_image_slide` in favor of `add_image_gen_slide`.
 
 ## Text Class
 
@@ -333,6 +445,23 @@ x = 1.0       # 1 inch (absolute)
 x = "50%"     # 50% of slide width (percentage)
 ```
 
+### Positioning Helpers
+
+The `easypptx.positioning` module provides percent/inch conversion helpers used throughout the library:
+
+```python
+from easypptx.positioning import (
+    is_percent,             # True if a value is a percentage string like "50%"
+    parse_percent,          # "50%" -> 50.0
+    pct,                    # 50.0 -> "50%"
+    to_percent,             # Convert a position value to a percentage of a dimension
+    to_inches,              # Convert a position value to inches
+    shift_band,             # Shift a position band (e.g. below a title area)
+    resolve_padding,        # Resolve combined/x/y padding values
+    apply_content_padding,  # Apply padding to a content area
+)
+```
+
 ## Constants
 
 ### Aspect Ratios
@@ -351,7 +480,9 @@ ASPECT_RATIOS = {
 
 ### Colors
 
-The `Presentation` class defines an expanded color palette:
+Shared constants (`COLORS`, `ALIGN`, `VERTICAL`, `DEFAULT_FONT`) live in the `easypptx.common` module. They were previously documented as attributes of `Presentation`; those attributes (e.g. `Presentation.COLORS`) still work as aliases.
+
+The color palette:
 
 ```python
 COLORS = {
@@ -372,7 +503,7 @@ COLORS = {
 
 ### Alignments
 
-The `Presentation` class defines alignment options:
+The `easypptx.common` module defines alignment options:
 
 ```python
 # Text alignment
@@ -392,16 +523,19 @@ VERTICAL = {
 
 ## Shape Types
 
-EasyPPTX uses the `MSO_SHAPE` enum from python-pptx for shape types:
+EasyPPTX uses the `MSO_SHAPE` enum from python-pptx for shape types. `Slide.add_shape` and `Presentation.add_shape` also accept the shape's name as a string:
 
 ```python
 from pptx.enum.shapes import MSO_SHAPE
 
-# Examples:
+# Enum values:
 MSO_SHAPE.RECTANGLE
 MSO_SHAPE.OVAL
 MSO_SHAPE.ROUNDED_RECTANGLE
 MSO_SHAPE.ACTION_BUTTON_HOME
+
+# Equivalent string names:
+slide.add_shape(shape_type="ROUNDED_RECTANGLE")
 ```
 
 For a complete list of shape types, refer to the [python-pptx documentation](https://python-pptx.readthedocs.io/en/latest/api/enum/MsoAutoShapeType.html).

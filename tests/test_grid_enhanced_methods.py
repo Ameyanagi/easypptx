@@ -58,48 +58,28 @@ class TestGridEnhancedMethods:
         assert self.grid.cells[1][0].content == "image_shape"
 
     def test_add_pyplot(self):
-        """Test the add_pyplot method."""
-        import os
+        """Test the add_pyplot method renders the figure to an in-memory stream."""
+        import io
 
         # Mock the figure and savefig methods
         mock_figure = MagicMock()
         mock_figure.savefig = MagicMock()
 
-        # Patch tempfile.NamedTemporaryFile to return a controlled path
-        # Use os.path.join with a safer temp directory approach
-        import tempfile
+        result = self.grid.add_pyplot(row=1, col=1, figure=mock_figure, dpi=300)
 
-        temp_path = os.path.join(tempfile.gettempdir(), "mock_figure.png")
-        mock_temp_file = MagicMock()
-        mock_temp_file.name = temp_path
-        mock_temp_file.__enter__ = MagicMock(return_value=mock_temp_file)
-        mock_temp_file.__exit__ = MagicMock()
+        # Verify that figure.savefig was called with an in-memory stream
+        mock_figure.savefig.assert_called_once()
+        stream = mock_figure.savefig.call_args[0][0]
+        assert isinstance(stream, io.BytesIO)
+        assert mock_figure.savefig.call_args[1]["dpi"] == 300
 
-        # Mock os.path.exists and os.unlink to avoid issues
-        original_exists = os.path.exists
-        original_unlink = os.unlink
-        os.path.exists = MagicMock(return_value=True)
-        os.unlink = MagicMock()
+        # Verify that add_image was called with the same stream
+        self.parent.add_image.assert_called_once()
+        assert self.parent.add_image.call_args[1]["image_path"] is stream
 
-        try:
-            with unittest.mock.patch("tempfile.NamedTemporaryFile", return_value=mock_temp_file):
-                result = self.grid.add_pyplot(row=1, col=1, figure=mock_figure, dpi=300)
-
-                # Verify that figure.savefig was called with the temp path
-                mock_figure.savefig.assert_called_once()
-                assert temp_path in mock_figure.savefig.call_args[0]
-
-                # Verify that add_image was called
-                self.parent.add_image.assert_called_once()
-                assert self.parent.add_image.call_args[1]["image_path"] == temp_path
-
-                # Verify correct result and cell content
-                assert result == "image_shape"
-                assert self.grid.cells[1][1].content == "image_shape"
-        finally:
-            # Restore the original functions
-            os.path.exists = original_exists
-            os.unlink = original_unlink
+        # Verify correct result and cell content
+        assert result == "image_shape"
+        assert self.grid.cells[1][1].content == "image_shape"
 
     def test_add_table(self):
         """Test the add_table method."""

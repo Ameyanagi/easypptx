@@ -32,9 +32,35 @@ A Python library for easily creating and manipulating PowerPoint presentations p
 
 ```bash
 pip install easypptx
+
+# With optional extras:
+pip install "easypptx[dataframe]"  # pandas support (tables/charts from DataFrames)
+pip install "easypptx[plot]"       # matplotlib figure support
+pip install "easypptx[all]"        # everything
 ```
 
 ## Quick Start
+
+The fastest way to build a deck is the grid workflow — one call creates a
+slide with a title and a grid, then `grid[row, col]` places content:
+
+```python
+from easypptx import Presentation
+
+pres = Presentation()
+
+# One call: slide with title + 2x2 grid
+slide, grid = pres.add_grid_slide(rows=2, cols=2, title="Quarterly Review")
+
+grid[0, 0].add_text("Revenue up 12%", font_size=20, align="center", vertical="middle")
+grid[0, 1].add_table([["Region", "Sales"], ["East", 120], ["West", 95]], has_header=True)
+grid[1, 0].add_image(image_path="chart.png")
+grid[1, 1].add_text("Next steps: expand pilot", font_size=18)
+
+pres.save("review.pptx")
+```
+
+Content can also be placed directly on a slide with percentage-based positions:
 
 ```python
 from easypptx import Presentation
@@ -157,7 +183,7 @@ slide2 = pres.add_slide(
 # Add a slide without any template
 slide3 = pres.add_slide(
     title="Standard Slide",
-    template_toml=None  # Explicitly disable template
+    template_toml=False  # Explicitly disable the default template for this slide
 )
 ```
 
@@ -539,13 +565,14 @@ git push -u origin main
 
 ### 2. Set Up Your Development Environment
 
-Then, install the environment and the pre-commit hooks with
+Then, install the environment and the [lefthook](https://github.com/evilmartians/lefthook) git hooks with
 
 ```bash
 make install
 ```
 
-This will also generate your `uv.lock` file
+This will also generate your `uv.lock` file. Code quality is enforced with
+`ruff` (lint + format) and `ty` (type checking); run everything with `make check`.
 
 ### 3. Run tests
 
@@ -556,33 +583,23 @@ uv run pytest
 ## Project Structure
 
 - `src/easypptx/` - Main package
-  - `presentation.py` - Core presentation handling
-  - `slide.py` - Slide creation and manipulation
+  - `presentation.py` - Core presentation handling and slide factories
+  - `slide.py` - Slide content methods (text, images, shapes, tables, charts)
+  - `grid.py` - Grid layout system for complex arrangements
+  - `positioning.py` - Shared percentage/inch position arithmetic
+  - `common.py` - Shared constants (colors, alignment, fonts) and helpers
   - `text.py` - Text elements and formatting
   - `image.py` - Image handling
   - `table.py` - Table creation from data
   - `chart.py` - Chart generation
-  - `grid.py` - Grid layout system for complex arrangements
   - `pyplot.py` - Integration with matplotlib plots
   - `template.py` - Template management and utilities
-- `examples/` - Example scripts demonstrating usage
-  - `quick_start.py` - Basic usage example
-  - `basic_demo.py` - Introduction to basic features
-  - `comprehensive_example.py` - Full-featured business presentation
-  - `aspect_ratio_example.py` - Demonstration of aspect ratio options
+  - `template_generator.py` - Generating starter TOML templates
+- `examples/` - Example scripts, organized by topic
+  - `basics/` - Quickstart and core features
+  - `grid/` - Grid layout workflow (start with `008_quick_slide_deck.py`)
   - `templates/` - Template system examples
-    - `001_template_basic.py` - Basic TOML template usage
-    - `002_template_presets.py` - Built-in template presets
-    - `003_template_toml_manager.py` - TOML template management
-    - `004_template_manager.py` - Template Manager API
-    - `005_template_toml_reference.py` - TOML templates with reference PPTX
-  - `grid/` - Grid layout examples
-    - `001_basic_grid.py` - Basic Grid usage
-    - `002_grid_indexing.py` - Grid indexing and iteration
-    - `003_nested_grid.py` - Nested grids and merged cells
-    - `004_autogrid.py` - Automatic grid layout
-    - `005_enhanced_grid.py` - Enhanced Grid with convenience methods
-  - `extended_features_example.py` - Showcase of percentage-based positioning, auto-alignment, and more
+  - `layouts/`, `styling/`, `advanced/` - Positioning, styling, and advanced usage
 
 ## Contributing
 

@@ -2,16 +2,16 @@
 
 from typing import TYPE_CHECKING
 
-from pptx.dml.color import RGBColor
 from pptx.shapes.autoshape import Shape as PPTXShape
 from pptx.text.text import TextFrame
 from pptx.util import Pt
 
+from easypptx.common import ALIGN, DEFAULT_FONT, VERTICAL, resolve_color
+from easypptx.positioning import PositionType
+
 if TYPE_CHECKING:
     from easypptx.slide import Slide
 
-# Type for position parameters - accepts either percentage or absolute values
-PositionType = float | str
 RGBColorTuple = tuple[int, int, int]
 
 
@@ -48,7 +48,7 @@ class Text:
         self,
         text: str,
         font_size: int = 44,
-        font_name: str = "Meiryo",
+        font_name: str = DEFAULT_FONT,
         color: str | RGBColorTuple | None = "black",
         align: str = "center",
         x: PositionType = "10%",
@@ -97,7 +97,7 @@ class Text:
         font_size: int = 18,
         font_bold: bool = False,
         font_italic: bool = False,
-        font_name: str = "Meiryo",
+        font_name: str = DEFAULT_FONT,
         align: str = "left",
         vertical: str = "top",
         color: str | RGBColorTuple | None = "black",
@@ -140,10 +140,10 @@ class Text:
 
     @staticmethod
     def add(
-        slide,
+        slide: "Slide",
         text: str,
         position: dict[str, PositionType],
-        font_name: str = "Meiryo",
+        font_name: str = DEFAULT_FONT,
         font_size: int = 18,
         font_bold: bool = False,
         font_italic: bool = False,
@@ -211,11 +211,8 @@ class Text:
             vertical: Vertical alignment, one of "top", "middle", "bottom" (default: None)
         """
         # Set vertical alignment for the text frame
-        if vertical:
-            from easypptx.presentation import Presentation
-
-            if vertical in Presentation.VERTICAL:
-                text_frame.vertical_anchor = Presentation.VERTICAL[vertical]
+        if vertical and vertical in VERTICAL:
+            text_frame.vertical_anchor = VERTICAL[vertical]
 
         # Format all paragraphs
         for paragraph in text_frame.paragraphs:
@@ -229,17 +226,11 @@ class Text:
                 paragraph.font.name = font_name
 
             # Set text alignment
-            if align:
-                from easypptx.presentation import Presentation
-
-                if align in Presentation.ALIGN:
-                    paragraph.alignment = Presentation.ALIGN[align]
+            if align and align in ALIGN:
+                paragraph.alignment = ALIGN[align]
 
             # Set text color
             if color:
-                from easypptx.presentation import Presentation
-
-                if isinstance(color, str) and color in Presentation.COLORS:
-                    paragraph.font.color.rgb = Presentation.COLORS[color]
-                elif isinstance(color, tuple) and len(color) == 3:
-                    paragraph.font.color.rgb = RGBColor(*color)
+                rgb = resolve_color(color)
+                if rgb is not None:
+                    paragraph.font.color.rgb = rgb

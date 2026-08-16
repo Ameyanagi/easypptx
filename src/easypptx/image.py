@@ -1,10 +1,14 @@
 """Image handling module for EasyPPTX."""
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import IO, TYPE_CHECKING
 
 from PIL import Image as PILImage
 from pptx.shapes.autoshape import Shape as PPTXShape
+
+from easypptx.positioning import PositionType, is_percent, parse_percent
 
 if TYPE_CHECKING:
     from easypptx.slide import Slide
@@ -28,7 +32,7 @@ class Image:
         ```
     """
 
-    def __init__(self, slide_obj: "Slide") -> None:
+    def __init__(self, slide_obj: Slide) -> None:
         """Initialize an Image object.
 
         Args:
@@ -38,17 +42,17 @@ class Image:
 
     def add(
         self,
-        image_path: str | Path,
-        x: float | str = 1.0,
-        y: float | str = 1.0,
-        width: float | str | None = None,
-        height: float | str | None = None,
+        image_path: str | Path | IO[bytes],
+        x: PositionType = 1.0,
+        y: PositionType = 1.0,
+        width: PositionType | None = None,
+        height: PositionType | None = None,
         maintain_aspect_ratio: bool = True,
     ) -> PPTXShape:
         """Add an image to the slide.
 
         Args:
-            image_path: Path to the image file
+            image_path: Path to the image file, or a binary file-like object
             x: X position in inches or percentage (default: 1.0)
             y: Y position in inches or percentage (default: 1.0)
             width: Width in inches or percentage (default: None, uses image's width)
@@ -62,36 +66,36 @@ class Image:
         Raises:
             FileNotFoundError: If the image file doesn't exist
         """
-        image_path_obj = Path(image_path)
-        if not image_path_obj.exists():
-            raise FileNotFoundError(f"Image file not found: {image_path}")
+        source: str | IO[bytes]
+        if isinstance(image_path, str | Path):
+            image_path_obj = Path(image_path)
+            if not image_path_obj.exists():
+                raise FileNotFoundError(f"Image file not found: {image_path}")
+            source = str(image_path_obj)
+        else:
+            source = image_path
 
-        # Get image dimensions if needed
-        if maintain_aspect_ratio and (width is not None or height is not None):
-            with PILImage.open(image_path_obj) as img:
+        # Size the missing dimension from the image's aspect ratio
+        if maintain_aspect_ratio and (width is None) != (height is None):
+            with PILImage.open(source) as img:
                 img_width, img_height = img.size
-                aspect_ratio = img_width / img_height
+            aspect_ratio = img_width / img_height
+            if not isinstance(source, str):
+                source.seek(0)
 
-                if width is not None and height is None:
-                    # Calculate height based on width
-                    # If width is percentage-based, assume proportional height
-                    if isinstance(width, str) and width.endswith("%"):
-                        height = f"{float(width.strip('%')) / aspect_ratio}%"
-                    else:
-                        height = float(width) / aspect_ratio
-                elif height is not None and width is None:
-                    # Calculate width based on height
-                    # If height is percentage-based, assume proportional width
-                    if isinstance(height, str) and height.endswith("%"):
-                        width = f"{float(height.strip('%')) * aspect_ratio}%"
-                    else:
-                        width = float(height) * aspect_ratio
+            if width is not None:
+                # Calculate height based on width
+                height = f"{parse_percent(width) / aspect_ratio}%" if is_percent(width) else float(width) / aspect_ratio
+            elif height is not None:
+                # Calculate width based on height
+                width = (
+                    f"{parse_percent(height) * aspect_ratio}%" if is_percent(height) else float(height) * aspect_ratio
+                )
 
-        # Pass positional arguments for compatibility with tests
-        return self.slide.add_image(str(image_path_obj), x, y, width, height)
+        return self.slide.add_image(source, x, y, width, height)
 
     @staticmethod
-    def get_image_dimensions(image_path: str | Path) -> tuple:
+    def get_image_dimensions(image_path: str | Path) -> tuple[int, int]:
         """Get the dimensions of an image file.
 
         Args:
