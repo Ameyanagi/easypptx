@@ -6,7 +6,7 @@ This example shows how EasyPPTX handles different aspect ratios.
 
 from pathlib import Path
 
-from easypptx import Presentation
+from easypptx import Presentation, in_
 
 OUTPUT_DIR = Path("output")
 OUTPUT_DIR.mkdir(exist_ok=True)
@@ -31,7 +31,7 @@ for aspect_ratio in aspect_ratios:
     # Add centered title with percentage-based positioning
     centered_slide.add_text(
         text="Centered Title",
-        x="50%",  # 50% from left
+        x="10%",  # left edge at 10% so the 80%-wide box is centered
         y="5%",
         width="80%",
         height="10%",
@@ -69,7 +69,7 @@ for aspect_ratio in aspect_ratios:
     comparison_slide = pres.add_slide()
     comparison_slide.add_text(
         text="Comparison: Absolute vs. Percentage",
-        x="50%",
+        x="10%",
         y="5%",
         width="80%",
         height="10%",
@@ -81,19 +81,19 @@ for aspect_ratio in aspect_ratios:
     # Absolute positioning (in inches)
     comparison_slide.add_shape(
         shape_type=1,  # Rectangle
-        x=1.0,  # Absolute inches
-        y=2.0,  # Absolute inches
-        width=3.0,
-        height=2.0,
+        x=in_(1.0),  # Absolute inches via in_()
+        y=in_(2.0),
+        width=in_(3.0),
+        height=in_(2.0),
         fill_color="red",
     )
 
     comparison_slide.add_text(
         text="Absolute positioning\n(fixed inches, may look different)",
-        x=1.0,
-        y=4.5,
-        width=3.0,
-        height=1.0,
+        x=in_(1.0),
+        y=in_(4.5),
+        width=in_(3.0),
+        height=in_(1.0),
         font_size=14,
         align="center",
     )

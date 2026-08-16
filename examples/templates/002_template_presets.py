@@ -12,6 +12,7 @@ This example demonstrates:
 from pathlib import Path
 
 import pandas as pd
+from PIL import Image as PILImage
 
 from easypptx import Presentation
 
@@ -51,13 +52,17 @@ content_slide.add_text(
 # 3. Add a section slide with blue background
 section_slide = pres.add_section_slide(title="Image Examples", bg_color="blue")
 
-# 4. Skip the image slide as we don't have sample images available
-# Comment out the image slide code for now
-# image_slide = pres.add_image_slide(
-#     title="Image with Auto-Centering",
-#     image_path="examples/assets/sample_image.jpg",  # Replace with your image path
-#     label="Sample image with caption",
-# )
+# 4. Add an image slide (a sample image is generated on the fly)
+image_dir = OUTPUT_DIR / "images"
+image_dir.mkdir(exist_ok=True)
+sample_image_path = image_dir / "sample_preset_image.png"
+PILImage.new("RGB", (800, 450), color=(64, 64, 255)).save(sample_image_path)
+
+image_slide, image_shape = pres.add_image_gen_slide(
+    image_path=str(sample_image_path),
+    title="Image with Auto-Centering",
+    label="Sample image with caption",
+)
 
 # 5. Add a comparison slide with two columns
 comparison_slide = pres.add_comparison_slide(
