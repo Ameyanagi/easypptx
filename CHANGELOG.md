@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.4] - 2026-08-16
+
+Polish pass driven by rendered-PNG inspection (PowerPoint + LibreOffice engines).
+
+### Changed
+- Data labels position outside the bar end (columns/bars) or above the point (lines/scatter) instead of overlapping neighbors
+- Themed native charts get subtle gridlines derived from the theme text color (previously near-invisible on dark themes)
+- `Slide.add_chart` legend defaults to "bottom", giving the plot the full slide width (pass legend_position="right" for the old layout)
+- matplotlib-backed heatmaps render the input matrix in its original orientation (rows stay rows, series across the x axis)
+- matplotlib-backed charts use the deck font when it is installed for matplotlib
+
 ## [0.8.3] - 2026-08-16
 
 ### Fixed

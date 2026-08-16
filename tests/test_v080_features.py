@@ -438,3 +438,42 @@ class TestLegendLayout:
         slide = pres.add_slide()
         chart = slide.add_chart(data=[["Q", "R", "C"], ["a", 1, 2]], value_columns=["R", "C"])
         assert chart.legend.include_in_layout is False
+
+
+class TestPolish084:
+    """Visual-QA polish: label positions, gridlines, legend default, heatmap orientation."""
+
+    def test_data_labels_outside_end(self):
+        from pptx.enum.chart import XL_LABEL_POSITION
+
+        pres = Presentation()
+        slide = pres.add_slide()
+        chart = slide.add_chart(data=[["Q", "V"], ["a", 1]], show_values=True)
+        assert chart.plots[0].data_labels.position == XL_LABEL_POSITION.OUTSIDE_END
+
+    def test_themed_gridlines_dimmed(self):
+        pres = Presentation(theme="dark")
+        slide = pres.add_slide()
+        chart = slide.add_chart(data=[["Q", "V"], ["a", 1]])
+        dim = chart.value_axis.major_gridlines.format.line.color.rgb
+        assert dim == (int(255 * 0.45),) * 3
+
+    def test_legend_defaults_to_bottom(self):
+        from pptx.enum.chart import XL_LEGEND_POSITION
+
+        pres = Presentation()
+        slide = pres.add_slide()
+        chart = slide.add_chart(data=[["Q", "R", "C"], ["a", 1, 2]], value_columns=["R", "C"])
+        assert chart.legend.position == XL_LEGEND_POSITION.BOTTOM
+
+    def test_heatmap_keeps_matrix_orientation(self, tmp_path):
+        from PIL import Image as PILImage
+
+        pres = Presentation()
+        slide = pres.add_slide()
+        # 2 rows x 5 columns: rendered image must be wider than tall (plus margins)
+        shape = slide.add_chart(data=np.random.default_rng(0).random((2, 5)), chart_type="heatmap")
+        import io
+
+        img = PILImage.open(io.BytesIO(shape.image.blob))
+        assert img.width > img.height

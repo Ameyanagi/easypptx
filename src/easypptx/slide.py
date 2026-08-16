@@ -519,7 +519,7 @@ class Slide:
             value_columns: Name(s) or index(es) of column(s) to use as values (default: None)
             title: Chart title (default: None)
             has_legend: Whether to show legend (default: True)
-            legend_position: Legend position (default: "right")
+            legend_position: Legend position (default: "bottom")
             **kwargs: "value_column" and "chart_title" are accepted as aliases;
                 any other unknown parameter triggers a warning
 
@@ -548,7 +548,7 @@ class Slide:
             legend_position = legend_position if legend_position is not None else sk.get("legend_position")
         chart_type = chart_type if chart_type is not None else "column"
         has_legend = has_legend if has_legend is not None else True
-        legend_position = legend_position if legend_position is not None else "right"
+        legend_position = legend_position if legend_position is not None else "bottom"
 
         # Deck theme palette/text color apply when not explicitly given
         chart_defaults = self.template_defaults.get("chart", {})
@@ -598,6 +598,7 @@ class Slide:
                 y_max=y_max,
                 palette=palette,
                 text_color=font_color,
+                font_name=self.template_defaults.get("global", {}).get("font_name", DEFAULT_FONT),
             )
         if backend != "native":
             raise ValueError(f"Unknown backend: {backend!r} (use 'native' or 'pyplot')")
