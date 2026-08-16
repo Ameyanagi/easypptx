@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-08-16
+
+Professional visual defaults. Decks built with a theme now look designed out of the box; render-verified on both light and dark themes.
+
+### Changed
+- **Themed titles** are left-aligned with a short accent bar underneath (disable with `Theme(title_accent=False)`); built-in theme typography refined (softer body grays, consistent title sizes)
+- **Themed tables** are fully styled: theme-colored header row, subtle row banding, per-theme body colors, cell padding, vertical centering, and automatic right-alignment for numeric columns (headers follow their column)
+- **Bullets** gained vertical rhythm: paragraph spacing, 1.1 line spacing, and nested levels stepping down in size
+- **Chart gridlines** are luminance-aware: they fade toward white on light decks and toward black on dark decks
+- **Markdown title slides** get a centered accent rule and refined type scale
+- `Theme` gained `title_accent` and `table` fields; custom themes can supply their own table spec
+
 ## [0.8.4] - 2026-08-16
 
 Polish pass driven by rendered-PNG inspection (PowerPoint + LibreOffice engines).

@@ -433,7 +433,7 @@ class Slide:
             The created table object
         """
         from easypptx.data import normalize_table_rows
-        from easypptx.table import Table, apply_number_format, shade_cells_by_value
+        from easypptx.table import Table, apply_number_format, apply_table_theme, shade_cells_by_value
 
         if "first_row_header" in kwargs:
             has_header = kwargs.pop("first_row_header")
@@ -467,8 +467,14 @@ class Slide:
             style=style_id,
         )
 
+        # Theme table styling (header fill, banding, fonts, numeric alignment)
+        theme_spec = self.template_defaults.get("table", {})
+        if theme_spec:
+            apply_table_theme(table, theme_spec, has_header=has_header)
+
         if shade_columns:
-            # Shade from the raw values, not the formatted strings
+            # Shade from the raw values, not the formatted strings (after the
+            # theme pass so value shading stays visible)
             shade_cells_by_value(table, raw_rows, shade_columns, shade_color, has_header=has_header)
 
         return table
@@ -733,8 +739,11 @@ class Slide:
             paragraph = text_frame.paragraphs[0] if i == 0 else text_frame.add_paragraph()
             paragraph.text = str(text)
             paragraph.level = max(0, min(4, int(level)))
-            paragraph.font.size = Pt(font_size_val)
+            # Nested levels step down in size; spacing keeps lists scannable
+            paragraph.font.size = Pt(max(10, font_size_val - 2 * paragraph.level))
             paragraph.font.name = font_name_val
+            paragraph.space_after = Pt(max(4, int(font_size_val * 0.35)))
+            paragraph.line_spacing = 1.1
             if font_bold is not None:
                 paragraph.font.bold = font_bold
             if font_italic is not None:

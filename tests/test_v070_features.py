@@ -155,9 +155,9 @@ class TestStylesAndThemes:
         slide = pres.add_slide(title="T")
         # Theme body color cascades into plain text via template defaults
         shape = slide.add_text("body")
-        from easypptx.common import COLORS
+        from easypptx.styles import THEMES
 
-        assert shape.text_frame.paragraphs[0].font.color.rgb == COLORS["white"]
+        assert shape.text_frame.paragraphs[0].font.color.rgb == THEMES["dark"].body.color
 
     def test_unknown_theme_raises(self):
         with pytest.raises(ValueError, match="Unknown theme"):

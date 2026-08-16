@@ -351,17 +351,21 @@ def _render_slide(pres: Presentation, spec: _SlideSpec, base_dir: Path) -> EasyS
         slide = pres.add_slide()
         slide.add_text(
             spec.title or "",
-            x=5,
-            y=30,
-            width=90,
-            height=18,
+            x=8,
+            y=32,
+            width=84,
+            height=16,
             font_size=40,
             font_bold=True,
             align="center",
             vertical="middle",
         )
+        theme = pres.theme
+        if theme is not None and theme.title_accent and theme.accent_color is not None:
+            rule = slide.add_shape(x=44, y=50, width=12, height=0.9, fill_color=theme.accent_color)
+            rule.line.fill.background()
         if spec.subtitle:
-            slide.add_text(_strip_inline(spec.subtitle), x=10, y=52, width=80, height=10, font_size=20, align="center")
+            slide.add_text(_strip_inline(spec.subtitle), x=10, y=54, width=80, height=8, font_size=18, align="center")
     else:
         slide = pres.add_slide(title=spec.title) if spec.title else pres.add_slide()
         top = _CONTENT_TOP if spec.title else 8

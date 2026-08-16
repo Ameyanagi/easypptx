@@ -473,6 +473,21 @@ class Presentation:
                     color=title_color,
                 )
 
+                # A short accent bar under the title anchors the visual hierarchy
+                if self.theme is not None and self.theme.title_accent and self.theme.accent_color is not None:
+                    bar_x = to_percent(x_padding if x_padding is not None else "5%", self._slide_width_emu)
+                    bar_y = to_percent(
+                        y_padding if y_padding is not None else "5%", self._slide_height_emu
+                    ) + to_percent(title_height if title_height is not None else "10%", self._slide_height_emu)
+                    bar = slide.add_shape(
+                        x=pct(bar_x),
+                        y=pct(bar_y),
+                        width=7,
+                        height=0.9,
+                        fill_color=self.theme.accent_color,
+                    )
+                    bar.line.fill.background()
+
             return slide
 
     @property

@@ -293,3 +293,17 @@ pres.save("template_styled.pptx")
 The styling options are implemented using python-pptx's underlying API, with EasyPPTX providing a more intuitive interface.
 
 Colors are converted to `RGBColor` objects, and font properties are applied to paragraph objects in the text frames.
+
+## Professional Defaults (0.9.0)
+
+Themed decks apply a designed look automatically:
+
+- Slide titles are left-aligned with a short accent bar underneath
+  (`Theme(title_accent=False)` disables the bar).
+- Tables get the theme's header fill, subtle row banding, cell padding,
+  and automatic right-alignment for numeric columns. Custom themes can
+  provide their own spec via `Theme(table={...})` with keys
+  `header_fill`, `header_color`, `band_fills`, `body_color`,
+  `font_size`, and `header_font_size`.
+- Bullets use paragraph spacing and step nested levels down in size.
+- Chart gridlines fade toward the background (luminance-aware).

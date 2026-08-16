@@ -170,6 +170,79 @@ def shade_cells_by_value(
             cell.fill.fore_color.rgb = blended
 
 
+def _looks_numeric(text: str) -> bool:
+    """True for cell text that reads as a number (with separators/percent)."""
+    cleaned = text.strip().replace(",", "").replace("%", "").replace("\u00a5", "").replace("$", "")
+    if not cleaned:
+        return False
+    try:
+        float(cleaned)
+    except ValueError:
+        return False
+    return True
+
+
+def apply_table_theme(table: PPTXTable, spec: dict, has_header: bool = True) -> None:
+    """Apply a theme's table styling: header fill, banding, alignment, fonts.
+
+    Args:
+        table: The rendered python-pptx table
+        spec: Theme table spec with optional keys header_fill, header_color,
+            band_fills (list of two fills), body_color, font_name,
+            font_size, header_font_size
+        has_header: Whether row 0 is a header row (default: True)
+    """
+    from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
+    from pptx.util import Inches, Pt
+
+    from easypptx.common import resolve_color
+
+    header_fill = resolve_color(spec.get("header_fill"))
+    header_color = resolve_color(spec.get("header_color"))
+    band_fills = [resolve_color(c) for c in spec.get("band_fills", [])]
+    body_color = resolve_color(spec.get("body_color"))
+    font_name = spec.get("font_name")
+    font_size = spec.get("font_size")
+    header_font_size = spec.get("header_font_size", font_size)
+
+    n_rows = len(table.rows)
+    n_cols = len(table.columns)
+    body_start = 1 if has_header else 0
+
+    for r in range(n_rows):
+        is_header = has_header and r == 0
+        for c in range(n_cols):
+            cell = table.cell(r, c)
+            cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+            cell.margin_left = Inches(0.08)
+            cell.margin_right = Inches(0.08)
+            cell.margin_top = Inches(0.03)
+            cell.margin_bottom = Inches(0.03)
+
+            # Fills: header color, then subtle banding
+            if is_header and header_fill is not None:
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = header_fill
+            elif not is_header and band_fills and all(band_fills):
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = band_fills[(r - body_start) % len(band_fills)]
+
+            for paragraph in cell.text_frame.paragraphs:
+                if font_name:
+                    paragraph.font.name = font_name
+                size = header_font_size if is_header else font_size
+                if size:
+                    paragraph.font.size = Pt(size)
+                color = header_color if is_header else body_color
+                if color is not None:
+                    paragraph.font.color.rgb = color
+                # Numbers right-align for easy scanning; header follows body
+                if (not is_header and _looks_numeric(cell.text)) or (
+                    is_header and n_rows > body_start and _looks_numeric(table.cell(body_start, c).text)
+                ):
+                    paragraph.alignment = PP_ALIGN.RIGHT
+
+
 class Table:
     """Class for handling table operations in PowerPoint slides.
 
