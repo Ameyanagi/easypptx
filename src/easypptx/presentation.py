@@ -275,6 +275,22 @@ class Presentation:
         self.pptx_presentation.slide_width = Inches(width_inches)
         self.pptx_presentation.slide_height = Inches(height_inches)
 
+    def deck(self) -> Any:
+        """Start a fluent Deck builder on this presentation.
+
+        Returns:
+            A Deck whose chained calls render onto this presentation at save time
+
+        Examples:
+            ```python
+            pres = Presentation(theme="dark")
+            pres.deck().slide("Agenda").bullets(["One", "Two"]).save("out.pptx")
+            ```
+        """
+        from easypptx.deck import Deck
+
+        return Deck(presentation=self)
+
     @classmethod
     def from_markdown(
         cls,

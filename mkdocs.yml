@@ -16,6 +16,7 @@ nav:
   - Features: features.md
   - User Guide:
     - Percentage-Based Positioning: percentage_positioning.md
+    - Deck Builder: deck.md
     - Markdown to Presentation: markdown.md
     - Data to Slides: data.md
     - Auto-Alignment: auto_alignment.md

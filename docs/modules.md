@@ -47,3 +47,7 @@
 
 ## Common Module
 ::: easypptx.common
+
+## Deck Builder
+
+::: easypptx.deck
