@@ -54,8 +54,14 @@ class _Block:
     @property
     def weight(self) -> float:
         """Relative share of vertical space this block wants."""
+        from easypptx.textfit import estimate_lines
+
+        # Assume the default body size on a ~11.4-inch-wide content area
+        body_width_inches = 11.4
+
         if self.kind == "bullets":
-            return max(2.0, len(self.items) * 0.9)
+            lines = sum(estimate_lines(str(t), 18, body_width_inches) for t, _ in self.items)
+            return max(2.0, lines * 0.9)
         if self.kind == "image":
             return 6.0
         if self.kind == "table":
@@ -64,7 +70,8 @@ class _Block:
             return max(2.0, len(self.lines) * 0.6)
         if self.kind == "columns":
             return max((b.weight for b in self.columns), default=2.0)
-        return 1.5  # text paragraph
+        lines = estimate_lines(self.lines[0] if self.lines else "", 18, body_width_inches)
+        return max(1.5, lines * 0.75)  # text paragraph
 
 
 @dataclass
