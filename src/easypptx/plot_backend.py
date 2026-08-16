@@ -84,10 +84,13 @@ def render_chart(
     def color(i: int) -> Any:
         if not palette:
             return None
+        from easypptx.common import resolve_color
+
         value = palette[i % len(palette)]
-        if isinstance(value, tuple):
-            return tuple(c / 255 for c in value)
-        return value
+        rgb = resolve_color(tuple(value) if isinstance(value, list) else value)
+        if rgb is not None:
+            return tuple(c / 255 for c in rgb)
+        return value  # let matplotlib interpret hex strings and its own names
 
     fig, ax = plt.subplots(figsize=(8, 5))
     try:
@@ -119,8 +122,11 @@ def render_chart(
                 ax.scatter(range(n), series[name], label=name, color=color(i))
             ax.set_xticks(range(n), [str(c) for c in categories])
         elif chart_type == "pie":
+            if len(names) > 1:
+                raise ValueError("Pie charts take a single series; got " + ", ".join(names))
             values = series[names[0]]
-            ax.pie(values, labels=[str(c) for c in categories], autopct="%1.1f%%")
+            pie_colors = [color(i) for i in range(len(values))] if palette else None
+            ax.pie(values, labels=[str(c) for c in categories], autopct="%1.1f%%", colors=pie_colors)
         elif chart_type == "heatmap":
             matrix = [series[name] for name in names]
             image = ax.imshow(matrix, aspect="auto", cmap="viridis")
@@ -138,12 +144,18 @@ def render_chart(
 
         if title:
             ax.set_title(title)
+        # x_title/y_title/y_min/y_max are category/value-axis semantics, so
+        # horizontal bars map them to the physical x axis (matching native charts)
+        value_axis_is_x = chart_type == "bar"
         if x_title:
-            ax.set_xlabel(x_title)
+            (ax.set_ylabel if value_axis_is_x else ax.set_xlabel)(x_title)
         if y_title:
-            ax.set_ylabel(y_title)
+            (ax.set_xlabel if value_axis_is_x else ax.set_ylabel)(y_title)
         if y_min is not None or y_max is not None:
-            ax.set_ylim(bottom=y_min, top=y_max)
+            if value_axis_is_x:
+                ax.set_xlim(left=y_min, right=y_max)
+            else:
+                ax.set_ylim(bottom=y_min, top=y_max)
         if has_legend and len(names) > 1 and chart_type not in ("pie", "heatmap", "box", "violin"):
             ax.legend()
         fig.tight_layout()

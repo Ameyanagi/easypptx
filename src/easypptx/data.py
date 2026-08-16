@@ -116,6 +116,8 @@ def normalize_chart_data(
 
     # numpy arrays: no labels, so categories/columns fill them in
     if is_ndarray(data):
+        if data.dtype.names is not None:
+            raise ValueError("Structured numpy arrays are not supported; pass a DataFrame or dict instead")
         if data.ndim == 1:
             cats = categories if categories is not None else [str(i) for i in range(len(data))]
             name = columns[0] if columns else "Series 1"
@@ -144,12 +146,15 @@ def normalize_chart_data(
                 if len(cols) < 2:
                     raise ValueError("DataFrame must have at least two columns for automatic value extraction")
                 column = cols[1]
+            values = _column_from_polars(data, column, "Value")  # validates the column
             label = column if isinstance(column, str) else str(cols[column])
-            series[label] = _column_from_polars(data, column, "Value")
+            series[label] = values
         return cats, series
 
     # pandas DataFrame
     if is_dataframe(data):
+        if not len(data.columns):
+            return [], {}
         if category_column is None:
             category_column = data.columns[0]
         selected = value_columns if isinstance(value_columns, list) else [value_columns]
@@ -225,6 +230,8 @@ def normalize_table_rows(data: Any, columns: list[str] | None = None) -> list[li
         return [names, *[list(row) for row in zip(*cols, strict=True)]]
 
     if is_ndarray(data):
+        if data.dtype.names is not None:
+            raise ValueError("Structured numpy arrays are not supported; pass a DataFrame or dict instead")
         if data.ndim == 1:
             body = [[v] for v in data.tolist()]
             return [[columns[0] if columns else "Column 1"], *body]

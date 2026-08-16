@@ -267,21 +267,17 @@ class Slide:
         if vertical_val in VERTICAL:
             text_frame.vertical_anchor = VERTICAL[vertical_val]
 
-        # Apply text formatting
-        p = text_frame.paragraphs[0]
-        p.font.size = Pt(font_size_val)
-        p.font.bold = font_bold_val
-        p.font.italic = font_italic_val
-        p.font.name = font_name_val
-
-        # Set horizontal alignment
-        if align_val in ALIGN:
-            p.alignment = ALIGN[align_val]
-
-        # Set text color
+        # Apply text formatting to every paragraph (multiline text creates several)
         rgb = resolve_color(color_val)
-        if rgb is not None:
-            p.font.color.rgb = rgb
+        for p in text_frame.paragraphs:
+            p.font.size = Pt(font_size_val)
+            p.font.bold = font_bold_val
+            p.font.italic = font_italic_val
+            p.font.name = font_name_val
+            if align_val in ALIGN:
+                p.alignment = ALIGN[align_val]
+            if rgb is not None:
+                p.font.color.rgb = rgb
 
         return text_box
 
@@ -455,7 +451,11 @@ class Slide:
             has_header = True
 
         raw_rows = normalize_table_rows(data, columns=columns)
-        table_data = apply_number_format(raw_rows, number_format) if number_format is not None else raw_rows
+        table_data = (
+            apply_number_format(raw_rows, number_format, has_header=has_header)
+            if number_format is not None
+            else raw_rows
+        )
 
         table = Table(self).add(
             data=table_data,
@@ -469,7 +469,7 @@ class Slide:
 
         if shade_columns:
             # Shade from the raw values, not the formatted strings
-            shade_cells_by_value(table, raw_rows, shade_columns, shade_color)
+            shade_cells_by_value(table, raw_rows, shade_columns, shade_color, has_header=has_header)
 
         return table
 

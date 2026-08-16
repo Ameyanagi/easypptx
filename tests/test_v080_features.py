@@ -253,3 +253,86 @@ class TestDocsAgentRegressions:
         slide = pres.add_slide()
         with pytest.warns(UserWarning, match="pie"):
             slide.add_chart(data=[["Q", "V"], ["a", 1]], chart_type="pie", y_title="nope")
+
+
+class TestCodexReviewRegressions:
+    """Regressions from the independent 0.8.0 review."""
+
+    def test_headerless_table_formats_and_shades_all_rows(self):
+        pres = Presentation()
+        slide = pres.add_slide()
+        table = slide.add_table(
+            [[1, 10.0], [2, 20.0]],
+            has_header=False,
+            number_format={1: "{:,.1f}"},
+            shade_columns=[1],
+        )
+        assert table.cell(0, 1).text == "10.0"
+        assert table.cell(0, 1).fill.fore_color.rgb == (255, 255, 255)  # min shaded white
+
+    def test_integer_column_labels_prefer_names(self):
+        from easypptx.table import apply_number_format
+
+        rows = [[1, 2], ["a", 5.0], ["b", 7.0]]  # header row has integer names 1 and 2
+        out = apply_number_format(rows, {1: "{:,.1f}"})
+        # Key 1 matches the column NAMED 1 (index 0, non-numeric so unformatted)
+        # and must not also positionally format index 1
+        assert out[1] == ["a", 5.0]
+
+    def test_nan_and_numpy_scalars_in_shading(self):
+        pres = Presentation()
+        slide = pres.add_slide()
+        table = slide.add_table(
+            [["V"], [np.float64(1.0)], [float("nan")], [np.float64(3.0)]],
+            shade_columns=["V"],
+        )
+        # numpy scalars shade; NaN is skipped without crashing
+        assert table.cell(1, 0).fill.fore_color.rgb == (255, 255, 255)
+        assert table.cell(3, 0).fill.fore_color.rgb != (255, 255, 255)
+
+    def test_fit_never_enlarges_small_fonts(self):
+        from easypptx.textfit import fit_font_size
+
+        assert fit_font_size(["tiny"], 5.0, 5.0, font_size=6) == 6
+
+    def test_multiline_text_all_paragraphs_formatted(self):
+        pres = Presentation()
+        slide = pres.add_slide()
+        shape = slide.add_text("line one\nline two", font_size=30, fit="none")
+        sizes = [p.font.size.pt for p in shape.text_frame.paragraphs]
+        assert sizes == [30, 30]
+
+    def test_pyplot_multi_series_pie_rejected(self):
+        pres = Presentation()
+        slide = pres.add_slide()
+        with pytest.raises(ValueError, match="single series"):
+            slide.add_chart(data={"A": [1, 2], "B": [3, 4]}, chart_type="pie", backend="pyplot", categories=["x", "y"])
+
+    def test_structured_numpy_array_rejected(self):
+        arr = np.array([(1, 2.0)], dtype=[("a", "i4"), ("b", "f4")])
+        with pytest.raises(ValueError, match="Structured numpy arrays"):
+            normalize_chart_data(arr)
+
+    def test_polars_out_of_range_int_column(self):
+        with pytest.raises(ValueError, match="not found"):
+            normalize_chart_data(pl.DataFrame({"A": [1]}), value_columns=[5])
+
+    def test_empty_pandas_frame(self):
+        assert normalize_chart_data(pd.DataFrame()) == ([], {})
+
+    def test_foreign_pptx_accessor_not_overridden(self):
+        import easypptx
+
+        assert easypptx.register_pandas_accessor()  # ours registers/detects fine
+        # Simulate a foreign accessor
+        original = pd.DataFrame.pptx
+        try:
+
+            class Foreign:
+                pass
+
+            pd.DataFrame.pptx = Foreign()
+            with pytest.warns(UserWarning, match="another library"):
+                assert not easypptx.register_pandas_accessor()
+        finally:
+            pd.DataFrame.pptx = original

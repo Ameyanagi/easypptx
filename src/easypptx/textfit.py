@@ -79,9 +79,10 @@ def fit_font_size(
         A font size in whole points between min_size and font_size
     """
     text = "\n".join(paragraphs)
+    floor = min(float(min_size), float(font_size))
     size = float(font_size)
-    while size > min_size:
+    while size > floor:
         if estimate_height_inches(text, size, box_width_inches) <= box_height_inches:
             break
         size -= 1
-    return max(int(size), int(min_size))
+    return max(int(size), int(floor))

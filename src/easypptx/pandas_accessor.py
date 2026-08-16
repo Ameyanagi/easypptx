@@ -41,12 +41,26 @@ def register() -> bool:
     except ImportError:
         return False
 
-    if hasattr(pd.DataFrame, "pptx"):
-        return True
+    existing = getattr(pd.DataFrame, "pptx", None)
+    if existing is not None:
+        # Class access yields the accessor class itself; instance-style
+        # descriptors keep it under _accessor
+        accessor_cls = getattr(existing, "_accessor", existing)
+        if getattr(accessor_cls, "_easypptx_accessor", False):
+            return True
+        import warnings
+
+        warnings.warn(
+            "DataFrame.pptx is already registered by another library; easypptx will not override it",
+            stacklevel=2,
+        )
+        return False
 
     @register_dataframe_accessor("pptx")
     class PptxAccessor:
         """Send this DataFrame to an EasyPPTX slide as a table or chart."""
+
+        _easypptx_accessor = True
 
         def __init__(self, df: Any) -> None:
             self._df = df
