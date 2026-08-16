@@ -49,6 +49,7 @@ def render_chart(
     y_max: float | None = None,
     dpi: int = 200,
     palette: list | None = None,
+    text_color: Any = None,
 ) -> Any:
     """Render a chart with matplotlib and place it on the slide as an image.
 
@@ -69,6 +70,9 @@ def render_chart(
         y_max: Upper y-axis limit (default: None)
         dpi: Render resolution (default: 200)
         palette: Series colors as hex strings or RGB tuples (default: None)
+        text_color: Color for all figure text; also makes the figure
+            background transparent so the slide theme shows through
+            (default: None)
 
     Returns:
         The picture shape placed on the slide
@@ -156,10 +160,35 @@ def render_chart(
                 ax.set_xlim(left=y_min, right=y_max)
             else:
                 ax.set_ylim(bottom=y_min, top=y_max)
+        legend = None
         if has_legend and len(names) > 1 and chart_type not in ("pie", "heatmap", "box", "violin"):
-            ax.legend()
+            legend = ax.legend()
         fig.tight_layout()
 
-        return slide.add_pyplot(fig, x=x, y=y, width=width, height=height, dpi=dpi)
+        # Themed decks: transparent background and theme-colored text
+        transparent = False
+        if text_color is not None:
+            from easypptx.common import resolve_color
+
+            rgb = resolve_color(text_color)
+            if rgb is not None:
+                mpl_color = tuple(c / 255 for c in rgb)
+                transparent = True
+                ax.set_facecolor("none")
+                for spine in ax.spines.values():
+                    spine.set_color(mpl_color)
+                ax.tick_params(colors=mpl_color)
+                ax.xaxis.label.set_color(mpl_color)
+                ax.yaxis.label.set_color(mpl_color)
+                ax.title.set_color(mpl_color)
+                if legend is not None:
+                    legend.get_frame().set_alpha(0.15)
+                    for legend_text in legend.get_texts():
+                        legend_text.set_color(mpl_color)
+                for text in fig.findobj(match=lambda o: hasattr(o, "set_color") and o.__class__.__name__ == "Text"):
+                    if text.get_color() in ("black", "k", (0, 0, 0, 1)):
+                        text.set_color(mpl_color)
+
+        return slide.add_pyplot(fig, x=x, y=y, width=width, height=height, dpi=dpi, transparent=transparent)
     finally:
         plt.close(fig)

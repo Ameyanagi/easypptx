@@ -381,3 +381,51 @@ class TestGreptileReviewRegressions:
             normalize_chart_data([["A", "B"], [1, 2]], value_columns=[9])
         with pytest.raises(ValueError, match="out of range"):
             normalize_chart_data([["A", "B"], [1, 2]], category_column=7)
+
+
+class TestThemedFigures:
+    """Visual-QA regressions: figures must be legible on themed decks."""
+
+    def test_native_chart_text_uses_theme_color(self):
+        pres = Presentation(theme="dark")
+        slide = pres.add_slide()
+        chart = slide.add_chart(
+            data=[["Q", "R", "C"], ["a", 1, 2], ["b", 2, 3]],
+            value_columns=["R", "C"],
+            show_values=True,
+            y_title="USD",
+        )
+        white = (255, 255, 255)
+        assert chart.value_axis.tick_labels.font.color.rgb == white
+        assert chart.legend.font.color.rgb == white
+        assert chart.plots[0].data_labels.font.color.rgb == white
+
+    def test_pyplot_chart_transparent_on_theme(self):
+        from PIL import Image as PILImage
+
+        pres = Presentation(theme="dark")
+        slide = pres.add_slide()
+        shape = slide.add_chart(data={"A": [1.0, 2.0, 3.0]}, chart_type="histogram", categories=["x", "y", "z"])
+        import io
+
+        img = PILImage.open(io.BytesIO(shape.image.blob))
+        assert img.mode == "RGBA"
+        corner_alpha = img.getpixel((0, 0))[3]
+        assert corner_alpha == 0  # transparent background
+
+    def test_explicit_font_color_beats_theme(self):
+        pres = Presentation(theme="dark")
+        slide = pres.add_slide()
+        chart = slide.add_chart(data=[["Q", "V"], ["a", 1]], font_color=(1, 2, 3))
+        assert chart.value_axis.tick_labels.font.color.rgb == (1, 2, 3)
+
+    def test_grid_cell_table_supports_formatting(self):
+        pres = Presentation()
+        slide, grid = pres.add_grid_slide(rows=1, cols=1, title="T")
+        table = grid[0, 0].add_table(
+            data=[["Item", "Sales"], ["A", 1234.5], ["B", 42.0]],
+            number_format={"Sales": "{:,.1f}"},
+            shade_columns=["Sales"],
+        )
+        assert table.cell(1, 1).text == "1,234.5"
+        assert table.cell(2, 1).fill.fore_color.rgb == (255, 255, 255)

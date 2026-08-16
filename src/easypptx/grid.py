@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import IO, Any, overload
 
-from easypptx.common import filter_to_signature, is_dataframe, merge_defaults
+from easypptx.common import filter_to_signature, merge_defaults
 from easypptx.positioning import PositionType, pct, shift_band, to_percent
 
 # Using forward annotations (PEP 563) to avoid circular references
@@ -914,17 +914,18 @@ class Grid:
     def add_table(self, row: int, col: int, data, **kwargs) -> Any:
         """Add a table to a specific cell in the grid.
 
-        This is a convenience method that creates a Table object and adds it to the cell.
+        Routes through the parent slide's add_table, so every table feature
+        (DataFrames and other data shapes, number_format, shade_columns,
+        styles) works inside grid cells.
 
         Args:
             row: Row index (0-based)
             col: Column index (0-based)
-            data: Table data as a list of lists or pandas DataFrame
-            **kwargs: Additional arguments for the table
-                     (has_header, style, etc.)
+            data: Table data (any shape Slide.add_table accepts)
+            **kwargs: Additional arguments for Slide.add_table
 
         Returns:
-            The created table shape
+            The created table
 
         Raises:
             OutOfBoundsError: If row or column is out of bounds
@@ -932,61 +933,22 @@ class Grid:
 
         Example:
             ```python
-            # Add table to a specific cell
-            data = [["Name", "Value"], ["Item 1", 100], ["Item 2", 200]]
-            grid.add_table(0, 0, data, has_header=True)
-
-            # With pandas DataFrame
-            import pandas as pd
-            df = pd.DataFrame({"Name": ["Item 1", "Item 2"], "Value": [100, 200]})
-            grid.add_table(1, 1, df)
+            grid.add_table(0, 0, df, has_header=True, shade_columns=["Sales"])
             ```
         """
-        from easypptx.table import Table
-        from easypptx.table import Table as _Table
-
-        # Get the cell to determine the position and dimensions
         cell = self.get_cell(row, col)
+        if cell.is_spanned:
+            raise CellMergeError("Cell is part of a merged cell")
 
         # Merge provided kwargs with template defaults, dropping default keys
-        # that Table.add does not accept
-        merged_kwargs = filter_to_signature(_Table.add, self.merge_with_defaults("table", kwargs), kwargs)
-
-        # Create a Table object
-        table_obj = Table(self.parent)
-
-        # Use the cell's absolute position on the slide
-        merged_kwargs["x"], merged_kwargs["y"], merged_kwargs["width"], merged_kwargs["height"] = self._cell_area(cell)
-
-        # Remove data from kwargs to handle separately
+        # that the table method does not accept
+        merged_kwargs = filter_to_signature(self.parent.add_table, self.merge_with_defaults("table", kwargs), kwargs)
         merged_kwargs.pop("data", None)
 
-        # Handle has_header parameter if provided
-        if "has_header" in merged_kwargs:
-            merged_kwargs["first_row_header"] = merged_kwargs.pop("has_header")
-
-        # Convert list colors to tuples if needed
-        for style_key in ["header_style", "row_style"]:
-            if style_key in merged_kwargs:
-                style_dict = merged_kwargs[style_key]
-                for color_key in ["bg_color", "text_color"]:
-                    if (
-                        color_key in style_dict
-                        and isinstance(style_dict[color_key], list)
-                        and len(style_dict[color_key]) == 3
-                    ):
-                        style_dict[color_key] = tuple(style_dict[color_key])
-
-        # Convert pandas DataFrame to list if needed
-        table_data = [list(data.columns), *data.values.tolist()] if is_dataframe(data) else data
-
-        # Create the table with the processed data
-        table_shape = table_obj.add(data=table_data, **merged_kwargs)
-
-        # Store the table in the cell's content
-        cell.content = table_shape
-
-        return table_shape
+        x, y, width, height = self._cell_area(cell)
+        table = self.parent.add_table(data, x=x, y=y, width=width, height=height, **merged_kwargs)
+        cell.content = table
+        return table
 
     def next(self) -> GridCellProxy:
         """Return a proxy for the next free cell, growing the grid if needed.

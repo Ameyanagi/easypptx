@@ -537,6 +537,7 @@ class Slide:
             value_columns = kwargs.pop("value_column")
         if title is None and "chart_title" in kwargs:
             title = kwargs.pop("chart_title")
+        font_color = kwargs.pop("font_color", None)
         warn_ignored_kwargs("Slide.add_chart", kwargs)
 
         # A ChartStyle fills any chart options the caller left unset
@@ -549,9 +550,12 @@ class Slide:
         has_legend = has_legend if has_legend is not None else True
         legend_position = legend_position if legend_position is not None else "right"
 
-        # Deck theme palette applies when no explicit palette is given
+        # Deck theme palette/text color apply when not explicitly given
+        chart_defaults = self.template_defaults.get("chart", {})
         if palette is None:
-            palette = self.template_defaults.get("chart", {}).get("palette")
+            palette = chart_defaults.get("palette")
+        if font_color is None:
+            font_color = chart_defaults.get("font_color")
 
         series: dict[str, list]
         if categories is not None and values is not None:
@@ -593,6 +597,7 @@ class Slide:
                 y_min=y_min,
                 y_max=y_max,
                 palette=palette,
+                text_color=font_color,
             )
         if backend != "native":
             raise ValueError(f"Unknown backend: {backend!r} (use 'native' or 'pyplot')")
@@ -615,6 +620,7 @@ class Slide:
             y_min=y_min,
             y_max=y_max,
             palette=palette,
+            font_color=font_color,
         )
 
     @property
@@ -757,6 +763,7 @@ class Slide:
         border_width: int = 1,
         shadow: bool = False,
         maintain_aspect_ratio: bool = True,
+        transparent: bool = False,
         **kwargs: Any,
     ) -> PPTXShape:
         """Add a matplotlib (or seaborn) figure to the slide.
@@ -775,6 +782,8 @@ class Slide:
             border_width: Border width in points (default: 1)
             shadow: Whether to apply a drop shadow (default: False)
             maintain_aspect_ratio: Whether to keep the figure's aspect ratio (default: True)
+            transparent: Render the figure with a transparent background, so
+                the slide background shows through (default: False)
             **kwargs: Unknown parameters trigger a warning
 
         Returns:
@@ -796,6 +805,7 @@ class Slide:
                 "border_width": border_width,
                 "shadow": shadow,
                 "maintain_aspect_ratio": maintain_aspect_ratio,
+                "transparent": transparent,
             },
         )
 
