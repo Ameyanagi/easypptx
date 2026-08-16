@@ -306,6 +306,8 @@ class Chart:
             legend_position = kwargs.get("legend_position", "right")
             if isinstance(legend_position, str) and legend_position in self.LEGEND_POSITIONS:
                 chart.legend.position = self.LEGEND_POSITIONS[legend_position]
+            # Give the legend its own space instead of floating over the plot
+            chart.legend.include_in_layout = False
 
         # Data labels
         if show_values or number_format:
