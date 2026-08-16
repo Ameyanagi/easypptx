@@ -429,3 +429,12 @@ class TestThemedFigures:
         )
         assert table.cell(1, 1).text == "1,234.5"
         assert table.cell(2, 1).fill.fore_color.rgb == (255, 255, 255)
+
+
+class TestLegendLayout:
+    def test_legend_does_not_overlap_plot(self):
+        """PowerPoint visual QA: the legend must reserve its own layout space."""
+        pres = Presentation()
+        slide = pres.add_slide()
+        chart = slide.add_chart(data=[["Q", "R", "C"], ["a", 1, 2]], value_columns=["R", "C"])
+        assert chart.legend.include_in_layout is False
