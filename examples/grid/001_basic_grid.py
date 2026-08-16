@@ -1,7 +1,7 @@
 """
-001_basic_grid.py - Basic Grid Layout Example
+001_basic_grid_updated.py - Basic Grid Layout Example Using Enhanced APIs
 
-This example demonstrates basic grid layout creation and usage.
+This example demonstrates basic grid layout creation and usage with the enhanced Grid APIs.
 """
 
 from pathlib import Path
@@ -18,7 +18,7 @@ pres = Presentation()
 # Add a title slide
 slide = pres.add_slide()
 slide.add_text(
-    text="001 - Basic Grid Layout",
+    text="001 - Basic Grid Layout (Enhanced API)",
     x="50%",
     y="5%",
     width="90%",
@@ -40,41 +40,29 @@ grid = pres.add_grid(
     padding=5.0,
 )
 
-# Add content to each cell using add_to_cell method
-grid.add_to_cell(
-    row=0,
-    col=0,
-    content_func=slide.add_text,
+# Add content to each cell using the enhanced grid[row, col].add_xxx() syntax
+grid[0, 0].add_text(
     text="Top Left Cell",
     font_size=24,
     align="center",
     vertical="middle",
 )
 
-grid.add_to_cell(
-    row=0,
-    col=1,
-    content_func=slide.add_text,
+grid[0, 1].add_text(
     text="Top Right Cell",
     font_size=24,
     align="center",
     vertical="middle",
 )
 
-grid.add_to_cell(
-    row=1,
-    col=0,
-    content_func=slide.add_text,
+grid[1, 0].add_text(
     text="Bottom Left Cell",
     font_size=24,
     align="center",
     vertical="middle",
 )
 
-grid.add_to_cell(
-    row=1,
-    col=1,
-    content_func=slide.add_text,
+grid[1, 1].add_text(
     text="Bottom Right Cell",
     font_size=24,
     align="center",
@@ -82,6 +70,6 @@ grid.add_to_cell(
 )
 
 # Save the presentation
-output_path = output_dir / "001_basic_grid.pptx"
+output_path = output_dir / "001_basic_grid_updated.pptx"
 pres.save(output_path)
 print(f"Presentation saved to {output_path}")

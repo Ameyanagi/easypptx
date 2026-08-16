@@ -140,8 +140,10 @@ cython_debug/
 #.idea/
 
 # Generated output files
-output/**/*.pptx
-outputs/**/*.pptx
-examples/**/output/**/*.pptx
+output/
+outputs/
+examples/**/output/
+/*.pptx
+*.bak
 
 **/.claude/settings.local.json
