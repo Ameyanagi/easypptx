@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 from pptx.chart.chart import Chart as PPTXChart
 from pptx.chart.data import CategoryChartData
+from pptx.dml.color import RGBColor
 from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
 from pptx.util import Inches
 
@@ -309,13 +310,22 @@ class Chart:
             # Give the legend its own space instead of floating over the plot
             chart.legend.include_in_layout = False
 
-        # Data labels
+        # Data labels, positioned clear of neighboring bars/points
         if show_values or number_format:
+            from pptx.enum.chart import XL_LABEL_POSITION
+
             plot = chart.plots[0]
             plot.has_data_labels = True
             if number_format:
                 plot.data_labels.number_format = number_format
                 plot.data_labels.number_format_is_linked = False
+            try:
+                if chart_type in ("column", "bar"):
+                    plot.data_labels.position = XL_LABEL_POSITION.OUTSIDE_END
+                elif chart_type in ("line", "scatter"):
+                    plot.data_labels.position = XL_LABEL_POSITION.ABOVE
+            except ValueError:  # pragma: no cover - unsupported combinations
+                pass
 
         # Axis titles and value-axis limits (not every chart type has axes)
         chart_any: Any = chart
@@ -360,6 +370,11 @@ class Chart:
                         axis.tick_labels.font.color.rgb = rgb_font
                         if axis.has_title:
                             axis.axis_title.text_frame.paragraphs[0].font.color.rgb = rgb_font
+                    # Dim gridlines derived from the text color, so they are
+                    # visible-but-subtle on the themed background
+                    dim = RGBColor(*(int(c * 0.45) for c in rgb_font))
+                    if chart_any.value_axis.has_major_gridlines:
+                        chart_any.value_axis.major_gridlines.format.line.color.rgb = dim
                 except ValueError:
                     pass
 

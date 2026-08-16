@@ -21,6 +21,16 @@ _NATIVE_EQUIVALENTS = {"column", "bar", "line", "pie", "area", "scatter"}
 SUPPORTED_TYPES = PYPLOT_ONLY_TYPES | _NATIVE_EQUIVALENTS
 
 
+def _font_available(font_name: str) -> bool:
+    """Return True if matplotlib has the font installed (no fallback warning)."""
+    try:
+        from matplotlib import font_manager
+
+        return any(f.name == font_name for f in font_manager.fontManager.ttflist)
+    except Exception:  # pragma: no cover - font manager quirks
+        return False
+
+
 def _require_matplotlib() -> Any:
     try:
         import matplotlib
@@ -50,6 +60,7 @@ def render_chart(
     dpi: int = 200,
     palette: list | None = None,
     text_color: Any = None,
+    font_name: str | None = None,
 ) -> Any:
     """Render a chart with matplotlib and place it on the slide as an image.
 
@@ -73,6 +84,8 @@ def render_chart(
         text_color: Color for all figure text; also makes the figure
             background transparent so the slide theme shows through
             (default: None)
+        font_name: Font family for figure text, used only when the font is
+            installed for matplotlib (default: None, matplotlib default)
 
     Returns:
         The picture shape placed on the slide
@@ -98,6 +111,12 @@ def render_chart(
 
     fig, ax = plt.subplots(figsize=(8, 5))
     try:
+        # Match the deck font when matplotlib can actually find it
+        if font_name and _font_available(font_name):
+            for item in [ax.title, ax.xaxis.label, ax.yaxis.label]:
+                item.set_fontfamily(font_name)
+            ax.tick_params(labelfontfamily=font_name)
+
         names = list(series)
         n = len(categories)
 
@@ -132,10 +151,12 @@ def render_chart(
             pie_colors = [color(i) for i in range(len(values))] if palette else None
             ax.pie(values, labels=[str(c) for c in categories], autopct="%1.1f%%", colors=pie_colors)
         elif chart_type == "heatmap":
-            matrix = [series[name] for name in names]
+            # Render the data in its original orientation: input rows stay
+            # rows (categories), columns/series go across the x axis
+            matrix = [[series[name][i] for name in names] for i in range(n)]
             image = ax.imshow(matrix, aspect="auto", cmap="viridis")
-            ax.set_xticks(range(n), [str(c) for c in categories])
-            ax.set_yticks(range(len(names)), names)
+            ax.set_xticks(range(len(names)), names)
+            ax.set_yticks(range(n), [str(c) for c in categories])
             fig.colorbar(image, ax=ax)
         elif chart_type == "histogram":
             for i, name in enumerate(names):
