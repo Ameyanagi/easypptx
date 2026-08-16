@@ -212,6 +212,13 @@ class Chart:
         title: str | None = None,
         has_legend: bool = True,
         series: dict[str, list] | None = None,
+        show_values: bool = False,
+        number_format: str | None = None,
+        x_title: str | None = None,
+        y_title: str | None = None,
+        y_min: float | None = None,
+        y_max: float | None = None,
+        palette: list | None = None,
         **kwargs: Any,
     ) -> PPTXChart:
         """Add a chart to the slide.
@@ -226,6 +233,15 @@ class Chart:
             height: Height in inches or percentage (default: 4.5)
             title: Chart title (default: None)
             has_legend: Whether to show legend (default: True)
+            series: Mapping of series name -> values for multi-series charts (default: None)
+            show_values: Draw data labels on the series (default: False)
+            number_format: Excel-style number format for data labels,
+                e.g. "#,##0" or "0.0%" (default: None)
+            x_title: Category-axis title (default: None)
+            y_title: Value-axis title (default: None)
+            y_min: Lower value-axis limit (default: None)
+            y_max: Upper value-axis limit (default: None)
+            palette: Series colors as color names or RGB tuples (default: None)
             **kwargs: Additional chart-specific parameters
 
         Returns:
@@ -287,6 +303,48 @@ class Chart:
             legend_position = kwargs.get("legend_position", "right")
             if isinstance(legend_position, str) and legend_position in self.LEGEND_POSITIONS:
                 chart.legend.position = self.LEGEND_POSITIONS[legend_position]
+
+        # Data labels
+        if show_values or number_format:
+            plot = chart.plots[0]
+            plot.has_data_labels = True
+            if number_format:
+                plot.data_labels.number_format = number_format
+                plot.data_labels.number_format_is_linked = False
+
+        # Axis titles and value-axis limits (not every chart type has axes)
+        chart_any: Any = chart
+        if x_title or y_title or y_min is not None or y_max is not None:
+            import warnings
+
+            if chart_type == "pie":
+                warnings.warn("Axis options are ignored for pie charts", stacklevel=2)
+                return chart
+            try:
+                if x_title:
+                    axis = chart_any.category_axis
+                    axis.has_title = True
+                    axis.axis_title.text_frame.text = x_title
+                if y_title:
+                    axis = chart_any.value_axis
+                    axis.has_title = True
+                    axis.axis_title.text_frame.text = y_title
+                if y_min is not None:
+                    chart_any.value_axis.minimum_scale = y_min
+                if y_max is not None:
+                    chart_any.value_axis.maximum_scale = y_max
+            except ValueError as err:
+                warnings.warn(f"Axis options not supported for chart type {chart_type!r}: {err}", stacklevel=2)
+
+        # Series colors from an explicit palette (e.g. the deck theme)
+        if palette:
+            from easypptx.common import resolve_color
+
+            for i, chart_series in enumerate(chart.plots[0].series):
+                rgb = resolve_color(palette[i % len(palette)])
+                if rgb is not None:
+                    chart_series.format.fill.solid()
+                    chart_series.format.fill.fore_color.rgb = rgb
 
         return chart
 
@@ -431,7 +489,8 @@ class Chart:
             height: Height in inches or percentage (default: 4.5)
             title: Chart title (default: None)
             has_legend: Whether to show legend (default: True)
-            **kwargs: Additional chart-specific parameters
+            **kwargs: Additional parameters forwarded to Chart.add
+                (e.g. legend_position, show_values)
 
         Returns:
             The created chart object

@@ -98,6 +98,30 @@ Finance team
 :::
 ```
 
+### Data → charts and tables
+
+`add_chart` and `add_table` accept pandas / polars DataFrames, pandas
+Series, numpy arrays, dicts of sequences, or plain lists — one adapter,
+no required dependencies:
+
+```python
+slide.add_chart(data=df, value_columns=["Revenue", "Expenses"],   # native & editable
+                show_values=True, number_format="#,##0", y_title="USD (k)")
+slide.add_chart(data=np_matrix, chart_type="heatmap",             # auto-routed to matplotlib
+                columns=["Mon", "Tue", "Wed"])
+slide.add_table(df, number_format={"Sales": "{:,.0f}"},
+                shade_columns=["Sales"])                          # value-tinted cells
+
+df.pptx.chart(slide, kind="column")                               # pandas accessor
+df.pptx.table(slide)
+```
+
+Native PowerPoint charts stay the default (editable, colored by the deck
+theme); chart types PowerPoint can't draw (heatmap, histogram, box,
+violin) render via matplotlib into the same slot. Long text shrinks to
+fit its box automatically (`fit="shrink"`), so decks render correctly in
+every viewer.
+
 ### Themes and styles
 
 ```python

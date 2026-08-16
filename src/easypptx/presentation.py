@@ -119,6 +119,12 @@ class Presentation:
             ValueError: If an invalid aspect ratio is specified
             FileNotFoundError: If the template file doesn't exist
         """
+        # Late chance to register df.pptx (pandas may have been imported
+        # after easypptx)
+        from easypptx.pandas_accessor import maybe_register
+
+        maybe_register()
+
         self.theme = resolve_theme(theme)
         if default_bg_color is None and self.theme is not None:
             default_bg_color = self.theme.bg_color

@@ -74,11 +74,29 @@ brand = Theme(
     title=TextStyle(font_size=30, font_bold=True, color="white", align="left"),
     body=TextStyle(color="lightgray"),
     accent_color="orange",
+    palette=[(245, 166, 35), (91, 155, 213), (143, 184, 107)],
 )
 pres = Presentation(theme=brand)
 ```
 
 Themes also work with [markdown decks](markdown.md): `Presentation.from_markdown("deck.md", theme="corporate")` or a `theme:` key in the frontmatter.
+
+### Theme Palettes
+
+*New in 0.8.0.* The `palette` field lists series colors (names or RGB tuples) for native PowerPoint charts. When a themed presentation adds a native chart, the series are colored from the theme's palette automatically, cycling if a chart has more series than colors. The built-in `light`, `dark`, and `corporate` themes all ship palettes tuned to their backgrounds.
+
+```python
+pres = Presentation(theme="dark")
+slide = pres.add_slide(title="Q3")
+
+# Series colors come from the dark theme's palette
+slide.add_chart(data=df, chart_type="column")
+
+# An explicit palette= always beats the theme
+slide.add_chart(data=df, chart_type="column", palette=["red", "blue"])
+```
+
+See [Native Chart Styling](plots.md#native-chart-styling) for the other chart styling options (`show_values`, `number_format`, axis titles and limits).
 
 ## Default Font and Colors
 
@@ -152,6 +170,22 @@ text.add_paragraph(
     vertical="middle"
 )
 ```
+
+### Text Fitting
+
+*New in 0.8.0.* `add_text` and `add_bullets` take a `fit=` parameter controlling how text relates to its box:
+
+- `fit="shrink"` (the default) estimates how the text wraps — using glyph-width heuristics that treat CJK characters as full-width — and writes a font size that fits the box into the file, in addition to setting PowerPoint's autofit flag. Because the fitting size is computed at save time (not just flagged for PowerPoint to compute later), the deck renders correctly in LibreOffice, quick-look previews, and other renderers too, not only after opening it in PowerPoint. Text never shrinks below 8 pt.
+- `fit="resize"` grows the box to fit the text (PowerPoint's `SHAPE_TO_FIT_TEXT`).
+- `fit="none"` leaves both the font size and the box alone.
+
+```python
+slide.add_text("A long paragraph...", width=30, height=10)              # shrinks to fit
+slide.add_text("A long paragraph...", width=30, height=10, fit="resize")
+slide.add_text("A long paragraph...", width=30, height=10, fit="none")
+```
+
+Any other value raises a `ValueError`. The estimation helpers live in `easypptx.textfit`.
 
 ### Color Specification
 

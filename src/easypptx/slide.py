@@ -17,7 +17,6 @@ from easypptx.common import (
     COLORS,
     DEFAULT_FONT,
     VERTICAL,
-    is_dataframe,
     merge_defaults,
     normalize_color,
     resolve_color,
@@ -179,6 +178,7 @@ class Slide:
         vertical: str | None = None,
         color: str | tuple[int, int, int] | None = None,
         style: TextStyle | None = None,
+        fit: str = "shrink",
         **kwargs: Any,
     ) -> PPTXShape:
         """Add a text box to the slide.
@@ -196,6 +196,11 @@ class Slide:
             align: Text alignment, one of "left", "center", "right" (default: "left")
             vertical: Vertical alignment, one of "top", "middle", "bottom" (default: "top")
             color: Text color as string name from COLORS dict or RGB tuple (default: None)
+            style: A TextStyle filling any formatting left unset (default: None)
+            fit: How text relates to the box: "shrink" reduces the font size
+                so the text fits (and sets PowerPoint's autofit); "resize"
+                grows the box to fit the text; "none" leaves both alone
+                (default: "shrink")
             **kwargs: "vertical_align" is accepted as an alias for "vertical";
                 any other unknown parameter triggers a warning
 
@@ -244,27 +249,35 @@ class Slide:
         text_frame = text_box.text_frame
         text_frame.text = text
         text_frame.word_wrap = True  # Enable word wrap for better text display
-        text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+
+        if fit == "shrink":
+            # Compute a fitting size client-side (PowerPoint's autofit flag is
+            # only honored once the file is opened in PowerPoint) and set the
+            # flag as well so PowerPoint keeps maintaining it
+            from easypptx.textfit import fit_font_size
+
+            font_size_val = fit_font_size([text], width_inches, height_inches, font_size_val)
+            text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+        elif fit == "resize":
+            text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
+        elif fit != "none":
+            raise ValueError(f"Unknown fit mode: {fit!r} (use 'shrink', 'resize', or 'none')")
 
         # Set vertical alignment
         if vertical_val in VERTICAL:
             text_frame.vertical_anchor = VERTICAL[vertical_val]
 
-        # Apply text formatting
-        p = text_frame.paragraphs[0]
-        p.font.size = Pt(font_size_val)
-        p.font.bold = font_bold_val
-        p.font.italic = font_italic_val
-        p.font.name = font_name_val
-
-        # Set horizontal alignment
-        if align_val in ALIGN:
-            p.alignment = ALIGN[align_val]
-
-        # Set text color
+        # Apply text formatting to every paragraph (multiline text creates several)
         rgb = resolve_color(color_val)
-        if rgb is not None:
-            p.font.color.rgb = rgb
+        for p in text_frame.paragraphs:
+            p.font.size = Pt(font_size_val)
+            p.font.bold = font_bold_val
+            p.font.italic = font_italic_val
+            p.font.name = font_name_val
+            if align_val in ALIGN:
+                p.alignment = ALIGN[align_val]
+            if rgb is not None:
+                p.font.color.rgb = rgb
 
         return text_box
 
@@ -388,26 +401,39 @@ class Slide:
         width: PositionType | None = None,
         height: PositionType | None = None,
         has_header: bool | None = None,
-        style: int | dict | TableStyle | None = None,
+        style: int | str | dict | TableStyle | None = None,
+        columns: list[str] | None = None,
+        number_format: str | dict | None = None,
+        shade_columns: list | None = None,
+        shade_color: str | tuple[int, int, int] = "blue",
         **kwargs: Any,
     ) -> PPTXTable:
         """Add a table to the slide.
 
         Args:
-            data: Table data as a list of lists or pandas DataFrame
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Total width in inches or percentage (default: None, auto-sized)
-            height: Total height in inches or percentage (default: None, auto-sized)
+            data: Table data — a pandas or polars DataFrame, pandas Series,
+                numpy array, dict of sequences, or list of lists with a header
+            x: X position as percent or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 20)
+            width: Total width (default: None, auto-sized)
+            height: Total height (default: None, auto-sized)
             has_header: Whether the first row is a header (default: True)
-            style: Table style ID, or a style dict with a "style_id" key (default: None)
+            style: Table style id / GUID, style dict, or TableStyle (default: None)
+            columns: Header names for unlabeled numpy arrays (default: None)
+            number_format: Python format spec applied to numeric cells,
+                e.g. "{:,.1f}", or a dict mapping column name/index to a
+                format spec (default: None)
+            shade_columns: Column names/indexes whose cells get a
+                value-scaled background tint (default: None)
+            shade_color: Tint color for shade_columns (default: "blue")
             **kwargs: "first_row_header" is accepted as an alias for "has_header";
                 any other unknown parameter triggers a warning
 
         Returns:
             The created table object
         """
-        from easypptx.table import Table
+        from easypptx.data import normalize_table_rows
+        from easypptx.table import Table, apply_number_format, shade_cells_by_value
 
         if "first_row_header" in kwargs:
             has_header = kwargs.pop("first_row_header")
@@ -424,9 +450,14 @@ class Slide:
         if has_header is None:
             has_header = True
 
-        table_data = [list(data.columns), *data.values.tolist()] if is_dataframe(data) else data
+        raw_rows = normalize_table_rows(data, columns=columns)
+        table_data = (
+            apply_number_format(raw_rows, number_format, has_header=has_header)
+            if number_format is not None
+            else raw_rows
+        )
 
-        return Table(self).add(
+        table = Table(self).add(
             data=table_data,
             x=x,
             y=y,
@@ -435,6 +466,12 @@ class Slide:
             first_row_header=has_header,
             style=style_id,
         )
+
+        if shade_columns:
+            # Shade from the raw values, not the formatted strings
+            shade_cells_by_value(table, raw_rows, shade_columns, shade_color, has_header=has_header)
+
+        return table
 
     def add_chart(
         self,
@@ -452,6 +489,15 @@ class Slide:
         has_legend: bool | None = None,
         legend_position: str | None = None,
         style: ChartStyle | None = None,
+        backend: str | None = None,
+        columns: list[str] | None = None,
+        show_values: bool = False,
+        number_format: str | None = None,
+        x_title: str | None = None,
+        y_title: str | None = None,
+        y_min: float | None = None,
+        y_max: float | None = None,
+        palette: list | None = None,
         **kwargs: Any,
     ) -> PPTXChart:
         """Add a chart to the slide.
@@ -483,7 +529,9 @@ class Slide:
         Raises:
             ValueError: If neither data nor categories/values are provided
         """
-        from easypptx.chart import Chart, extract_chart_series
+        from easypptx.chart import Chart
+        from easypptx.data import normalize_chart_data
+        from easypptx.plot_backend import PYPLOT_ONLY_TYPES, SUPPORTED_TYPES, render_chart
 
         if value_columns is None and "value_column" in kwargs:
             value_columns = kwargs.pop("value_column")
@@ -501,13 +549,53 @@ class Slide:
         has_legend = has_legend if has_legend is not None else True
         legend_position = legend_position if legend_position is not None else "right"
 
-        series: dict[str, list] | None = None
+        # Deck theme palette applies when no explicit palette is given
+        if palette is None:
+            palette = self.template_defaults.get("chart", {}).get("palette")
+
+        series: dict[str, list]
         if categories is not None and values is not None:
             series = {"Series 1": values}
         else:
             if data is None:
                 raise ValueError("Provide either 'data' or both 'categories' and 'values'")
-            categories, series = extract_chart_series(data, category_column, value_columns)
+            categories, series = normalize_chart_data(
+                data, category_column, value_columns, categories=categories, columns=columns
+            )
+
+        # Route by chart type: the native set stays native and editable;
+        # everything else renders via matplotlib. backend= overrides.
+        native = chart_type in Chart.CHART_TYPES
+        if backend is None:
+            backend = "native" if native else "pyplot"
+        if backend == "native" and not native:
+            raise ValueError(
+                f"Chart type {chart_type!r} has no native PowerPoint equivalent. "
+                f"Native types: {', '.join(Chart.CHART_TYPES)}. "
+                f"Use backend='pyplot' types: {', '.join(sorted(PYPLOT_ONLY_TYPES))}."
+            )
+        if backend == "pyplot":
+            if chart_type not in SUPPORTED_TYPES:
+                raise ValueError(f"Unsupported chart type: {chart_type!r}")
+            return render_chart(
+                self,
+                chart_type,
+                categories,
+                series,
+                x=x,
+                y=y,
+                width=width,
+                height=height,
+                title=title,
+                has_legend=has_legend,
+                x_title=x_title,
+                y_title=y_title,
+                y_min=y_min,
+                y_max=y_max,
+                palette=palette,
+            )
+        if backend != "native":
+            raise ValueError(f"Unknown backend: {backend!r} (use 'native' or 'pyplot')")
 
         return Chart(self).add(
             chart_type=chart_type,
@@ -520,6 +608,13 @@ class Slide:
             title=title,
             has_legend=has_legend,
             legend_position=legend_position,
+            show_values=show_values,
+            number_format=number_format,
+            x_title=x_title,
+            y_title=y_title,
+            y_min=y_min,
+            y_max=y_max,
+            palette=palette,
         )
 
     @property
@@ -553,6 +648,7 @@ class Slide:
         align: str | None = None,
         bullet: bool = True,
         style: TextStyle | None = None,
+        fit: str = "shrink",
         **kwargs: Any,
     ) -> PPTXShape:
         """Add a bulleted (or plain stacked) list of paragraphs to the slide.
@@ -604,11 +700,26 @@ class Slide:
         width_inches = self._convert_position(width, self._slide_width)
         height_inches = self._convert_position(height, self._slide_height)
 
+        if fit == "shrink":
+            from easypptx.textfit import fit_font_size
+
+            lines = [
+                "  " * (item[1] if isinstance(item, tuple) else 0) + str(item[0] if isinstance(item, tuple) else item)
+                for item in items
+            ]
+            font_size_val = fit_font_size(lines, width_inches, height_inches, font_size_val)
+        elif fit not in ("resize", "none"):
+            raise ValueError(f"Unknown fit mode: {fit!r} (use 'shrink', 'resize', or 'none')")
+
         text_box = self.pptx_slide.shapes.add_textbox(
             Inches(x_inches), Inches(y_inches), Inches(width_inches), Inches(height_inches)
         )
         text_frame = text_box.text_frame
         text_frame.word_wrap = True
+        if fit == "shrink":
+            text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+        elif fit == "resize":
+            text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
 
         for i, item in enumerate(items):
             text, level = item if isinstance(item, tuple) else (item, 0)

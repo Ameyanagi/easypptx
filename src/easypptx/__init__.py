@@ -6,6 +6,7 @@ from easypptx.chart import Chart
 from easypptx.grid import Grid
 from easypptx.image import Image
 from easypptx.markdown import from_markdown
+from easypptx.pandas_accessor import register as register_pandas_accessor
 from easypptx.positioning import in_
 from easypptx.presentation import Presentation
 from easypptx.pyplot import Pyplot
@@ -40,4 +41,10 @@ __all__ = [
     "generate_default_template",
     "generate_template_with_comments",
     "in_",
+    "register_pandas_accessor",
 ]
+
+# Register df.pptx when pandas is already loaded (free — no import happens)
+from easypptx.pandas_accessor import maybe_register as _maybe_register_pandas_accessor
+
+_maybe_register_pandas_accessor()

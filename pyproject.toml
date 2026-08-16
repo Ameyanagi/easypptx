@@ -1,6 +1,6 @@
 [project]
 name = "EasyPPTX"
-version = "0.7.0"
+version = "0.8.0"
 description = "A Python library for easily creating and manipulating PowerPoint presentations programmatically with simple APIs."
 authors = [{ name = "Ameyanagi", email = "contact@ameyanagi.com" }]
 readme = "README.md"
@@ -43,6 +43,8 @@ dev = [
     "mkdocs>=1.4.2",
     "mkdocs-material>=8.5.10",
     "mkdocstrings[python]>=0.26.1",
+    "polars>=1.43.2",
+    "numpy>=2.2.5",
 ]
 
 [build-system]

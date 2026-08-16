@@ -50,6 +50,126 @@ if TYPE_CHECKING:
     from easypptx.slide import Slide
 
 
+def _is_finite_number(value: object) -> bool:
+    """True for real, finite, non-bool numbers (incl. numpy scalars)."""
+    import math
+    import numbers
+
+    if isinstance(value, bool) or not isinstance(value, numbers.Real):
+        return False
+    try:
+        return math.isfinite(float(value))
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
+def apply_number_format(rows: list[list], number_format: str | dict, has_header: bool = True) -> list[list]:
+    """Format numeric body cells with Python format specs.
+
+    Args:
+        rows: Table rows
+        number_format: A format string like "{:,.1f}" applied to every
+            numeric cell, or a dict mapping column name/index to a format
+            (column names win over positional indexes)
+        has_header: Whether the first row is a header and stays unformatted
+            (default: True)
+
+    Returns:
+        A new rows list with formatted string values
+    """
+    if not rows:
+        return rows
+    header = rows[0] if has_header else []
+    body_start = 1 if has_header else 0
+
+    def format_for(col: int) -> str | None:
+        if isinstance(number_format, str):
+            return number_format
+        # Column names take precedence; a key matching a header name is
+        # never reused as a positional index
+        name = header[col] if col < len(header) else None
+        if name is not None and name in number_format:
+            return number_format[name]
+        if col in number_format and col not in header:
+            return number_format[col]
+        return None
+
+    formatted = [list(row) for row in rows[:body_start]]
+    for row in rows[body_start:]:
+        new_row = []
+        for col, value in enumerate(row):
+            fmt = format_for(col)
+            if fmt is not None and _is_finite_number(value):
+                new_row.append(fmt.format(value))
+            else:
+                new_row.append(value)
+        formatted.append(new_row)
+    return formatted
+
+
+def shade_cells_by_value(
+    table: PPTXTable,
+    rows: list[list],
+    shade_columns: list,
+    shade_color: str | tuple[int, int, int] = "blue",
+    has_header: bool = True,
+) -> None:
+    """Tint body-cell backgrounds by value: min stays white, max gets shade_color.
+
+    NaN/infinite values and non-numbers are left unshaded.
+
+    Args:
+        table: The rendered python-pptx table
+        rows: The table data
+        shade_columns: Column names or positional indexes to shade
+            (names win over indexes)
+        shade_color: The full-intensity tint color
+        has_header: Whether the first row is a header and stays unshaded
+            (default: True)
+    """
+    from pptx.dml.color import RGBColor
+
+    from easypptx.common import resolve_color
+
+    rgb = resolve_color(shade_color)
+    body_start = 1 if has_header else 0
+    if rgb is None or len(rows) <= body_start:
+        return
+    header = rows[0] if has_header else []
+    n_cols = max(len(row) for row in rows)
+
+    def column_index(column: object) -> int | None:
+        # Column names take precedence over positional indexes
+        if column in header:
+            return header.index(column)
+        if isinstance(column, int) and 0 <= column < n_cols:
+            return column
+        return None
+
+    for column in shade_columns:
+        col = column_index(column)
+        if col is None:
+            raise ValueError(f"shade column '{column}' not found in header")
+        values = [float(row[col]) for row in rows[body_start:] if _is_finite_number(row[col])]
+        if not values:
+            continue
+        low, high = min(values), max(values)
+        span = (high - low) or 1.0
+        for i, row in enumerate(rows[body_start:], start=body_start):
+            value = row[col]
+            if not _is_finite_number(value):
+                continue
+            t = (float(value) - low) / span
+            blended = RGBColor(
+                round(255 + (rgb[0] - 255) * t),
+                round(255 + (rgb[1] - 255) * t),
+                round(255 + (rgb[2] - 255) * t),
+            )
+            cell = table.cell(i, col)
+            cell.fill.solid()
+            cell.fill.fore_color.rgb = blended
+
+
 class Table:
     """Class for handling table operations in PowerPoint slides.
 

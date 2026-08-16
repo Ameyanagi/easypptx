@@ -151,6 +151,7 @@ class Slide:
         vertical: Optional[str] = None,
         color: Optional[Union[str, Tuple[int, int, int]]] = None,
         style: Optional[TextStyle] = None,
+        fit: str = "shrink",
     ) -> PPTXShape:
         """Add a text box to the slide.
 
@@ -168,9 +169,16 @@ class Slide:
             vertical: Vertical alignment, one of "top", "middle", "bottom" (default: "top")
             color: Text color as string name from COLORS dict or RGB tuple (default: None)
             style: A TextStyle filling any formatting left unset (default: None)
+            fit: How text relates to the box (new in 0.8.0): "shrink" reduces
+                the font size so the text fits the box (and sets PowerPoint's
+                autofit flag); "resize" grows the box to fit the text; "none"
+                leaves both alone (default: "shrink")
 
         Returns:
             The created shape object
+
+        Raises:
+            ValueError: If fit is not "shrink", "resize", or "none"
         """
 
     def add_bullets(
@@ -182,10 +190,13 @@ class Slide:
         height: PositionType = 70,
         font_size: Optional[int] = None,
         font_name: Optional[str] = None,
+        font_bold: Optional[bool] = None,
+        font_italic: Optional[bool] = None,
         color: Optional[Union[str, Tuple[int, int, int]]] = None,
         align: Optional[str] = None,
         bullet: bool = True,
         style: Optional[TextStyle] = None,
+        fit: str = "shrink",
     ) -> PPTXShape:
         """Add a bulleted (or plain stacked) list of paragraphs to the slide.
 
@@ -200,13 +211,20 @@ class Slide:
             height: Height as percent or in_() length (default: 70)
             font_size: Font size in points (default: 18)
             font_name: Font name (default: "Meiryo")
+            font_bold: Whether text should be bold (default: None)
+            font_italic: Whether text should be italic (default: None)
             color: Text color name or RGB tuple (default: None)
             align: Text alignment "left"/"center"/"right" (default: "left")
             bullet: Draw bullet characters; False gives plain stacked paragraphs (default: True)
             style: A TextStyle filling any formatting left unset (default: None)
+            fit: How text relates to the box (new in 0.8.0): "shrink" (default),
+                "resize", or "none" — same behavior as add_text
 
         Returns:
             The created text box shape
+
+        Raises:
+            ValueError: If fit is not "shrink", "resize", or "none"
         """
 
     def add_image(
@@ -306,19 +324,36 @@ class Slide:
         width: Optional[PositionType] = None,
         height: Optional[PositionType] = None,
         has_header: Optional[bool] = None,
-        style: Optional[Union[int, dict, TableStyle]] = None,
+        style: Optional[Union[int, str, dict, TableStyle]] = None,
+        columns: Optional[List[str]] = None,
+        number_format: Optional[Union[str, dict]] = None,
+        shade_columns: Optional[list] = None,
+        shade_color: Union[str, Tuple[int, int, int]] = "blue",
     ) -> PPTXTable:
         """Add a table to the slide.
 
         Args:
-            data: Table data as a list of lists or pandas DataFrame
+            data: Table data — a pandas or polars DataFrame, pandas Series,
+                numpy array, dict of sequences, or list of lists with a
+                header row (non-list shapes are new in 0.8.0)
             x: X position as percent or in_() length (default: 5)
             y: Y position as percent or in_() length (default: 20)
             width: Total width as percent or in_() length (default: None, auto-sized)
             height: Total height as percent or in_() length (default: None, auto-sized)
             has_header: Whether the first row is a header (default: True)
-            style: Table style ID, a style dict with a "style_id" key,
-                or a TableStyle (default: None)
+            style: Table style — a small integer id mapping to a built-in
+                PowerPoint table style (see TABLE_STYLE_GUIDS in
+                easypptx.table), a literal GUID string, a style dict with a
+                "style_id" key, or a TableStyle (default: None)
+            columns: Header names for unlabeled numpy arrays (default: None)
+            number_format: Python format spec applied to numeric cells,
+                e.g. "{:,.1f}", or a dict mapping column name/index to a
+                format spec (new in 0.8.0) (default: None)
+            shade_columns: Column names/indexes whose cells get a
+                value-scaled background tint — the smallest value stays
+                white, the largest gets the full shade_color, computed from
+                the raw (unformatted) values (new in 0.8.0) (default: None)
+            shade_color: Tint color for shade_columns (default: "blue")
 
         Returns:
             The created table object
@@ -340,37 +375,74 @@ class Slide:
         has_legend: Optional[bool] = None,
         legend_position: Optional[str] = None,
         style: Optional[ChartStyle] = None,
-    ) -> PPTXChart:
+        backend: Optional[str] = None,
+        columns: Optional[List[str]] = None,
+        show_values: bool = False,
+        number_format: Optional[str] = None,
+        x_title: Optional[str] = None,
+        y_title: Optional[str] = None,
+        y_min: Optional[float] = None,
+        y_max: Optional[float] = None,
+        palette: Optional[list] = None,
+    ) -> Union[PPTXChart, PPTXShape]:
         """Add a chart to the slide.
 
         Either pass explicit categories and values lists, or pass data
-        (a list of lists with a header row, or a pandas DataFrame)
-        together with optional category_column / value_columns. Passing
-        several value_columns plots each column as a named series.
+        (a pandas or polars DataFrame, pandas Series, numpy array, dict of
+        sequences, or list of lists with a header row) together with
+        optional category_column / value_columns. Passing several
+        value_columns plots each column as a named series.
+
+        The native chart types render as editable PowerPoint charts;
+        heatmap/histogram/box/violin render via matplotlib (requires
+        easypptx[plot]) and return the placed picture shape instead.
 
         Args:
-            data: Chart data as a list of lists or pandas DataFrame (default: None)
-            chart_type: Type of chart ('column', 'bar', 'line', 'pie', 'area', 'scatter')
-                (default: "column")
+            data: Chart data — DataFrame (pandas/polars), Series, ndarray,
+                dict of sequences, or list of lists (default: None)
+            chart_type: Native types 'column', 'bar', 'line', 'pie', 'area',
+                'scatter', or matplotlib-backed types 'heatmap', 'histogram',
+                'box', 'violin' (new in 0.8.0) (default: "column")
             x: X position as percent or in_() length (default: 10)
             y: Y position as percent or in_() length (default: 20)
             width: Width as percent or in_() length (default: 60)
             height: Height as percent or in_() length (default: 60)
-            categories: Explicit list of category labels (default: None)
+            categories: Explicit list of category labels, used together
+                with values (default: None)
             values: Explicit list of data values (default: None)
             category_column: Name or index of the column to use as categories (default: None)
             value_columns: Name(s) or index(es) of column(s) to use as values;
                 a list creates one series per column (default: None)
             title: Chart title (default: None)
             has_legend: Whether to show legend (default: True)
-            legend_position: Legend position (default: "right")
+            legend_position: Legend position (native charts only) (default: "right")
             style: A ChartStyle filling any chart options left unset (default: None)
+            backend: "native" or "pyplot"; overrides the automatic routing
+                by chart_type. "native" with a non-native type raises a
+                ValueError (new in 0.8.0) (default: None, auto)
+            columns: Series names for unlabeled numpy arrays (default: None)
+            show_values: Draw data labels on the series (native charts only)
+                (new in 0.8.0) (default: False)
+            number_format: Excel-style number format for data labels, e.g.
+                "#,##0" or "0.0%"; setting it also enables the labels
+                (native charts only) (new in 0.8.0) (default: None)
+            x_title: Category-axis title (new in 0.8.0) (default: None)
+            y_title: Value-axis title (new in 0.8.0) (default: None)
+            y_min: Lower value-axis limit (new in 0.8.0) (default: None)
+            y_max: Upper value-axis limit (new in 0.8.0) (default: None)
+            palette: Series colors as color names or RGB tuples; overrides
+                the deck theme's palette (new in 0.8.0) (default: None)
 
         Returns:
-            The created chart object
+            The created chart object (native backend), or the placed
+            picture shape (pyplot backend)
 
         Raises:
-            ValueError: If neither data nor categories/values are provided
+            ValueError: If neither data nor categories/values are provided,
+                if the chart type is unknown, or if backend="native" is
+                forced for a non-native chart type
+            ImportError: If a matplotlib-backed chart type is requested but
+                matplotlib is not installed
         """
 
     @property
@@ -620,9 +692,92 @@ class Theme:
     title: TextStyle = field(default_factory=TextStyle)
     body: TextStyle = field(default_factory=TextStyle)
     accent_color: Optional[Union[str, Tuple[int, int, int]]] = None
+    palette: Optional[List[Union[str, Tuple[int, int, int]]]] = None  # New in 0.8.0
 ```
 
 Style objects are passed via the `style=` parameter of `add_text`, `add_bullets`, `add_table`, and `add_chart`; explicit keyword arguments always beat the style object. Themes set the default slide background, cascade body text styling via template defaults, and style `add_slide` titles.
+
+*New in 0.8.0*, the `palette` field lists series colors for native PowerPoint charts. A themed presentation colors native chart series from the palette automatically (cycling if needed); an explicit `palette=` argument on `add_chart` wins. The built-in `light`, `dark`, and `corporate` presets all ship palettes. See [Theme Palettes](styling.md#theme-palettes).
+
+## Data Adapter (easypptx.data)
+
+New in 0.8.0. One adapter normalizes every data shape the chart and table APIs accept: pandas DataFrame/Series, polars DataFrame, numpy 1D/2D arrays, dicts of sequences, and lists of lists with a header row. pandas, polars, and numpy are detected through `sys.modules`, so none of them become dependencies. These functions are used internally by `add_chart` / `add_table` and are also usable directly:
+
+```python
+def normalize_chart_data(
+    data: Any,
+    category_column: Any = None,
+    value_columns: Any = None,
+    categories: Optional[list] = None,
+    columns: Optional[List[str]] = None,
+) -> Tuple[list, Dict[str, list]]:
+    """Normalize any supported data shape to (categories, {name: values}).
+
+    Args:
+        data: DataFrame (pandas or polars), Series, ndarray, dict of
+            sequences, or list of lists with a header row
+        category_column: Name or index of the category column, for tabular
+            inputs (default: first column)
+        value_columns: Name(s)/index(es) of value column(s); a list plots
+            one series per entry (default: the second column)
+        categories: Explicit category labels, for inputs that carry none
+            (ndarray, dict) (default: positional labels)
+        columns: Column names for unlabeled 2D arrays (default: "Series N")
+
+    Returns:
+        (categories, series) where series maps series name -> list of values
+
+    Raises:
+        ValueError: If a named column is missing or the data is unusable
+    """
+
+def normalize_table_rows(data: Any, columns: Optional[List[str]] = None) -> List[list]:
+    """Normalize any supported data shape to table rows with a header row.
+
+    Args:
+        data: DataFrame (pandas or polars), Series, ndarray, dict of
+            sequences, or list of lists (assumed to already include a header)
+        columns: Header names for unlabeled 2D arrays (default: "Column N")
+
+    Returns:
+        List of rows; the first row is the header (except for plain
+        list-of-lists input, which is passed through unchanged)
+
+    Raises:
+        ValueError: If the data shape is unsupported
+    """
+
+# Duck-typing predicates (never import the library they test for):
+def is_dataframe(obj: Any) -> bool: ...  # pandas DataFrame
+def is_series(obj: Any) -> bool: ...     # pandas Series
+def is_polars(obj: Any) -> bool: ...     # polars DataFrame
+def is_ndarray(obj: Any) -> bool: ...    # numpy ndarray
+```
+
+## Pandas Accessor
+
+New in 0.8.0. When pandas is available, DataFrames gain a `df.pptx` accessor:
+
+```python
+df.pptx.table(slide, **kwargs)              # -> slide.add_table(df, **kwargs)
+df.pptx.chart(slide, kind=None, **kwargs)   # -> slide.add_chart(data=df, chart_type=kind, **kwargs)
+```
+
+The accessor registers automatically when pandas is already imported at `import easypptx` time, and again whenever a `Presentation` is created. For manual registration (e.g. pandas was imported after easypptx):
+
+```python
+def register_pandas_accessor() -> bool:
+    """Register the df.pptx accessor on pandas DataFrames.
+
+    Importable as easypptx.register_pandas_accessor.
+
+    Returns:
+        True if the accessor is registered (or already was), False when
+        pandas is not importable.
+    """
+```
+
+See [Data to Slides](data.md#the-dfpptx-pandas-accessor) for usage.
 
 ## Constants
 
