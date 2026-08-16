@@ -82,6 +82,7 @@ class Theme:
     title: TextStyle = field(default_factory=TextStyle)
     body: TextStyle = field(default_factory=TextStyle)
     accent_color: ColorType | None = None
+    palette: list[ColorType] | None = None
 
     def to_template(self) -> dict[str, Any]:
         """Express the theme in the template-defaults structure.
@@ -90,6 +91,8 @@ class Theme:
         themed defaults cascade exactly like template defaults.
         """
         template: dict[str, Any] = {"defaults": {"global": self.body.to_kwargs()}}
+        if self.palette is not None:
+            template["defaults"]["chart"] = {"palette": list(self.palette)}
         if self.bg_color is not None:
             template["bg_color"] = self.bg_color
         return template
@@ -103,6 +106,7 @@ THEMES: dict[str, Theme] = {
         title=TextStyle(font_size=32, font_bold=True, color="black", align="center"),
         body=TextStyle(color="black"),
         accent_color="blue",
+        palette=[(0x2E, 0x75, 0xB6), (0xED, 0x7D, 0x31), (0x54, 0x9E, 0x39), (0xBF, 0x90, 0x00), (0x7A, 0x5C, 0xA8)],
     ),
     "dark": Theme(
         name="dark",
@@ -110,6 +114,7 @@ THEMES: dict[str, Theme] = {
         title=TextStyle(font_size=32, font_bold=True, color="white", align="center"),
         body=TextStyle(color="white"),
         accent_color="cyan",
+        palette=[(0x4F, 0xC3, 0xF7), (0xFF, 0xB7, 0x4D), (0x81, 0xC7, 0x84), (0xE5, 0x73, 0x73), (0xBA, 0x68, 0xC8)],
     ),
     "corporate": Theme(
         name="corporate",
@@ -117,6 +122,7 @@ THEMES: dict[str, Theme] = {
         title=TextStyle(font_size=30, font_bold=True, color="white", align="left"),
         body=TextStyle(color=(0xD8, 0xE2, 0xEC)),
         accent_color="orange",
+        palette=[(0xF5, 0xA6, 0x23), (0x5B, 0x9B, 0xD5), (0x8F, 0xB8, 0x6B), (0xC9, 0x6A, 0x50), (0x9E, 0x86, 0xC8)],
     ),
 }
 

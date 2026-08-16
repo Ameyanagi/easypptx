@@ -50,6 +50,96 @@ if TYPE_CHECKING:
     from easypptx.slide import Slide
 
 
+def apply_number_format(rows: list[list], number_format: str | dict) -> list[list]:
+    """Format numeric body cells with Python format specs.
+
+    Args:
+        rows: Table rows; the first row is the header
+        number_format: A format string like "{:,.1f}" applied to every
+            numeric cell, or a dict mapping column name/index to a format
+
+    Returns:
+        A new rows list with formatted string values
+    """
+    if not rows:
+        return rows
+    header = rows[0]
+
+    def format_for(col: int) -> str | None:
+        if isinstance(number_format, str):
+            return number_format
+        if col in number_format:
+            return number_format[col]
+        name = header[col] if col < len(header) else None
+        return number_format.get(name)
+
+    formatted = [list(header)]
+    for row in rows[1:]:
+        new_row = []
+        for col, value in enumerate(row):
+            fmt = format_for(col)
+            if fmt is not None and isinstance(value, int | float) and not isinstance(value, bool):
+                new_row.append(fmt.format(value))
+            else:
+                new_row.append(value)
+        formatted.append(new_row)
+    return formatted
+
+
+def shade_cells_by_value(
+    table: PPTXTable,
+    rows: list[list],
+    shade_columns: list,
+    shade_color: str | tuple[int, int, int] = "blue",
+) -> None:
+    """Tint body-cell backgrounds by value: min stays white, max gets shade_color.
+
+    Args:
+        table: The rendered python-pptx table
+        rows: The table data (first row is the header)
+        shade_columns: Column names or indexes to shade
+        shade_color: The full-intensity tint color
+    """
+    from pptx.dml.color import RGBColor
+
+    from easypptx.common import resolve_color
+
+    rgb = resolve_color(shade_color)
+    if rgb is None or len(rows) < 2:
+        return
+    header = rows[0]
+
+    def column_index(column: object) -> int | None:
+        if isinstance(column, int):
+            return column if 0 <= column < len(header) else None
+        return header.index(column) if column in header else None
+
+    for column in shade_columns:
+        col = column_index(column)
+        if col is None:
+            raise ValueError(f"shade column '{column}' not found in header")
+        numbers = [
+            float(row[col]) for row in rows[1:] if isinstance(row[col], int | float) and not isinstance(row[col], bool)
+        ]
+        if not numbers:
+            continue
+        low, high = min(numbers), max(numbers)
+        span = (high - low) or 1.0
+        for i, row in enumerate(rows[1:], start=1):
+            value = row[col]
+            if not isinstance(value, int | float) or isinstance(value, bool):
+                continue
+            t = (float(value) - low) / span
+            blended = RGBColor(
+                round(255 + (rgb[0] - 255) * t),
+                round(255 + (rgb[1] - 255) * t),
+                round(255 + (rgb[2] - 255) * t),
+            )
+            cell = table.cell(i, col)
+            cell.fill.solid()
+            cell.fill.fore_color.rgb = blended
+
+
 class Table:
     """Class for handling table operations in PowerPoint slides.
 
