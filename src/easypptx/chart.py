@@ -314,9 +314,12 @@ class Chart:
 
         # Axis titles and value-axis limits (not every chart type has axes)
         chart_any: Any = chart
-        if chart_type != "pie" and (x_title or y_title or y_min is not None or y_max is not None):
+        if x_title or y_title or y_min is not None or y_max is not None:
             import warnings
 
+            if chart_type == "pie":
+                warnings.warn("Axis options are ignored for pie charts", stacklevel=2)
+                return chart
             try:
                 if x_title:
                     axis = chart_any.category_axis
@@ -486,16 +489,8 @@ class Chart:
             height: Height in inches or percentage (default: 4.5)
             title: Chart title (default: None)
             has_legend: Whether to show legend (default: True)
-            series: Mapping of series name -> values for multi-series charts (default: None)
-            show_values: Draw data labels on the series (default: False)
-            number_format: Excel-style number format for data labels,
-                e.g. "#,##0" or "0.0%" (default: None)
-            x_title: Category-axis title (default: None)
-            y_title: Value-axis title (default: None)
-            y_min: Lower value-axis limit (default: None)
-            y_max: Upper value-axis limit (default: None)
-            palette: Series colors as color names or RGB tuples (default: None)
-            **kwargs: Additional chart-specific parameters
+            **kwargs: Additional parameters forwarded to Chart.add
+                (e.g. legend_position, show_values)
 
         Returns:
             The created chart object

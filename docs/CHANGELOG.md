@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.0] - 2026-08-16
+
+Non-breaking release.
+
+### Added
+- Universal data adapter (`easypptx.data`): `slide.add_chart(data=...)` and `slide.add_table(data=...)` accept pandas DataFrames and Series, polars DataFrames, numpy 1D/2D arrays (label with `columns=`), dicts of sequences, and lists of lists with a header row — all duck-typed, none required as dependencies
+- Chart backend routing: `chart_type="heatmap"`/`"histogram"`/`"box"`/`"violin"` render via matplotlib (requires `easypptx[plot]`) into the same slide region and return a picture shape; `backend="pyplot"` forces matplotlib for any type, `backend="native"` raises a clear error for non-native types. Native charts (`column`, `bar`, `line`, `pie`, `area`, `scatter`) remain the default and stay editable
+- Native chart styling on `add_chart` and `Chart.add`: `show_values=`, `number_format=` (Excel-style, for data labels), `x_title=`, `y_title=`, `y_min=`, `y_max=`, and `palette=`
+- `Theme.palette`: themed presentations color native chart series automatically (the built-in `light`/`dark`/`corporate` themes ship palettes); an explicit `palette=` wins
+- Table formatting on `add_table`: `number_format=` (Python format spec or per-column dict), `shade_columns=` + `shade_color=` value-scaled background tints, `columns=` header names for numpy arrays, and `style=` now accepts GUID strings with small ints mapping to built-in PowerPoint table styles
+- `df.pptx` pandas accessor: `df.pptx.table(slide, ...)` and `df.pptx.chart(slide, kind=..., ...)`; auto-registers when pandas is imported before easypptx (or when a `Presentation` is created), with `easypptx.register_pandas_accessor()` for manual registration
+- Text fitting (`easypptx.textfit`): `fit=` on `add_text` and `add_bullets` — `"shrink"` (default) writes a fitting font size into the file using CJK-aware wrap estimation so decks render correctly outside PowerPoint too, `"resize"` grows the box, `"none"` opts out
+- The markdown renderer allocates block heights from estimated line counts
+
 ## [0.7.0] - 2026-08-16
 
 ### Breaking Changes

@@ -18,6 +18,18 @@
 ## Chart Module
 ::: easypptx.chart
 
+## Data Module
+::: easypptx.data
+
+## Plot Backend Module
+::: easypptx.plot_backend
+
+## Pandas Accessor Module
+::: easypptx.pandas_accessor
+
+## Text Fitting Module
+::: easypptx.textfit
+
 ## Markdown Module
 ::: easypptx.markdown
 

@@ -238,3 +238,18 @@ class TestNoWarningsEndToEnd:
             slide.add_chart(data=df, y=55, height=40, width=45, show_values=True)
             slide.add_text("note", x=55, y=55, width=40, height=10)
             pres.save(tmp_path / "deck.pptx")
+
+
+class TestDocsAgentRegressions:
+    def test_categories_forwarded_with_data(self):
+        """Regression: categories= used to be dropped when combined with data=."""
+        pres = Presentation()
+        slide = pres.add_slide()
+        chart = slide.add_chart(data={"Rev": [1, 2, 3]}, categories=["Q1", "Q2", "Q3"], chart_type="column")
+        assert list(chart.plots[0].categories) == ["Q1", "Q2", "Q3"]
+
+    def test_pie_axis_options_warn(self):
+        pres = Presentation()
+        slide = pres.add_slide()
+        with pytest.warns(UserWarning, match="pie"):
+            slide.add_chart(data=[["Q", "V"], ["a", 1]], chart_type="pie", y_title="nope")

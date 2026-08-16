@@ -11,6 +11,8 @@ A Python library for easily creating and manipulating PowerPoint presentations p
 
 - Simple, intuitive API for PowerPoint manipulation
 - Create slides with text, images, tables, charts, and bulleted lists
+- Tables and charts accept pandas/polars DataFrames, pandas Series, numpy arrays, dicts, and lists — plus a `df.pptx` accessor for one-line DataFrame-to-slide
+- Native PowerPoint charts stay editable; heatmap/histogram/box/violin render via matplotlib automatically
 - Build whole decks from markdown with `Presentation.from_markdown`
 - Reusable styles (`TextStyle`, `TableStyle`, `ChartStyle`) and built-in themes (`light`, `dark`, `corporate`)
 - Default 16:9 aspect ratio with support for multiple ratio options
@@ -81,6 +83,21 @@ slide.add_chart(data=df, chart_type="pie",
 pres.save("example.pptx")
 ```
 
+*New in 0.8.0*, DataFrames can send themselves to a slide with the `df.pptx` accessor, and tables/charts accept data in whatever shape you have it (Series, polars, numpy, dicts, lists):
+
+```python
+slide2 = pres.add_slide(title="Sales")
+df = pd.DataFrame({"Region": ["East", "West"], "Sales": [1200, 950]})
+
+df.pptx.table(slide2, y=20, height=30, number_format="{:,.0f}")
+df.pptx.chart(slide2, kind="column", y=55, height=40, show_values=True)
+
+# dicts and numpy arrays work directly too
+slide2.add_chart(data={"Rev": [100, 120], "Cost": [80, 85]}, chart_type="line")
+```
+
+See [Data to Slides](data.md) for the full story.
+
 Or write the deck in markdown and convert it:
 
 ```python
@@ -95,6 +112,7 @@ pres.save("deck.pptx")
 - [Features Overview](features.md)
 - [User Guide](percentage_positioning.md)
 - [Markdown to Presentation](markdown.md)
+- [Data to Slides](data.md)
 - [Migrating to 0.7.0](migration.md)
 - [API Reference](api_reference.md)
 - [Examples](https://github.com/Ameyanagi/EasyPPTX/tree/main/examples)

@@ -17,6 +17,7 @@ nav:
   - User Guide:
     - Percentage-Based Positioning: percentage_positioning.md
     - Markdown to Presentation: markdown.md
+    - Data to Slides: data.md
     - Auto-Alignment: auto_alignment.md
     - Grid Layout: grid_layout.md
     - Plots: plots.md
@@ -34,6 +35,8 @@ plugins:
           paths: ["src/easypptx"]
           options:
             docstring_style: google
+            # Some docstrings deliberately document **kwargs pass-throughs and
+            # combined parameters ("x, y, width, height:"); don't fail on them.
 
 hooks:
   - docs_hooks.py

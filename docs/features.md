@@ -148,6 +148,32 @@ slide.add_table(
 )
 ```
 
+*New in 0.8.0*, `data` accepts more shapes — polars DataFrames, pandas Series, numpy arrays (label the header with `columns=`), and dicts of sequences — and tables gained formatting options:
+
+```python
+import numpy as np
+
+# Python format specs for numeric cells: one spec for all columns...
+slide.add_table(df, number_format="{:,.1f}")
+
+# ...or a per-column dict (keys are column names or indexes)
+slide.add_table(df, number_format={"Score": "{:,.0f}"})
+
+# Value-scaled background shading: the smallest value stays white,
+# the largest gets the full shade_color, computed from the raw values
+slide.add_table(df, shade_columns=["Score"], shade_color="blue")
+
+# numpy arrays carry no labels; columns= names the header
+slide.add_table(np.array([[1, 2], [3, 4]]), columns=["Alpha", "Beta"])
+
+# style= maps small ints to built-in PowerPoint table styles
+# (see TABLE_STYLE_GUIDS in easypptx.table) and also accepts a GUID string
+slide.add_table(data, style=1)
+slide.add_table(data, style="{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}")
+```
+
+See [Data to Slides](data.md) for the full list of accepted data shapes.
+
 ## Creating Charts
 
 ```python
@@ -193,6 +219,27 @@ slide.add_chart(
     x=10, y=55, width=60, height=40,
 )
 ```
+
+*New in 0.8.0:*
+
+- `data` also accepts pandas Series, polars DataFrames, numpy arrays, and dicts of sequences — see [Data to Slides](data.md#accepted-data-shapes).
+- The native chart types (`column`, `bar`, `line`, `pie`, `area`, `scatter`) stay editable PowerPoint charts; `chart_type="heatmap"`, `"histogram"`, `"box"`, and `"violin"` render via matplotlib (requires `easypptx[plot]`) into the same slide region. `backend="pyplot"` forces matplotlib for any type. See [Chart Backend Routing](plots.md#chart-backend-routing).
+- Native charts gained styling options — data labels, axis titles and limits, and series colors:
+
+```python
+slide.add_chart(
+    data=df2,
+    chart_type="column",
+    show_values=True,
+    number_format="#,##0",
+    x_title="Quarter",
+    y_title="Amount",
+    y_min=0,
+    palette=["blue", "orange"],
+)
+```
+
+When the presentation has a theme, native chart series are colored by the theme's palette automatically; an explicit `palette=` wins. DataFrames can also send themselves to a slide via the `df.pptx` accessor: `df.pptx.chart(slide, kind="column")` and `df.pptx.table(slide)` — see [Data to Slides](data.md#the-dfpptx-pandas-accessor).
 
 ## Direct Object APIs
 
@@ -293,6 +340,8 @@ slide.add_pyplot(
 ```
 
 Unknown parameters passed to these methods now trigger a warning instead of being silently ignored. Out-of-range percentages (e.g. `"150%"`) are clamped with a warning.
+
+*New in 0.8.0*, `add_text` and `add_bullets` fit text to the box by default: the `fit=` parameter takes `"shrink"` (default, reduce the font size until the text fits), `"resize"` (grow the box to fit the text), or `"none"`. See [Text Fitting](styling.md#text-fitting).
 
 ## Advanced Features
 

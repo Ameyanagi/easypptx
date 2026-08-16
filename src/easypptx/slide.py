@@ -560,7 +560,7 @@ class Slide:
             if data is None:
                 raise ValueError("Provide either 'data' or both 'categories' and 'values'")
             categories, series = normalize_chart_data(
-                data, category_column, value_columns, categories=None, columns=columns
+                data, category_column, value_columns, categories=categories, columns=columns
             )
 
         # Route by chart type: the native set stays native and editable;

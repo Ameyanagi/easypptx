@@ -48,7 +48,7 @@ Q3 2026
 | `<!-- notes: ... -->` | Speaker notes for the slide |
 | `::: columns` ... `:::` | Blocks inside are laid out side by side |
 
-Basic inline markdown (`**bold**`, `*italic*`, `` `code` ``, links) is stripped to plain text. Content blocks on a slide share the vertical space automatically, weighted by their size.
+Basic inline markdown (`**bold**`, `*italic*`, `` `code` ``, links) is stripped to plain text. Content blocks on a slide share the vertical space automatically, weighted by their size. *New in 0.8.0*, block heights are allocated from estimated line counts: the renderer estimates how each paragraph and bullet wraps (with CJK-aware glyph widths, via `easypptx.textfit`), so long bullets get more vertical room than short ones instead of every block claiming an equal share.
 
 ## Full Example
 

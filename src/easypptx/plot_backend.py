@@ -57,7 +57,10 @@ def render_chart(
         chart_type: One of SUPPORTED_TYPES
         categories: Category labels
         series: Mapping of series name -> values
-        x, y, width, height: Slide region (percent or in_() lengths)
+        x: Region left edge (percent or in_() length)
+        y: Region top edge (percent or in_() length)
+        width: Region width (percent or in_() length)
+        height: Region height (percent or in_() length)
         title: Chart title (default: None)
         has_legend: Whether to draw a legend for multi-series data (default: True)
         x_title: X-axis label (default: None)
