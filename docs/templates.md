@@ -195,7 +195,7 @@ slide, picture = pres.add_image_gen_slide(
 )
 ```
 
-> **Deprecated:** `pres.add_image_slide(...)` still works but emits a `DeprecationWarning`. Use `pres.add_image_gen_slide(...)` instead.
+> **Removed in 0.7.0:** `pres.add_image_slide(...)` has been removed. Use `pres.add_image_gen_slide(...)` instead — see [Migrating to 0.7.0](migration.md).
 
 Available image style options:
 - `border`: Whether to show a border around the image (Boolean)

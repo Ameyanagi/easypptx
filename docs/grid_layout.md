@@ -7,7 +7,10 @@ EasyPPTX provides a powerful Grid layout system that makes it easy to create wel
 A Grid divides a slide (or a portion of a slide) into rows and columns, creating cells that can contain content. Key features include:
 
 - Percentage-based positioning for responsive layouts
-- Cell merging (like in spreadsheets)
+- Cell merging (like in spreadsheets), including slice spans like `grid[1, :]`
+- Weighted rows and columns (`rows=[2, 1]` makes the first row twice as tall)
+- Auto-flow with `grid.next()` for filling cells in order
+- Cell styling with `grid[r, c].style(...)` for card-like backgrounds
 - Nested grids for complex layouts
 - Automatic padding between cells
 
@@ -72,6 +75,18 @@ grid = Grid(
 )
 ```
 
+### Weighted Rows and Columns
+
+*New in 0.7.0.* `rows` and `cols` also accept a list of relative weights instead of a count. `rows=[2, 1]` creates two rows where the first is twice as tall as the second:
+
+```python
+# A tall content row over a shorter footer row, three equal columns
+grid = Grid(parent=slide, rows=[2, 1], cols=3)
+
+# The same works through pres.add_grid
+grid = pres.add_grid(slide, rows=[2, 1], cols=3, x="5%", y="15%", width="90%", height="80%")
+```
+
 ## Adding Content to Grid Cells
 
 You can add any content (text, images, shapes, etc.) to a specific cell in the grid:
@@ -117,6 +132,49 @@ grid.add_to_cell(
     vertical="middle",
 )
 ```
+
+### Slice Spans
+
+*New in 0.7.0.* Slices in the `grid[row, col]` syntax merge a rectangular region in one step and return its cell proxy, so you can add content directly:
+
+```python
+# The whole second row as one region
+grid[1, :].add_text("Footer", align="center", vertical="middle")
+
+# Two rows of the second column
+grid[0:2, 1].add_image(image_path="chart.png")
+```
+
+Negative indices work as usual; step slices (e.g. `grid[::2, 0]`) are rejected with a `ValueError`. Accessing the same span again returns the existing merged region.
+
+## Auto-Flow with next()
+
+*New in 0.7.0.* `grid.next()` returns a proxy for the next free cell in row-major order, so content can be appended without tracking coordinates. When every cell is filled, a new row is appended automatically:
+
+```python
+grid = pres.add_grid(slide, rows=2, cols=2)
+
+grid.next().add_text("First cell")
+grid.next().add_text("Second cell")
+grid.next().add_image(image_path="photo.png")
+grid.next().add_table(data=[["A", "B"], [1, 2]])
+grid.next().add_text("A fifth item grows the grid by one row")
+```
+
+## Styling Cells
+
+*New in 0.7.0.* `grid[row, col].style(...)` draws a card-like background behind a cell and optionally sets content padding. It returns the proxy, so calls chain naturally:
+
+```python
+grid[0, 0].style(
+    fill="lightgray",     # background color name or RGB tuple
+    border_color="gray",  # border color (omit for no border)
+    border_width=1,       # border width in points
+    padding=2,            # extra content padding, percent of the slide
+).add_text("Card content", align="center", vertical="middle")
+```
+
+The background rectangle covers the full cell; `padding` shrinks the area used by content added to the cell afterwards.
 
 ## Nested Grids
 
@@ -237,7 +295,7 @@ EasyPPTX's Grid class provides multiple ways to access and manipulate cells, sim
 
 ### 1. Using the `[row, col]` Indexing Syntax
 
-`grid[row, col]` returns a cell proxy with `add_text`, `add_image`, `add_pyplot`, `add_table`, and `add_grid` methods. The content is sized and positioned to the cell automatically:
+`grid[row, col]` returns a cell proxy with `add_text`, `add_image`, `add_pyplot`, `add_table`, `add_grid`, and `style` methods. The content is sized and positioned to the cell automatically:
 
 ```python
 # Add content directly to the cell at row 0, column 1
@@ -302,9 +360,9 @@ cell = grid.get_cell(row=1, col=2)
 ### Grid Class
 
 - `parent`: The parent Slide or Grid object
-- `x`, `y`: Position of the grid (percentages or absolute values)
+- `x`, `y`: Position of the grid (percentages or `in_()` lengths)
 - `width`, `height`: Dimensions of the grid
-- `rows`, `cols`: Number of rows and columns
+- `rows`, `cols`: Number of rows and columns (counts, or lists of relative weights)
 - `padding`: Padding between cells (percentage)
 - `cells`: 2D array of GridCell objects
 - `flat`: Property that returns a flat iterator for the grid (like matplotlib's subplot.flat)
@@ -315,8 +373,9 @@ cell = grid.get_cell(row=1, col=2)
 - `merge_cells(start_row, start_col, end_row, end_col)`: Merge cells in the specified range
 - `add_to_cell(row, col, content_func, **kwargs)`: Add content to a specific cell
 - `add_grid_to_cell(row, col, rows, cols, padding)`: Add a nested grid to a cell
+- `next()`: Return a proxy for the next free cell, growing the grid when full
 - `__iter__()`: Makes Grid objects iterable
-- `__getitem__(key)`: Enables accessing cells via grid[row, col] or grid[index]
+- `__getitem__(key)`: Enables accessing cells via grid[row, col], grid[index], or slice spans like grid[1, :]
 
 ### Convenience Methods
 

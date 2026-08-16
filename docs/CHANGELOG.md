@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.7.0] - 2026-08-16
+
+### Breaking Changes
+- Bare numbers in position parameters are now percentages (`x=10` == `"10%"`); floats no longer mean inches. Absolute inches use the new `in_()` helper.
+- Default positions changed from inches to percentages (e.g. `add_text`: x=5, y=5, width=90, height=10; `add_chart`: x=10, y=20, width=60, height=60).
+- Removed the deprecated `Presentation` pass-throughs (`add_text`, `add_image`, `add_shape`, `add_table`, `add_chart`, `add_pyplot`) and `add_matplotlib_slide`, `add_seaborn_slide`, `add_plot`, `add_image_slide`. Use the `Slide` methods, `add_pyplot_slide`, and `add_image_gen_slide`.
+
+### Added
+- Markdown-to-deck conversion: `Presentation.from_markdown` / `easypptx.from_markdown`
+- Grid upgrades: slice spans (`grid[1, :]`), weighted tracks (`rows=[2, 1]`), auto-flow (`grid.next()`), and cell styling (`grid[r, c].style(...)`)
+- `slide.add_bullets`, `slide.notes`, and `slide.add_pyplot`
+- Multi-series charts via `value_columns=[...]` and `Chart.add(..., series={...})`
+- `TextStyle`, `TableStyle`, `ChartStyle` dataclasses with a `style=` parameter, plus `Theme` and built-in presets (`light`, `dark`, `corporate`)
+
 ## [Unreleased]
 
 ### Added

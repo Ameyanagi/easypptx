@@ -2,6 +2,84 @@
 
 EasyPPTX provides a comprehensive set of styling and formatting options to customize the appearance of your presentations.
 
+## Style Objects
+
+*New in 0.7.0.* The `TextStyle`, `TableStyle`, and `ChartStyle` dataclasses (importable from `easypptx` or `easypptx.styles`) bundle formatting that would otherwise be repeated on every call. Pass them via the `style=` parameter of `add_text`, `add_bullets`, `add_table`, and `add_chart`:
+
+```python
+from easypptx import Presentation, TextStyle, TableStyle, ChartStyle
+
+pres = Presentation()
+slide = pres.add_slide()
+
+# Define a style once...
+heading = TextStyle(font_size=28, font_bold=True, color="blue", align="center")
+
+# ...and reuse it
+slide.add_text("Results", style=heading)
+slide.add_text("Outlook", y=20, style=heading)
+
+# Bulleted lists take the same TextStyle
+body = TextStyle(font_size=20, color="black")
+slide.add_bullets(["Point one", "Point two"], style=body)
+
+# Tables and charts have their own style dataclasses
+slide.add_table(
+    [["A", "B"], [1, 2]],
+    style=TableStyle(has_header=True, style_id=5),
+)
+slide.add_chart(
+    categories=["A", "B", "C"],
+    values=[10, 20, 30],
+    style=ChartStyle(chart_type="bar", has_legend=False),
+)
+```
+
+Explicit keyword arguments always beat the style object, so a style acts as a set of defaults you can override per call:
+
+```python
+# heading sets color="blue", but this call renders red
+slide.add_text("Warning", style=heading, color="red")
+```
+
+The fields:
+
+- `TextStyle`: `font_name`, `font_size`, `font_bold`, `font_italic`, `color`, `align`, `vertical`
+- `TableStyle`: `has_header`, `style_id`
+- `ChartStyle`: `chart_type`, `has_legend`, `legend_position`
+
+All fields are optional; unset fields fall back to the normal defaults.
+
+## Themes
+
+*New in 0.7.0.* A `Theme` groups a background color with title and body text styles and applies to the whole presentation. Three presets are built in — `"light"`, `"dark"`, and `"corporate"` — selectable by name:
+
+```python
+from easypptx import Presentation
+
+pres = Presentation(theme="dark")
+slide = pres.add_slide(title="Styled by the theme")
+slide.add_text("Body text inherits the theme's color", y=25)
+```
+
+A theme sets the default slide background, cascades its body `TextStyle` to text content through the template-defaults machinery, and styles titles created with `add_slide(title=...)`. Explicit arguments (and slide-level `bg_color`) still win.
+
+Custom themes are plain `Theme` instances; every field is optional:
+
+```python
+from easypptx import Presentation, TextStyle, Theme
+
+brand = Theme(
+    bg_color=(10, 20, 40),
+    title=TextStyle(font_size=30, font_bold=True, color="white", align="left"),
+    body=TextStyle(color="lightgray"),
+    accent_color="orange",
+)
+pres = Presentation(theme=brand)
+```
+
+Themes also work with [markdown decks](markdown.md): `Presentation.from_markdown("deck.md", theme="corporate")` or a `theme:` key in the frontmatter.
+
 ## Default Font and Colors
 
 EasyPPTX comes with sensible defaults:

@@ -18,6 +18,12 @@
 ## Chart Module
 ::: easypptx.chart
 
+## Markdown Module
+::: easypptx.markdown
+
+## Styles Module
+::: easypptx.styles
+
 ## Grid Module
 ::: easypptx.grid
 
