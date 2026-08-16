@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2026-08-16
+
+### Fixed
+- `Grid.append()` skips spanned (merged-over) cells and places content with absolute slide coordinates; it now returns the created object instead of None
+- Grid expansion preserves merged-region geometry (spans survive `next()`-triggered growth)
+- Pie charts with axis options keep their palette colors (the axis warning no longer returned early)
+- List-of-lists chart data raises `ValueError` for out-of-range integer column selectors instead of leaking `IndexError`
+
+### Security
+- Release workflow and its composite action pin all third-party GitHub Actions to full commit SHAs
+
 ## [0.8.0] - 2026-08-16
 
 ### Added

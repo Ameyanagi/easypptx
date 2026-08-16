@@ -182,7 +182,9 @@ def normalize_chart_data(
             if column is None:
                 return default
             if isinstance(column, int):
-                return column
+                if 0 <= column < len(header):
+                    return column
+                raise ValueError(f"{kind} column {column} is out of range for {len(header)} columns")
             try:
                 return header.index(column)
             except ValueError:
