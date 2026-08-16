@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-08-16
+
+### Added
+- **Universal data adapter**: `add_chart` and `add_table` accept pandas DataFrames and Series, polars DataFrames, numpy 1D/2D arrays (with `columns=`/`categories=` labels), dicts of sequences, and list-of-lists — all through one normalization layer (`easypptx.data`), detected via `sys.modules` with zero new dependencies
+- **Chart backend routing**: native PowerPoint charts remain the default (editable, theme-aware); `chart_type="heatmap"/"histogram"/"box"/"violin"` renders via matplotlib into the same slide region; `backend="pyplot"` forces image rendering for any type; `backend="native"` raises a clear error for non-native types
+- **Native chart styling**: `show_values=`/`number_format=` data labels, `x_title`/`y_title` axis titles, `y_min`/`y_max` limits, and `palette=` series colors — with the deck `Theme` palette applied automatically (built-in themes ship palettes)
+- **Table formatting**: `number_format=` (Python format specs, per-column dicts), `shade_columns=`/`shade_color=` value-scaled cell tinting (from raw values, not formatted strings), and real table styles via GUID-backed ids
+- **`df.pptx` pandas accessor**: `df.pptx.table(slide, ...)` and `df.pptx.chart(slide, kind=...)`; auto-registered when pandas is loaded, or explicitly via `easypptx.register_pandas_accessor()`
+- **Text fitting**: `fit="shrink"` (default) computes a fitting font size client-side — decks render correctly in LibreOffice/previews, not just after PowerPoint recalculates autofit; `fit="resize"` grows the box; `fit="none"` opts out. CJK-aware width estimation (`easypptx.textfit`); the markdown renderer now allocates block heights from estimated line counts
+
+### Changed
+- `Slide.add_chart` gained `backend`, `columns`, `show_values`, `number_format`, `x_title`, `y_title`, `y_min`, `y_max`, `palette`
+- `Slide.add_table` gained `columns`, `number_format`, `shade_columns`, `shade_color`; `style` accepts GUID strings
+- `Theme` gained a `palette` field; built-in light/dark/corporate themes define palettes
+
 ## [0.7.0] - 2026-08-16
 
 ### Added
