@@ -10,11 +10,47 @@ A Grid divides a slide (or a portion of a slide) into rows and columns, creating
 - Cell merging (like in spreadsheets)
 - Nested grids for complex layouts
 - Automatic padding between cells
-- Responsive positioning that adapts to different aspect ratios
+
+Grid-cell content is positioned absolutely on the slide, using the cell's computed position.
+
+## Recommended Workflow: add_grid_slide
+
+The quickest way to build a grid layout is `pres.add_grid_slide`, which creates a slide and a grid in one step. Add content with the `grid[row, col].add_*` methods:
+
+```python
+from easypptx import Presentation
+
+pres = Presentation()
+
+# Create a slide with a 2x2 grid and a title
+slide, grid = pres.add_grid_slide(
+    rows=2,
+    cols=2,
+    title="Grid Slide Example",
+    title_height="15%",
+    padding=5.0,
+)
+
+# Add content to cells with grid[row, col]
+grid[0, 0].add_text("Top Left", font_size=24, align="center", vertical="middle")
+grid[0, 1].add_image(image_path="path/to/image.jpg")
+grid[1, 0].add_table(data=[["A", "B"], [1, 2]])
+
+# Add a matplotlib figure to a cell
+import matplotlib.pyplot as plt
+fig = plt.figure()
+plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
+grid[1, 1].add_pyplot(fig, dpi=300)
+
+# Nested grids work the same way
+nested = grid[0, 0].add_grid(rows=2, cols=1)
+```
+
+The sections below cover the lower-level `Grid` API for cases that need more control.
 
 ## Creating a Grid
 
-To create a Grid, you need a parent (usually a Slide), and you can specify the grid's position, dimensions, and layout:
+To create a Grid directly, you need a parent (usually a Slide), and you can specify the grid's position, dimensions, and layout:
 
 ```python
 from easypptx import Presentation, Grid
@@ -33,7 +69,6 @@ grid = Grid(
     rows=2,       # Number of rows
     cols=2,       # Number of columns
     padding=5.0,  # Padding between cells (percentage)
-    h_align="center",  # Responsive alignment (default: "center")
 )
 ```
 
@@ -202,17 +237,12 @@ EasyPPTX's Grid class provides multiple ways to access and manipulate cells, sim
 
 ### 1. Using the `[row, col]` Indexing Syntax
 
-```python
-# Access a cell directly using grid[row, col]
-cell = grid[0, 1]  # Get the cell at row 0, column 1
+`grid[row, col]` returns a cell proxy with `add_text`, `add_image`, `add_pyplot`, `add_table`, and `add_grid` methods. The content is sized and positioned to the cell automatically:
 
-# Add content to the cell
-cell.content = slide.add_text(
+```python
+# Add content directly to the cell at row 0, column 1
+grid[0, 1].add_text(
     text="Cell at [0, 1]",
-    x=cell.x,
-    y=cell.y,
-    width=cell.width,
-    height=cell.height,
     font_size=24,
     align="center",
     vertical="middle",
@@ -223,15 +253,9 @@ cell.content = slide.add_text(
 
 ```python
 # Access a cell using a flat index (row-major order)
-cell = grid[3]  # Get the cell at flat index 3 (row 1, col 1 in a 2x2 grid)
-
-# Add content to the cell
-cell.content = slide.add_text(
+# Flat index 3 is row 1, col 1 in a 2x2 grid
+grid[3].add_text(
     text="Cell at flat index 3",
-    x=cell.x,
-    y=cell.y,
-    width=cell.width,
-    height=cell.height,
     font_size=24,
     align="center",
     vertical="middle",
@@ -243,13 +267,8 @@ cell.content = slide.add_text(
 ```python
 # Iterate through all cells in the grid
 for cell in grid:
-    # Add content to each cell
-    cell.content = slide.add_text(
+    grid[cell.row, cell.col].add_text(
         text=f"Cell at [{cell.row}, {cell.col}]",
-        x=cell.x,
-        y=cell.y,
-        width=cell.width,
-        height=cell.height,
         font_size=24,
         align="center",
         vertical="middle",
@@ -263,12 +282,8 @@ for cell in grid:
 for cell in grid.flat:
     # Check cell properties and add content conditionally
     if cell.row == 1:  # Only add to cells in the second row
-        cell.content = slide.add_text(
+        grid[cell.row, cell.col].add_text(
             text=f"Flat cell at [{cell.row}, {cell.col}]",
-            x=cell.x,
-            y=cell.y,
-            width=cell.width,
-            height=cell.height,
             font_size=24,
             align="center",
             vertical="middle",
@@ -291,7 +306,6 @@ cell = grid.get_cell(row=1, col=2)
 - `width`, `height`: Dimensions of the grid
 - `rows`, `cols`: Number of rows and columns
 - `padding`: Padding between cells (percentage)
-- `h_align`: Horizontal alignment for responsive positioning
 - `cells`: 2D array of GridCell objects
 - `flat`: Property that returns a flat iterator for the grid (like matplotlib's subplot.flat)
 
@@ -300,7 +314,7 @@ cell = grid.get_cell(row=1, col=2)
 - `get_cell(row, col)`: Get a cell at the specified position
 - `merge_cells(start_row, start_col, end_row, end_col)`: Merge cells in the specified range
 - `add_to_cell(row, col, content_func, **kwargs)`: Add content to a specific cell
-- `add_grid_to_cell(row, col, rows, cols, padding, h_align)`: Add a nested grid to a cell
+- `add_grid_to_cell(row, col, rows, cols, padding)`: Add a nested grid to a cell
 - `__iter__()`: Makes Grid objects iterable
 - `__getitem__(key)`: Enables accessing cells via grid[row, col] or grid[index]
 
@@ -335,24 +349,26 @@ grid.add_table(1, 1, data, has_header=True)
 
 ## Automatic Grid Layout
 
-EasyPPTX can automatically arrange content in a grid:
+EasyPPTX can automatically arrange content in a grid. Content functions that accept `x`, `y`, `width`, and `height` (or `**kwargs`) receive the cell position, so the content is placed inside its cell. Zero-argument functions are still called as-is:
 
 ```python
 # Create content functions
-def create_text1():
+def create_text1(**kwargs):
     return slide.add_text(
         text="Content 1",
         font_size=24,
         align="center",
         vertical="middle",
+        **kwargs,  # Receives the cell's x, y, width, height
     )
 
-def create_text2():
+def create_text2(**kwargs):
     return slide.add_text(
         text="Content 2",
         font_size=24,
         align="center",
         vertical="middle",
+        **kwargs,
     )
 
 # More content functions...
@@ -442,7 +458,7 @@ grid = Grid.autogrid_pyplot(
 
 ## One-Step Grid Slide Creation
 
-For a quicker workflow, create a slide with a grid in one step:
+As shown in the recommended workflow above, `add_grid_slide` creates a slide with a grid in one step:
 
 ```python
 # Create a slide with a grid
@@ -457,10 +473,7 @@ slide, grid = pres.add_grid_slide(
 # Now add content to the grid cells
 for row in range(3):
     for col in range(3):
-        grid.add_to_cell(
-            row=row,
-            col=col,
-            content_func=slide.add_text,
+        grid[row, col].add_text(
             text=f"Cell [{row},{col}]",
             font_size=18,
             align="center",
@@ -490,8 +503,8 @@ slide, grid = pres.add_autogrid_slide(
 
 See the following examples for detailed demonstrations:
 
-- [001_basic_grid.py](../examples/grid/001_basic_grid.py): Basic grid creation and usage
-- [002_grid_indexing.py](../examples/grid/002_grid_indexing.py): Grid indexing and iteration features
-- [003_nested_grid.py](../examples/grid/003_nested_grid.py): Nested grids and cell merging
-- [004_autogrid.py](../examples/grid/004_autogrid.py): Automatic grid layout features
-- [005_enhanced_grid.py](../examples/grid/005_enhanced_grid.py): Empty grids and convenience methods
+- [001_basic_grid.py](https://github.com/Ameyanagi/EasyPPTX/tree/main/examples/grid/001_basic_grid.py): Basic grid creation and usage
+- [002_grid_indexing.py](https://github.com/Ameyanagi/EasyPPTX/tree/main/examples/grid/002_grid_indexing.py): Grid indexing and iteration features
+- [003_nested_grid.py](https://github.com/Ameyanagi/EasyPPTX/tree/main/examples/grid/003_nested_grid.py): Nested grids and cell merging
+- [004_autogrid.py](https://github.com/Ameyanagi/EasyPPTX/tree/main/examples/grid/004_autogrid.py): Automatic grid layout features
+- [005_enhanced_grid.py](https://github.com/Ameyanagi/EasyPPTX/tree/main/examples/grid/005_enhanced_grid.py): Empty grids and convenience methods

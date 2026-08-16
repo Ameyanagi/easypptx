@@ -26,42 +26,45 @@ A Python library for easily creating and manipulating PowerPoint presentations p
 pip install easypptx
 ```
 
+pandas and matplotlib support are optional extras:
+
+```bash
+pip install "easypptx[dataframe]"  # pandas DataFrame support (tables, charts)
+pip install "easypptx[plot]"       # matplotlib figure embedding
+pip install "easypptx[all]"        # both
+```
+
+seaborn is not a dependency. seaborn plots still work: pass their figure to `add_pyplot_slide` or `Pyplot.add`.
+
 ## Quick Start
 
 ```python
-from easypptx import Presentation, Slide, Text, Image, Table, Chart
+from easypptx import Presentation
 import pandas as pd
 
 # Create a new presentation (uses 16:9 aspect ratio by default)
 pres = Presentation()
 
-# Add a slide
-slide = pres.add_slide()
-
-# Add title
-text = Text(slide)
-text.add_title("EasyPPTX Demo")
+# Add a slide with a title
+slide = pres.add_slide(title="EasyPPTX Demo")
 
 # Add text
-text.add_paragraph("This presentation was created with EasyPPTX",
-                  x="10%", y="30%", font_size=24)
+slide.add_text("This presentation was created with EasyPPTX",
+               x="10%", y="30%", font_size=24)
 
 # Add an image
-img = Image(slide)
-img.add("path/to/image.png", x="10%", y="40%", width="40%")
+slide.add_image("path/to/image.png", x="10%", y="40%", width="40%")
 
 # Create a table
-tbl = Table(slide)
 data = [["Name", "Value"], ["Item 1", 100], ["Item 2", 200]]
-tbl.add(data, x="60%", y="30%")
+slide.add_table(data, x="60%", y="30%", width="30%", height="15%")
 
-# Add a chart from pandas DataFrame
+# Add a chart from a pandas DataFrame
 df = pd.DataFrame({"Category": ["A", "B", "C"], "Value": [10, 20, 30]})
-chart = Chart(slide)
-chart.from_dataframe(df, chart_type="pie",
-                    category_column="Category",
-                    value_column="Value",
-                    x="60%", y="50%", title="Sample Chart")
+slide.add_chart(data=df, chart_type="pie",
+                category_column="Category",
+                value_columns="Value",
+                x="60%", y="50%", title="Sample Chart")
 
 # Save the presentation
 pres.save("example.pptx")

@@ -69,3 +69,11 @@ This document tracks the current status of implementation for each feature in th
 | API Documentation | Partial | Class and method docstrings are complete |
 
 Last updated: May 11, 2024
+
+## 2026-08-16 — v0.6.0 quality overhaul
+
+- Loud failures: unknown kwargs warn instead of being silently dropped; invalid templates raise; out-of-range percents warn on clamp.
+- API convergence: Slide.add_table / Slide.add_chart added; pass-through Presentation content methods and the matplotlib/seaborn/plot slide variants deprecated; parameter aliases (has_header, value_column, vertical_align) accepted.
+- Shared modules: easypptx.positioning (percent/inch arithmetic) and easypptx.common (colors/alignment/font constants, template-default merging) replace ~6 copies of layout math and diverged constants.
+- Bug fixes: double content_y_padding in add_grid_slide, dead maintain_aspect_ratio in Presentation.add_image, presentation-replacing add_slide_from_template, Table.from_dataframe(include_index=True), grid-cell absolute positioning, autogrid position injection, version drift.
+- Tooling: mypy.ini (which disabled all checks) removed; ty + ruff + lefthook; CI matrix fixed to 3.12/3.13; pandas/matplotlib now optional extras; seaborn dropped; py.typed shipped; matplotlib figures embedded via BytesIO; TOML template cache.

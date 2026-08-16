@@ -92,6 +92,30 @@ slide.add_shape(
 )
 ```
 
+## Responsive Layouts and Centering
+
+Percentage-based positioning is the responsive mechanism in EasyPPTX: elements keep their relative position and size when the slide dimensions or aspect ratio change.
+
+To center content, use `align="center"` together with a symmetric `x`/`width` pair. For example, `x="10%"` with `width="80%"` leaves 10% on each side, so the element stays centered at any aspect ratio:
+
+```python
+slide.add_text(
+    text="Centered Title",
+    x="10%",
+    y="5%",
+    width="80%",
+    height="10%",
+    align="center"
+)
+```
+
+The same principle works for images and shapes: give them a symmetric x/width (e.g. `x="20%"`, `width="60%"`) to keep them horizontally centered.
+
+## Validation and Warnings
+
+- Unknown parameters passed to content methods trigger a warning instead of being silently ignored.
+- Out-of-range percentages (e.g. `"150%"`) are clamped to the valid range with a warning.
+
 ## Benefits of Percentage-Based Positioning
 
 1. **Responsive layouts**: Elements maintain their relative positions regardless of the presentation's aspect ratio

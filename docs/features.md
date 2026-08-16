@@ -42,6 +42,12 @@ slide = pres.add_slide()
 # Add a slide with a specific layout
 slide = pres.add_slide(layout_index=1)  # Content layout
 
+# Add a slide with a title (title_color sets the title color)
+slide = pres.add_slide(title="Section Title", title_color="blue")
+
+# Opt a single slide out of the presentation's default TOML template
+slide = pres.add_slide(template_toml=False)
+
 # Get all slides
 slides = pres.slides
 
@@ -104,56 +110,66 @@ img.add("image.png", x=1, y=2, width=4, height=3)
 
 ## Creating Tables
 
+> pandas DataFrame support requires the optional extra: `pip install "easypptx[dataframe]"`.
+
 ```python
-from easypptx import Presentation, Table
+from easypptx import Presentation
 
 # Create a presentation
 pres = Presentation()
 slide = pres.add_slide()
-tbl = Table(slide)
 
 # Add a simple table
 data = [["Header 1", "Header 2"], ["Cell A1", "Cell A2"], ["Cell B1", "Cell B2"]]
-tbl.add(data, x=1, y=1)
+slide.add_table(data, x=1, y=1, width=4, height=2)
 
 # Add a table from a pandas DataFrame
 import pandas as pd
 df = pd.DataFrame({"Name": ["John", "Jane"], "Score": [85, 92]})
-tbl.from_dataframe(df, x=1, y=3)
+slide.add_table(df, x=1, y=3, width=4, height=2)
 
-# Add a formatted table
-tbl.add(
+# Include the DataFrame index as the first column
+from easypptx import Table
+Table(slide).from_dataframe(df, x=1, y=5, include_index=True)
+
+# Add a table with a header row and style
+slide.add_table(
     data,
     x=1,
     y=5,
-    first_row_header=True,
-    style="Medium Style 2 - Accent 1"
+    width=4,
+    height=2,
+    has_header=True,
+    style=5
 )
 ```
 
 ## Creating Charts
 
 ```python
-from easypptx import Presentation, Chart
+from easypptx import Presentation
 
 # Create a presentation
 pres = Presentation()
 slide = pres.add_slide()
-chart = Chart(slide)
 
-# Add a simple chart
-categories = ["A", "B", "C"]
-values = [10, 20, 30]
-chart.add("pie", categories, values, x=1, y=1, width=4, height=3, title="Chart Title")
+# Add a simple chart from explicit categories and values
+slide.add_chart(
+    chart_type="pie",
+    categories=["A", "B", "C"],
+    values=[10, 20, 30],
+    x=1, y=1, width=4, height=3,
+    title="Chart Title"
+)
 
 # Add a chart from a pandas DataFrame
 import pandas as pd
 df = pd.DataFrame({"Category": ["A", "B", "C"], "Value": [10, 20, 30]})
-chart.from_dataframe(
-    df,
+slide.add_chart(
+    data=df,
     chart_type="column",
     category_column="Category",
-    value_column="Value",
+    value_columns="Value",
     x=6,
     y=1,
     title="DataFrame Chart"
@@ -162,19 +178,19 @@ chart.from_dataframe(
 
 ## Direct Object APIs
 
-EasyPPTX provides a set of direct object APIs on the Presentation class to manipulate slide content without creating separate object instances.
+EasyPPTX provides a set of content methods on the Slide class to manipulate slide content without creating separate object instances.
+
+> **Deprecated:** The pass-through variants on `Presentation` that take a slide as the first argument (`pres.add_text(slide, ...)`, `pres.add_image(slide, ...)`, `pres.add_shape(slide, ...)`, `pres.add_table(slide, ...)`, `pres.add_chart(slide, ...)`, `pres.add_pyplot(slide, ...)`) still work but emit a `DeprecationWarning`. Use the `Slide` methods shown below instead.
 
 ```python
 from easypptx import Presentation
-from pptx.enum.shapes import MSO_SHAPE
 
 # Create a presentation
 pres = Presentation()
 slide = pres.add_slide()
 
 # Add text directly
-pres.add_text(
-    slide=slide,
+slide.add_text(
     text="Hello World",
     x="10%",
     y="20%",
@@ -184,33 +200,26 @@ pres.add_text(
 )
 
 # Add an image directly
-pres.add_image(
-    slide=slide,
+slide.add_image(
     image_path="image.png",
     x="10%",
     y="30%",
-    width="30%",
-    border=True,
-    shadow=True
+    width="30%"
 )
 
-# Add a shape directly
-pres.add_shape(
-    slide=slide,
-    shape_type=MSO_SHAPE.ROUNDED_RECTANGLE,
+# Add a shape directly (string shape names work in addition to MSO_SHAPE enums)
+slide.add_shape(
+    shape_type="ROUNDED_RECTANGLE",
     x="50%",
     y="30%",
     width="40%",
     height="15%",
-    fill_color="blue",
-    text="Button",
-    font_color="white"
+    fill_color="blue"
 )
 
 # Add a table directly
 data = [["Name", "Value"], ["Item 1", 100], ["Item 2", 200]]
-pres.add_table(
-    slide=slide,
+slide.add_table(
     data=data,
     x="10%",
     y="50%",
@@ -221,8 +230,7 @@ pres.add_table(
 # Add a chart directly
 import pandas as pd
 df = pd.DataFrame({"Category": ["A", "B", "C"], "Value": [10, 20, 30]})
-pres.add_chart(
-    slide=slide,
+slide.add_chart(
     data=df,
     chart_type="column",
     x="10%",
@@ -233,21 +241,22 @@ pres.add_chart(
     value_columns="Value"
 )
 
-# Add a matplotlib figure directly
+# Add a matplotlib figure (embedded via an in-memory stream, no temp files)
 import matplotlib.pyplot as plt
+from easypptx import Pyplot
+
 plt.figure(figsize=(10, 6))
 plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
 plt.title('Sample Plot')
 
-pres.add_pyplot(
+Pyplot.add(
     slide=slide,
     figure=plt.gcf(),
-    x="60%",
-    y="50%",
-    width="30%",
-    height="20%"
+    position={"x": "60%", "y": "50%", "width": "30%", "height": "20%"}
 )
 ```
+
+Unknown parameters passed to these methods now trigger a warning instead of being silently ignored. Out-of-range percentages (e.g. `"150%"`) are clamped with a warning.
 
 ## Advanced Features
 
@@ -258,53 +267,29 @@ from easypptx import Presentation
 
 # Create a presentation
 pres = Presentation()
-slide = pres.add_slide()
 
-# Create a 2x2 grid
-grid = pres.add_grid(
-    slide=slide,
-    x="5%",
-    y="15%",
-    width="90%",
-    height="75%",
+# Create a slide with a 2x2 grid in one step
+slide, grid = pres.add_grid_slide(
     rows=2,
     cols=2,
+    title="Grid Example",
     padding=5.0
 )
 
 # Add content to a cell using grid[row, col] syntax
-grid[0, 0].content = slide.add_text(
+grid[0, 0].add_text(
     text="Top Left Cell",
-    x=grid[0, 0].x,
-    y=grid[0, 0].y,
-    width=grid[0, 0].width,
-    height=grid[0, 0].height,
     font_size=24,
     align="center",
     vertical="middle"
 )
 
-# Iterate through cells
-for cell in grid:
-    if cell.row == 1:  # Only second row
-        cell.content = slide.add_text(
-            text=f"Cell [{cell.row}, {cell.col}]",
-            x=cell.x,
-            y=cell.y,
-            width=cell.width,
-            height=cell.height,
-            font_size=18,
-            align="center",
-            vertical="middle"
-        )
+grid[0, 1].add_image(image_path="image.png")
 
-# Access cell with flat index
-grid[3].content = slide.add_text(
+grid[1, 0].add_table(data=[["A", "B"], [1, 2]])
+
+grid[1, 1].add_text(
     text="Bottom Right Cell",
-    x=grid[3].x,
-    y=grid[3].y,
-    width=grid[3].width,
-    height=grid[3].height,
     font_size=24,
     align="center",
     vertical="middle"

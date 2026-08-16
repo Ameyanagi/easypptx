@@ -17,3 +17,15 @@
 
 ## Chart Module
 ::: easypptx.chart
+
+## Grid Module
+::: easypptx.grid
+
+## Pyplot Module
+::: easypptx.pyplot
+
+## Positioning Module
+::: easypptx.positioning
+
+## Common Module
+::: easypptx.common

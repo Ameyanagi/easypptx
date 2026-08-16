@@ -2,16 +2,20 @@
 
 EasyPPTX provides several ways to add data visualizations to your presentations:
 
-1. **Built-in PowerPoint charts** - Using the `Chart` class with tabular data
+1. **Built-in PowerPoint charts** - Using `slide.add_chart` with tabular data
 2. **Matplotlib figures** - Embedding matplotlib plots directly
-3. **Seaborn plots** - Adding seaborn visualizations seamlessly
+3. **Seaborn plots** - Adding seaborn visualizations by passing their figure
+
+> **Optional dependencies:** pandas support requires `pip install "easypptx[dataframe]"` and matplotlib support requires `pip install "easypptx[plot]"` (or install both with `"easypptx[all]"`). seaborn is not a dependency of EasyPPTX; seaborn plots work by passing their figure to `add_pyplot_slide` or `Pyplot.add`.
+
+Matplotlib figures are embedded via in-memory streams, so no temporary files are written.
 
 ## PowerPoint Native Charts
 
 For simple charts using PowerPoint's built-in charting capabilities:
 
 ```python
-from easypptx import Presentation, Chart
+from easypptx import Presentation
 import pandas as pd
 
 # Create a presentation
@@ -25,16 +29,14 @@ data = pd.DataFrame({
 })
 
 # Add a chart
-chart = Chart.add(
-    slide=slide,
+slide.add_chart(
     data=data,
     chart_type="column",
-    position={"x": "10%", "y": "20%", "width": "80%", "height": "70%"},
+    x="10%", y="20%", width="80%", height="70%",
     category_column="Category",
     value_columns="Values",
     has_legend=True,
-    has_title=True,
-    chart_title="Sample Chart"
+    title="Sample Chart"
 )
 
 # You can also use the add_chart_slide convenience method
@@ -51,6 +53,8 @@ chart_slide = pres.add_chart_slide(
     }
 )
 ```
+
+`slide.add_chart` also accepts explicit `categories` and `values` lists instead of `data`. The aliases `value_column` (singular) and `chart_title` are accepted for `value_columns` and `title`.
 
 ## Matplotlib Integration
 
@@ -85,96 +89,79 @@ Pyplot.add(
     }
 )
 
-# Method 2: Using the add_matplotlib_slide convenience method
-slide = pres.add_matplotlib_slide(
-    title="Matplotlib Example",
+# Method 2: Using the add_pyplot_slide convenience method
+slide, picture = pres.add_pyplot_slide(
     figure=plt.gcf(),
+    title="Matplotlib Example",
     label="Figure 1: Sample Plot",
     dpi=300,
-    custom_style={
-        "border": True,
-        "border_color": "blue",
-        "shadow": True
-    }
+    border=True,
+    border_color="blue",
+    shadow=True
 )
 ```
 
+> **Deprecated:** `pres.add_matplotlib_slide(...)` still works but emits a `DeprecationWarning`. Use `pres.add_pyplot_slide(...)` instead.
+
 ## Seaborn Integration
 
-You can also add seaborn plots directly:
+seaborn plots are matplotlib figures under the hood, so pass their figure to `add_pyplot_slide`:
 
 ```python
+import matplotlib.pyplot as plt
 import seaborn as sns
-import pandas as pd
 from easypptx import Presentation
 
 # Create a seaborn plot
 tips = sns.load_dataset("tips")
-sns_plot = sns.barplot(x="day", y="total_bill", data=tips)
+ax = sns.barplot(x="day", y="total_bill", data=tips)
 plt.title('Tips by Day')
 
 # Create a presentation
 pres = Presentation()
 
-# Add a seaborn plot
-slide = pres.add_seaborn_slide(
+# Add the seaborn plot's figure
+slide, picture = pres.add_pyplot_slide(
+    figure=ax.get_figure(),
     title="Seaborn Example",
-    seaborn_plot=sns_plot,
     label="Figure 1: Average Tips by Day",
-    custom_style={
-        "border": True,
-        "border_color": "green",
-        "shadow": True
-    }
+    border=True,
+    border_color="green",
+    shadow=True
 )
 ```
 
+> **Deprecated:** `pres.add_seaborn_slide(...)` still works but emits a `DeprecationWarning`. Use `pres.add_pyplot_slide(...)` as shown above.
+
 ## Unified API for Plots
 
-For convenience, EasyPPTX provides a unified `add_plot` method that works with different visualization types:
+> **Deprecated:** The `pres.add_plot(...)` method still works but emits a `DeprecationWarning`. Use `pres.add_pyplot_slide(...)` for matplotlib/seaborn figures, or `pres.add_chart_slide(...)` for PowerPoint charts.
 
 ```python
 from easypptx import Presentation
 import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
 
 # Create a presentation
 pres = Presentation()
 
-# Create a matplotlib plot
+# Matplotlib or seaborn figure
 plt.figure()
 plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
 plt.title('Matplotlib Plot')
 
-# Add with the unified method
-slide1 = pres.add_plot(
+slide1, picture = pres.add_pyplot_slide(
+    figure=plt.gcf(),
     title="Matplotlib Plot",
-    plot=plt.gcf(),
-    plot_type="matplotlib",
     label="Figure 1: Sample Plot"
 )
 
-# Create a seaborn plot
-tips = sns.load_dataset("tips")
-sns_plot = sns.barplot(x="day", y="total_bill", data=tips)
-
-# Add with the unified method
-slide2 = pres.add_plot(
-    title="Seaborn Plot",
-    plot=sns_plot,
-    plot_type="seaborn",
-    label="Figure 2: Tips by Day"
-)
-
-# Create data for a PowerPoint chart
+# PowerPoint chart from data
 data = pd.DataFrame({"Category": ["A", "B", "C"], "Value": [1, 4, 2]})
 
-# Add with the unified method
-slide3 = pres.add_plot(
+slide2 = pres.add_chart_slide(
     title="PowerPoint Chart",
     data=data,
-    plot_type="pptx_chart",
     chart_type="column",
     category_column="Category",
     value_columns="Value"
@@ -187,19 +174,13 @@ You can customize how plots appear in your presentations:
 
 ```python
 # Set custom styling for a matplotlib plot
-custom_style = {
-    "border": True,
-    "border_color": "blue",
-    "border_width": 2,
-    "shadow": True,
-    "maintain_aspect_ratio": True,
-    "center": True
-}
-
-slide = pres.add_matplotlib_slide(
-    title="Styled Plot",
+slide, picture = pres.add_pyplot_slide(
     figure=plt.gcf(),
-    custom_style=custom_style
+    title="Styled Plot",
+    border=True,
+    border_color="blue",
+    shadow=True,
+    maintain_aspect_ratio=True
 )
 ```
 
@@ -217,16 +198,17 @@ slide = pres.add_comparison_slide(
 # Add matplotlib plot to the left side
 Pyplot.add(
     slide=slide,
-    figure=plt.figure1,
+    figure=fig1,
     position={"x": "5%", "y": "20%", "width": "42%", "height": "70%"}
 )
 
 # Add PowerPoint chart to the right side
-Chart.add(
-    slide=slide,
+slide.add_chart(
     data=data,
     chart_type="line",
-    position={"x": "53%", "y": "20%", "width": "42%", "height": "70%"}
+    category_column="Category",
+    value_columns="Value",
+    x="53%", y="20%", width="42%", height="70%"
 )
 ```
 

@@ -184,20 +184,18 @@ You can customize how images appear in your presentations:
 
 ```python
 # Add an image slide with custom styling
-slide = pres.add_image_slide(
-    title="Styled Image",
+slide, picture = pres.add_image_gen_slide(
     image_path="example.jpg",
+    title="Styled Image",
     label="Beautiful scenery",
-    custom_style={
-        "border": True,
-        "border_color": "blue",
-        "border_width": 2,
-        "shadow": True,
-        "maintain_aspect_ratio": True,
-        "center": True
-    }
+    border=True,
+    border_color="blue",
+    shadow=True,
+    maintain_aspect_ratio=True
 )
 ```
+
+> **Deprecated:** `pres.add_image_slide(...)` still works but emits a `DeprecationWarning`. Use `pres.add_image_gen_slide(...)` instead.
 
 Available image style options:
 - `border`: Whether to show a border around the image (Boolean)
@@ -308,7 +306,7 @@ title_slide = pres.add_title_slide(
 content_slide = pres.add_content_slide(title="Key Points")
 content_slide.add_text(
     text="• Point 1\n• Point 2\n• Point 3",
-    position={"x": "10%", "y": "15%", "width": "80%", "height": "70%"}
+    x="10%", y="15%", width="80%", height="70%"
 )
 
 # Add a section slide
@@ -318,9 +316,9 @@ section_slide = pres.add_section_slide(
 )
 
 # Add an image slide with caption
-image_slide = pres.add_image_slide(
-    title="Image Example",
+image_slide, picture = pres.add_image_gen_slide(
     image_path="path/to/image.jpg",
+    title="Image Example",
     label="This is a caption for the image"
 )
 
@@ -503,7 +501,7 @@ title_slide = pres.add_title_slide(
 content_slide = pres.add_content_slide("Key Highlights")
 content_slide.add_text(
     text="• Revenue increased by 15%\n• New product launch successful\n• Expansion to 3 new markets",
-    position={"x": "10%", "y": "15%", "width": "80%", "height": "70%"}
+    x="10%", y="15%", width="80%", height="70%"
 )
 
 pres.save("combined_template_approach.pptx")
@@ -553,7 +551,7 @@ for shape in bullet_shapes:
 ### Dashboard Slide
 
 ```python
-from easypptx import Presentation, Chart, Pyplot
+from easypptx import Presentation, Pyplot
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -573,15 +571,17 @@ data = pd.DataFrame({
 })
 
 # Add a chart to the top left position
-Chart.add(
-    slide=dashboard_slide,
+pos = chart_positions["top_left"]["position"]
+dashboard_slide.add_chart(
     data=data,
     chart_type="column",
-    position=chart_positions["top_left"]["position"],
+    x=pos["x"],
+    y=pos["y"],
+    width=pos["width"],
+    height=pos["height"],
     category_column="Quarter",
     value_columns="Revenue",
-    has_title=True,
-    chart_title="Quarterly Revenue"
+    title="Quarterly Revenue"
 )
 
 # Add a matplotlib plot to another position
@@ -612,7 +612,11 @@ timeline_title.text_frame.text = "Project Timeline"
 
 # Create timeline steps (simplified example)
 step_box1 = timeline_slide.add_shape(
-    position={"x": "5%", "y": "20%", "width": "15%", "height": "15%"},
+    shape_type="RECTANGLE",  # String shape names work in addition to MSO_SHAPE enums
+    x="5%",
+    y="20%",
+    width="15%",
+    height="15%",
     fill_color="blue"
 )
 
@@ -740,6 +744,34 @@ slide = pres.add_slide_from_template(template_name)
 custom_name = tm.load("templates/my_custom.toml", template_name="renamed_template")
 slide = pres.add_slide_from_template(custom_name)
 ```
+
+### Default Templates and Per-Slide Overrides
+
+A presentation can register a default TOML template that applies to every new slide. Individual slides can override or opt out of it:
+
+```python
+from easypptx import Presentation
+
+# Register a default template for all slides
+pres = Presentation(template_toml="templates/my_default.toml")
+
+# Uses the default template
+slide1 = pres.add_slide(title="Uses the default template")
+
+# Uses a different template for this slide only
+slide2 = pres.add_slide(template_toml="templates/special.toml")
+
+# Opts this slide out of the default template entirely
+slide3 = pres.add_slide(template_toml=False)
+```
+
+`template_toml=None` (the default) means "use the presentation's default template if one is set". `template_toml=False` means "use no template for this slide".
+
+### Template Loading Behavior
+
+- TOML templates are cached by path and modification time, so repeated loads of an unchanged file are fast.
+- Invalid template files raise an error instead of printing a warning.
+- `add_slide_from_template` raises `ValueError` if a template's `reference_pptx` would replace a presentation that already has slides.
 
 ### Benefits of TOML/JSON Templates
 
