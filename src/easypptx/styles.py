@@ -85,6 +85,7 @@ class Theme:
     palette: list[ColorType] | None = None
     title_accent: bool = True
     table: dict[str, Any] | None = None
+    footer: str | None = None
 
     def to_template(self) -> dict[str, Any]:
         """Express the theme in the template-defaults structure.
@@ -102,6 +103,8 @@ class Theme:
             template["defaults"]["chart"] = chart_defaults
         if self.table is not None:
             template["defaults"]["table"] = dict(self.table)
+        if self.accent_color is not None:
+            template["defaults"]["bullet"] = {"marker_color": self.accent_color}
         if self.bg_color is not None:
             template["bg_color"] = self.bg_color
         return template
@@ -158,6 +161,36 @@ THEMES: dict[str, Theme] = {
         },
     ),
 }
+
+
+def theme_rgb(color: Any) -> tuple[int, int, int] | None:
+    """Resolve a theme color field to an RGB tuple."""
+    from easypptx.common import resolve_color
+
+    rgb = resolve_color(color)
+    return (rgb[0], rgb[1], rgb[2]) if rgb is not None else None
+
+
+def card_tone(theme: Theme) -> tuple[int, int, int] | None:
+    """A subtle panel tone: the background nudged toward the text color."""
+    from easypptx.common import blend_colors
+
+    bg = theme_rgb(theme.bg_color)
+    fg = theme_rgb(theme.body.color)
+    if bg is None or fg is None:
+        return None
+    return blend_colors(bg, fg, 0.07)
+
+
+def muted_tone(theme: Theme) -> tuple[int, int, int] | None:
+    """A muted text tone: body color faded halfway toward the background."""
+    from easypptx.common import blend_colors
+
+    bg = theme_rgb(theme.bg_color)
+    fg = theme_rgb(theme.body.color)
+    if bg is None or fg is None:
+        return None
+    return blend_colors(fg, bg, 0.45)
 
 
 def resolve_theme(theme: str | Theme | None) -> Theme | None:

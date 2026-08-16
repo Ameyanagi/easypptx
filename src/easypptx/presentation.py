@@ -32,6 +32,8 @@ from easypptx.text import Text
 if TYPE_CHECKING:
     import pandas as pd
 
+    from easypptx.deck import Deck
+
 
 class Presentation:
     """Main presentation class for creating and manipulating PowerPoint presentations.
@@ -275,7 +277,7 @@ class Presentation:
         self.pptx_presentation.slide_width = Inches(width_inches)
         self.pptx_presentation.slide_height = Inches(height_inches)
 
-    def deck(self) -> Any:
+    def deck(self) -> Deck:
         """Start a fluent Deck builder on this presentation.
 
         Returns:

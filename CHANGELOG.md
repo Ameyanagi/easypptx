@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Fluent deck builder**: `Deck(theme=...)` / `pres.deck()` — build a whole presentation as one chain (`.title_slide().slide().bullets().chart().save()`). Calls validate eagerly (errors at the call site); rendering is lazy with content-aware layout: fixed blocks (text/bullets/tables) get natural estimated heights, flexible blocks (charts/images/figures) expand into the remaining space, and no coordinates are needed. Explicit x/y/width/height on any call opts that block out of auto-layout
 - **Auto-pagination**: overflowing content flows onto "(cont.)" slides and long bullet lists split across pages at full size; `slide(paginate=False)` compresses instead
 - `section()` divider slides, `notes()`, and a `tap(fn)` escape hatch to the low-level Slide API; a rendered deck cannot be reused (builder is consumed)
+- **Design blocks**: `stats()` KPI tile rows (accent numbers, uppercase labels, green/red deltas on tonal cards), `compare()` side-by-side cards, chart `headline=` message lines and `emphasize=` series highlighting (non-highlighted series mute to neutral in both chart backends), `kicker=` labels above titles, and theme-colored footers with page numbers (`Deck(footer=...)` / `Theme.footer`)
+- **Composed title slides**: asymmetric layout with a tonal side panel and accent edge; bullet markers render in the theme accent color deck-wide
 
 ## [0.9.0] - 2026-08-16
 

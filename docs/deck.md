@@ -33,7 +33,22 @@ Build onto an existing presentation with `pres.deck()`.
 ## Content methods
 
 `text`, `bullets`, `chart`, `table`, `image`, and `pyplot` mirror the
-`Slide` methods and forward their keyword arguments. Three extras:
+`Slide` methods and forward their keyword arguments. Design blocks:
+
+- `stats([...])` — a row of KPI tiles: `("+12%", "Revenue growth", "+3pt")`
+  tuples render as big accent numbers with uppercase labels and
+  green/red deltas on tonal cards.
+- `compare(left, right)` — two side-by-side cards, each
+  `(heading, bullet_items)`, with accent headings.
+- `chart(..., headline="Revenue accelerated every quarter",
+  emphasize="Revenue")` — a message line above the chart, with all
+  non-emphasized series muted to neutral so the story stands out.
+- `slide(..., kicker="Q3 FINANCIALS")` — a small accent label above the
+  title.
+- `Deck(footer="Acme Corp")` (or `Theme(footer=...)`) adds a footer line
+  and page numbers to every content slide.
+
+Three extras:
 
 - `notes(text)` sets or appends the current slide's speaker notes.
 - `tap(fn)` runs `fn(slide)` with the rendered `Slide` at save time — the

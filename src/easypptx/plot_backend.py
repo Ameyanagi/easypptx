@@ -61,6 +61,7 @@ def render_chart(
     palette: list | None = None,
     text_color: Any = None,
     font_name: str | None = None,
+    emphasize: list[str] | None = None,
 ) -> Any:
     """Render a chart with matplotlib and place it on the slide as an image.
 
@@ -98,7 +99,11 @@ def render_chart(
         raise ValueError(f"Unsupported chart type: {chart_type!r}. Supported: {', '.join(sorted(SUPPORTED_TYPES))}")
     plt = _require_matplotlib()
 
+    names_list = list(series)
+
     def color(i: int) -> Any:
+        if emphasize and names_list[i] not in emphasize:
+            return (0.72, 0.75, 0.78)  # muted neutral for de-emphasized series
         if not palette:
             return None
         from easypptx.common import resolve_color
