@@ -91,36 +91,28 @@ class TestImage:
     def test_add_image_maintain_aspect_ratio_width(self):
         """Test adding an image with width while maintaining aspect ratio."""
         # Call add method with width only and maintain_aspect_ratio=True
-        result = self.image.add(self.test_image_path, width=4.0, maintain_aspect_ratio=True)
+        from easypptx import Presentation
+        from easypptx.image import Image
 
-        # Verify slide.add_image was called with correct parameters
-        self.slide.add_image.assert_called_once()
-        call_args = self.slide.add_image.call_args[0]
+        pres = Presentation()
+        slide = pres.add_slide()
+        shape = Image(slide).add(self.test_image_path, width=40, maintain_aspect_ratio=True)
 
-        assert call_args[0] == str(self.test_image_path)
-        assert call_args[3] == 4.0  # width
-        # Height should be calculated based on aspect ratio (width/2 since our test image is 100x50)
-        assert call_args[4] == 2.0  # height
-
-        # Verify the result is the return value from slide.add_image
-        assert result == self.slide.add_image.return_value
+        # Physical aspect ratio preserved: our test image is 100x50 (2:1)
+        assert abs(shape.width / shape.height - 2.0) < 0.01
 
     def test_add_image_maintain_aspect_ratio_height(self):
         """Test adding an image with height while maintaining aspect ratio."""
         # Call add method with height only and maintain_aspect_ratio=True
-        result = self.image.add(self.test_image_path, height=2.0, maintain_aspect_ratio=True)
+        from easypptx import Presentation
+        from easypptx.image import Image
 
-        # Verify slide.add_image was called with correct parameters
-        self.slide.add_image.assert_called_once()
-        call_args = self.slide.add_image.call_args[0]
+        pres = Presentation()
+        slide = pres.add_slide()
+        shape = Image(slide).add(self.test_image_path, height=30, maintain_aspect_ratio=True)
 
-        assert call_args[0] == str(self.test_image_path)
-        # Width should be calculated based on aspect ratio (height*2 since our test image is 100x50)
-        assert call_args[3] == 4.0  # width
-        assert call_args[4] == 2.0  # height
-
-        # Verify the result is the return value from slide.add_image
-        assert result == self.slide.add_image.return_value
+        # Physical aspect ratio preserved: our test image is 100x50 (2:1)
+        assert abs(shape.width / shape.height - 2.0) < 0.01
 
     def test_add_image_nonexistent_file(self):
         """Test adding a nonexistent image raises FileNotFoundError."""

@@ -189,6 +189,13 @@ class GridCellProxy:
             x, y, w, h = self.grid._cell_area(cell, padded=False)
             shape = self.grid.parent.add_shape(x=x, y=y, width=w, height=h)
 
+            # Send the background to the bottom of the z-order so it never
+            # covers content that already exists in the cell
+            element = shape._element
+            tree = element.getparent()
+            tree.remove(element)
+            tree.insert(2, element)
+
             fill_rgb = resolve_color(fill)
             if fill_rgb is not None:
                 shape.fill.solid()
@@ -485,12 +492,15 @@ class Grid:
         if start_row > end_row or start_col > end_col:
             raise CellMergeError("Start coordinates must be less than or equal to end coordinates")
 
-        # Check if any of the cells in the range are already merged
+        # Check if any of the cells in the range are already merged, either
+        # as spanned members or as the origin of another span
         for row in range(start_row, end_row + 1):
             for col in range(start_col, end_col + 1):
                 cell = self.cells[row][col]
                 if cell.is_spanned:
                     raise CellMergeError("Cell is already part of a merged cell")
+                if (cell.span_rows, cell.span_cols) != (1, 1):
+                    raise CellMergeError("Cell is already the origin of a merged region")
 
         # Get the first cell (top-left)
         first_cell = self.cells[start_row][start_col]
@@ -984,6 +994,11 @@ class Grid:
         Cells fill in row-major order; when every cell has content, a new
         row is appended automatically.
 
+        Note:
+            Growing the grid resizes the cell geometry for future placements
+            only — shapes already on the slide keep their positions. Size the
+            grid up front (rows=...) when mixing with pre-placed content.
+
         Examples:
             ```python
             grid.next().add_text("First free cell")
@@ -1091,11 +1106,17 @@ class Grid:
         # Recalculate cell dimensions
         new_cells = self._create_cells()
 
-        # Copy content from old cells to new cells where applicable
+        # Copy content and metadata from old cells to new cells
         for row in range(original_rows):
             for col in range(original_cols):
                 if row < self.rows and col < self.cols:
-                    new_cells[row][col].content = self.cells[row][col].content
+                    old = self.cells[row][col]
+                    new = new_cells[row][col]
+                    new.content = old.content
+                    new.span_rows = old.span_rows
+                    new.span_cols = old.span_cols
+                    new.is_spanned = old.is_spanned
+                    new.pad = old.pad
 
         # Update cells
         self.cells = new_cells

@@ -547,6 +547,8 @@ class Slide:
         height: PositionType = 70,
         font_size: int | None = None,
         font_name: str | None = None,
+        font_bold: bool | None = None,
+        font_italic: bool | None = None,
         color: str | tuple[int, int, int] | None = None,
         align: str | None = None,
         bullet: bool = True,
@@ -587,6 +589,8 @@ class Slide:
             sk = style.to_kwargs()
             font_size = font_size if font_size is not None else sk.get("font_size")
             font_name = font_name if font_name is not None else sk.get("font_name")
+            font_bold = font_bold if font_bold is not None else sk.get("font_bold")
+            font_italic = font_italic if font_italic is not None else sk.get("font_italic")
             align = align if align is not None else sk.get("align")
             color = color if color is not None else sk.get("color")
 
@@ -613,6 +617,10 @@ class Slide:
             paragraph.level = max(0, min(4, int(level)))
             paragraph.font.size = Pt(font_size_val)
             paragraph.font.name = font_name_val
+            if font_bold is not None:
+                paragraph.font.bold = font_bold
+            if font_italic is not None:
+                paragraph.font.italic = font_italic
             if align_val in ALIGN:
                 paragraph.alignment = ALIGN[align_val]
             if color_rgb is not None:
@@ -837,13 +845,24 @@ def _bullet_props(paragraph: Any) -> Any:
     return pPr
 
 
+def _insert_bullet_element(pPr: Any, element: Any) -> None:
+    """Insert a bullet element in schema order (before a:tabLst/a:defRPr/a:extLst)."""
+    from pptx.oxml.ns import qn
+
+    for anchor_tag in ("a:tabLst", "a:defRPr", "a:extLst"):
+        anchor = pPr.find(qn(anchor_tag))
+        if anchor is not None:
+            anchor.addprevious(element)
+            return
+    pPr.append(element)
+
+
 def _set_bullet(paragraph: Any, char: str = "\u2022") -> None:
     """Mark a paragraph as a bulleted list entry."""
     from pptx.oxml.ns import qn
 
     pPr = _bullet_props(paragraph)
-    bullet = pPr.makeelement(qn("a:buChar"), {"char": char})
-    pPr.append(bullet)
+    _insert_bullet_element(pPr, pPr.makeelement(qn("a:buChar"), {"char": char}))
 
 
 def _remove_bullet(paragraph: Any) -> None:
@@ -851,7 +870,7 @@ def _remove_bullet(paragraph: Any) -> None:
     from pptx.oxml.ns import qn
 
     pPr = _bullet_props(paragraph)
-    pPr.append(pPr.makeelement(qn("a:buNone"), {}))
+    _insert_bullet_element(pPr, pPr.makeelement(qn("a:buNone"), {}))
 
 
 # Backward-compatible export: PositionType historically lived in this module

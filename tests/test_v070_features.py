@@ -258,3 +258,119 @@ class TestNumericPercent:
         shape = slide.add_text("q", x=in_(1.0), y=in_(0.5), width=in_(2.0), height=in_(1.0))
         assert shape.left == 914400
         assert shape.top == 457200
+
+
+class TestReviewRegressions:
+    """Regressions surfaced by the independent 0.7.0 review."""
+
+    def test_expand_grid_preserves_metadata(self):
+        pres = Presentation()
+        slide = pres.add_slide()
+        grid = pres.add_grid(slide=slide, rows=1, cols=2)
+        grid[0, 0].style(padding=3)
+        grid.next().add_text("a")
+        grid.next().add_text("b")
+        grid.next().add_text("c")  # grows to 2 rows
+        assert grid.cells[0][0].pad == 3
+
+    def test_overlapping_spans_rejected(self):
+        from easypptx.grid import CellMergeError
+
+        pres = Presentation()
+        slide = pres.add_slide()
+        grid = pres.add_grid(slide=slide, rows=2, cols=2)
+        grid[0, :]
+        with pytest.raises(CellMergeError):
+            grid[:, 0]
+        grid[0, :]  # exact reuse is still allowed
+
+    def test_cell_background_sits_below_content(self):
+        pres = Presentation()
+        slide = pres.add_slide()
+        grid = pres.add_grid(slide=slide, rows=1, cols=1, padding=0.0)
+        grid[0, 0].add_text("content first")
+        grid[0, 0].style(fill="lightgray")
+        from pptx.enum.shapes import MSO_SHAPE_TYPE
+
+        shapes = list(slide.pptx_slide.shapes)
+        # Background rectangle must be first in z-order, the text box on top
+        assert shapes[0].shape_type == MSO_SHAPE_TYPE.AUTO_SHAPE
+        assert shapes[-1].shape_type == MSO_SHAPE_TYPE.TEXT_BOX
+
+    def test_leading_hr_is_not_frontmatter(self):
+        pres = Presentation.from_markdown("---\n\n## Kept\n\ncontent\n")
+        assert len(pres.slides) == 1
+
+    def test_hr_then_heading_no_blank_slide(self):
+        pres = Presentation.from_markdown("## A\n\ntext\n\n---\n\n## B\n\ntext\n")
+        assert len(pres.slides) == 2
+
+    def test_unclosed_code_fence_kept(self):
+        pres = Presentation.from_markdown("## C\n\n```\nx = 1\n")
+        boxes = [s for s in pres.slides[0].shapes if s.has_text_frame]
+        assert any("x = 1" in b.text_frame.text for b in boxes)
+
+    def test_crowded_markdown_slide_no_warnings(self):
+        import warnings as w
+
+        md = "## Busy\n\n" + "\n\n".join(f"Paragraph {i}" for i in range(45))
+        with w.catch_warnings():
+            w.simplefilter("error")
+            Presentation.from_markdown(md)
+
+    def test_square_image_stays_square(self, tmp_path):
+        from easypptx.image import Image
+
+        path = tmp_path / "sq.png"
+        PILImage.new("RGB", (100, 100), "red").save(path)
+        pres = Presentation()
+        slide = pres.add_slide()
+        shape = Image(slide).add(path, x=10, y=10, width=50)
+        assert abs(shape.width - shape.height) <= 1
+
+    def test_fit_within_box_centers(self, tmp_path):
+        from easypptx.image import Image
+
+        path = tmp_path / "sq.png"
+        PILImage.new("RGB", (100, 100), "red").save(path)
+        pres = Presentation()
+        slide = pres.add_slide()
+        shape = Image(slide).add(path, x=0, y=0, width=100, height=50)
+        assert abs(shape.width - shape.height) <= 1
+        sw = pres.pptx_presentation.slide_width
+        assert abs((shape.left + shape.width / 2) - sw / 2) < 2000
+
+    def test_in_length_padding_not_stringified(self):
+        import warnings as w
+
+        pres = Presentation()
+        with w.catch_warnings():
+            w.simplefilter("error")  # the old bug produced a clamp warning
+            _slide, _grid = pres.add_autogrid_slide(None, rows=1, cols=1, title="T", title_padding=in_(0.5))
+
+    def test_chart_slide_multi_series(self):
+        pres = Presentation()
+        df = pd.DataFrame({"Q": ["Q1", "Q2"], "Rev": [1, 2], "Cost": [3, 4]})
+        slide = pres.add_chart_slide("Multi", df, category_column="Q", value_columns=["Rev", "Cost"])
+        chart = next(s for s in slide.pptx_slide.shapes if s.has_chart).chart
+        assert [s.name for s in chart.plots[0].series] == ["Rev", "Cost"]
+
+    def test_bullet_xml_precedes_defrpr(self):
+        from pptx.oxml.ns import qn
+
+        pres = Presentation()
+        slide = pres.add_slide()
+        shape = slide.add_bullets(["item"], font_bold=True)
+        pPr = shape.text_frame.paragraphs[0]._p.find(qn("a:pPr"))
+        tags = [c.tag.split("}")[1] for c in pPr]
+        assert tags.index("buChar") < tags.index("defRPr")
+
+    def test_theme_title_font_fields_apply(self):
+        theme = Theme(title=TextStyle(font_name="Arial", font_bold=False, font_size=20))
+        pres = Presentation(theme=theme)
+        slide = pres.add_slide(title="T")
+        title_shape = next(s for s in slide.shapes if s.has_text_frame)
+        p = title_shape.text_frame.paragraphs[0]
+        assert p.font.name == "Arial"
+        assert p.font.bold is False
+        assert p.font.size.pt == 20

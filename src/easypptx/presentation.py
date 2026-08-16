@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, cast
 
@@ -32,11 +31,6 @@ from easypptx.text import Text
 
 if TYPE_CHECKING:
     import pandas as pd
-
-
-def _deprecated(old: str, new: str) -> None:
-    """Emit a DeprecationWarning pointing callers at the replacement API."""
-    warnings.warn(f"{old} is deprecated; use {new} instead", DeprecationWarning, stacklevel=3)
 
 
 class Presentation:
@@ -452,6 +446,8 @@ class Presentation:
                     title_align = (title_style.align if title_style else None) or "center"
                 if title_color is None and title_style is not None:
                     title_color = title_style.color
+                title_font_name = title_style.font_name if title_style else None
+                title_font_bold = title_style.font_bold if title_style and title_style.font_bold is not None else True
 
                 # If general title_padding is provided, it overrides individual x and y padding
                 x_padding = title_padding if title_padding is not None else title_x_padding
@@ -465,7 +461,8 @@ class Presentation:
                     width=title_width,
                     height=title_height,
                     font_size=title_font_size,
-                    font_bold=True,
+                    font_bold=title_font_bold,
+                    font_name=title_font_name,
                     align=title_align,
                     color=title_color,
                 )
@@ -929,8 +926,8 @@ class Presentation:
 
             slide.add_text(
                 text=title,
-                x=str(title_x) if title_x is not None else "0%",
-                y=str(title_y) if title_y is not None else "0%",
+                x=title_x if title_x is not None else "0%",
+                y=title_y if title_y is not None else "0%",
                 width="100%",
                 height=title_height,
                 font_size=title_font_size,
@@ -949,7 +946,7 @@ class Presentation:
 
             slide.add_text(
                 text=subtitle,
-                x=str(subtitle_x) if subtitle_x is not None else "0%",
+                x=subtitle_x if subtitle_x is not None else "0%",
                 y=subtitle_y if subtitle_y is not None else adjusted_y,
                 width="100%",
                 height=subtitle_height,
@@ -1000,7 +997,7 @@ class Presentation:
 
             slide.add_text(
                 text=label,
-                x=str(label_x) if label_x is not None else "0%",
+                x=label_x if label_x is not None else "0%",
                 y=label_y,
                 width="100%",
                 height="5%",
@@ -1189,38 +1186,13 @@ class Presentation:
             chart_style["chart_type"] = chart_type
 
         # Import Chart class here to avoid circular import
-        from easypptx.chart import Chart
+        from easypptx.chart import Chart, extract_chart_series
 
         # Create a Chart object and add the chart
         chart_obj = Chart(slide)
 
-        # Extract chart data from data parameter
-        categories: list[Any] = []
-        values: list[Any] = []
-
-        # Simple extraction of categories and values for the example
-        if common.is_dataframe(data):
-            # It's a pandas DataFrame
-            df_data = cast("pd.DataFrame", data)
-            if category_column is not None and category_column in df_data.columns:
-                categories = df_data[category_column].tolist()
-            else:
-                categories = df_data.iloc[:, 0].tolist()
-
-            if value_columns is not None:
-                if isinstance(value_columns, str) and value_columns in df_data.columns:
-                    values = df_data[value_columns].tolist()
-                elif isinstance(value_columns, list) and len(value_columns) > 0 and value_columns[0] in df_data.columns:
-                    values = df_data[value_columns[0]].tolist()
-                else:
-                    values = df_data.iloc[:, 1].tolist()
-            else:
-                values = df_data.iloc[:, 1].tolist()
-        else:
-            # It's a list of lists
-            if data and len(data) > 1:
-                categories = [row[0] for row in data[1:]]
-                values = [row[1] for row in data[1:]]
+        # Extract categories and every requested value series
+        categories, series = extract_chart_series(data, category_column, value_columns)
 
         # Extract position values
         x = chart_position.get("x", "10%")
@@ -1231,7 +1203,7 @@ class Presentation:
         chart = chart_obj.add(
             chart_type=chart_style.get("chart_type", "column"),
             categories=categories,
-            values=values,
+            series=series,
             x=x,
             y=y,
             width=width,
@@ -1662,7 +1634,7 @@ class Presentation:
         if content_padding_val is not None or content_x_padding_val is not None:
             content_x = content_padding_val if content_padding_val is not None else content_x_padding_val
             if content_x is not None:
-                grid_x = str(content_x)
+                grid_x = content_x
 
         # Add title if provided
         if title:
@@ -1951,7 +1923,7 @@ class Presentation:
 
         # Apply content x padding if specified (for grid positioning)
         content_x = resolve_padding(content_padding, content_x_padding)
-        grid_x = str(content_x) if content_x is not None else "0%"
+        grid_x = content_x if content_x is not None else "0%"
 
         if title:
             # Calculate title position with padding
@@ -1961,8 +1933,8 @@ class Presentation:
             # Add the title to the slide
             slide.add_text(
                 text=title,
-                x=str(title_x) if title_x is not None else "0%",
-                y=str(title_y) if title_y is not None else "0%",
+                x=title_x if title_x is not None else "0%",
+                y=title_y if title_y is not None else "0%",
                 width="100%",
                 height=title_height,
                 font_size=title_font_size,
@@ -2131,8 +2103,8 @@ class Presentation:
 
             slide.add_text(
                 text=title,
-                x=str(title_x) if title_x is not None else "0%",
-                y=str(title_y) if title_y is not None else "0%",
+                x=title_x if title_x is not None else "0%",
+                y=title_y if title_y is not None else "0%",
                 width="100%",
                 height=title_height,
                 font_size=title_font_size,
@@ -2151,7 +2123,7 @@ class Presentation:
 
             slide.add_text(
                 text=subtitle,
-                x=str(subtitle_x) if subtitle_x is not None else "0%",
+                x=subtitle_x if subtitle_x is not None else "0%",
                 y=subtitle_y if subtitle_y is not None else adjusted_y,
                 width="100%",
                 height=subtitle_height,
@@ -2205,7 +2177,7 @@ class Presentation:
 
             slide.add_text(
                 text=label,
-                x=str(label_x) if label_x is not None else "0%",
+                x=label_x if label_x is not None else "0%",
                 y=label_y,
                 width="100%",
                 height="5%",

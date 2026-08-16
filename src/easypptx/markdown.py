@@ -84,11 +84,17 @@ def _parse_frontmatter(lines: list[str]) -> tuple[dict[str, str], int]:
         return {}, 0
     settings: dict[str, str] = {}
     for i, line in enumerate(lines[1:], start=1):
-        if line.strip() == "---":
-            return settings, i + 1
-        if ":" in line:
-            key, _, value = line.partition(":")
-            settings[key.strip().lower()] = value.strip().strip("\"'")
+        stripped = line.strip()
+        if stripped == "---":
+            # Only valid frontmatter (at least one key) consumes the block;
+            # otherwise the leading --- was a horizontal rule
+            return (settings, i + 1) if settings else ({}, 0)
+        if not stripped:
+            continue
+        if ":" not in stripped:
+            return {}, 0  # not frontmatter: a leading horizontal rule
+        key, _, value = stripped.partition(":")
+        settings[key.strip().lower()] = value.strip().strip("\"'")
     return {}, 0  # unterminated: treat as normal content
 
 
@@ -208,12 +214,12 @@ def _parse(text: str) -> tuple[dict[str, str], list[_SlideSpec]]:
             if not stripped:
                 continue
 
-        # Horizontal rule = forced slide break
+        # Horizontal rule = forced slide break (slide created lazily so a
+        # following heading doesn't leave a blank slide behind)
         if re.fullmatch(r"(-{3,}|\*{3,}|_{3,})", stripped):
             end_columns()
             flush_all()
-            current = _SlideSpec()
-            slides.append(current)
+            current = None
             continue
 
         # Blank line closes paragraph/bullet/table groups
@@ -253,6 +259,8 @@ def _parse(text: str) -> tuple[dict[str, str], list[_SlideSpec]]:
 
         paragraph.append(stripped)
 
+    if in_code and code_lines:
+        sink().append(_Block("code", lines=code_lines))
     end_columns()
     flush_all()
     return settings, slides
@@ -271,8 +279,10 @@ def _parse_table(lines: list[str]) -> list[list[str]]:
 
 def _strip_inline(text: str) -> str:
     """Drop basic inline markdown (bold/italic/code/link syntax)."""
-    text = re.sub(r"\*\*(.+?)\*\*|__(.+?)__", lambda m: m.group(1) or m.group(2), text)
-    text = re.sub(r"\*(.+?)\*|_(.+?)_", lambda m: m.group(1) or m.group(2), text)
+    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)
+    text = re.sub(r"(?<!\w)__(.+?)__(?!\w)", r"\1", text)
+    text = re.sub(r"(?<!\w)\*([^*]+)\*(?!\w)", r"\1", text)
+    text = re.sub(r"(?<!\w)_([^_]+)_(?!\w)", r"\1", text)
     text = re.sub(r"`([^`]*)`", r"\1", text)
     text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
     return text
@@ -353,13 +363,17 @@ def _render_slide(pres: Presentation, spec: _SlideSpec, base_dir: Path) -> EasyS
         blocks = spec.blocks
         if blocks:
             total_weight = sum(b.weight for b in blocks)
-            gaps = _GAP * (len(blocks) - 1)
-            usable = available - gaps
+            gap = _GAP
+            usable = available - gap * (len(blocks) - 1)
+            if usable < len(blocks) * 1.5:
+                # Crowded slide: shrink the gaps and floor the usable space
+                gap = 0.5
+                usable = max(available - gap * (len(blocks) - 1), len(blocks) * 1.0)
             y = float(top)
             for block in blocks:
                 block_height = usable * block.weight / total_weight
                 _render_block(slide, block, x=5, y=y, width=90, height=block_height, base_dir=base_dir)
-                y += block_height + _GAP
+                y += block_height + gap
 
     if spec.notes:
         slide.notes = "\n".join(spec.notes)

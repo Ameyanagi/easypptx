@@ -7,10 +7,9 @@ from typing import IO, TYPE_CHECKING
 
 from PIL import Image as PILImage
 from pptx.shapes.autoshape import Shape as PPTXShape
-from pptx.util import Inches, Length
+from pptx.util import Inches
 
-from easypptx.common import EMU_PER_INCH
-from easypptx.positioning import PositionType, parse_percent
+from easypptx.positioning import PositionType, to_inches
 
 if TYPE_CHECKING:
     from easypptx.slide import Slide
@@ -77,26 +76,35 @@ class Image:
         else:
             source = image_path
 
-        # Size the missing dimension from the image's aspect ratio
-        if maintain_aspect_ratio and (width is None) != (height is None):
+        # Preserve the image's aspect ratio via physical dimensions
+        if maintain_aspect_ratio and (width is not None or height is not None):
             with PILImage.open(source) as img:
                 img_width, img_height = img.size
             aspect_ratio = img_width / img_height
             if not isinstance(source, str):
                 source.seek(0)
 
-            if width is not None:
-                # Calculate height based on width
-                if isinstance(width, Length):
-                    height = Inches(int(width) / EMU_PER_INCH / aspect_ratio)
-                else:
-                    height = parse_percent(width) / aspect_ratio
+            slide_w = self.slide._get_slide_width()
+            slide_h = self.slide._get_slide_height()
+
+            if width is not None and height is not None:
+                # Both given: fit within the box, centered
+                box_x = to_inches(x, slide_w)
+                box_y = to_inches(y, slide_h)
+                box_w = to_inches(width, slide_w)
+                box_h = to_inches(height, slide_h)
+                fit_w = min(box_w, box_h * aspect_ratio)
+                fit_h = fit_w / aspect_ratio
+                x = Inches(box_x + (box_w - fit_w) / 2)
+                y = Inches(box_y + (box_h - fit_h) / 2)
+                width = Inches(fit_w)
+                height = Inches(fit_h)
+            elif width is not None:
+                # Height follows from the physical width
+                height = Inches(to_inches(width, slide_w) / aspect_ratio)
             elif height is not None:
-                # Calculate width based on height
-                if isinstance(height, Length):
-                    width = Inches(int(height) / EMU_PER_INCH * aspect_ratio)
-                else:
-                    width = parse_percent(height) * aspect_ratio
+                # Width follows from the physical height
+                width = Inches(to_inches(height, slide_h) * aspect_ratio)
 
         return self.slide.add_image(source, x, y, width, height)
 
