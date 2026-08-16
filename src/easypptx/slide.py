@@ -504,6 +504,7 @@ class Slide:
         y_min: float | None = None,
         y_max: float | None = None,
         palette: list | None = None,
+        emphasize: str | list[str] | None = None,
         **kwargs: Any,
     ) -> PPTXChart:
         """Add a chart to the slide.
@@ -545,6 +546,8 @@ class Slide:
             title = kwargs.pop("chart_title")
         font_color = kwargs.pop("font_color", None)
         warn_ignored_kwargs("Slide.add_chart", kwargs)
+
+        emphasize_list = [emphasize] if isinstance(emphasize, str) else emphasize
 
         # A ChartStyle fills any chart options the caller left unset
         if style is not None:
@@ -605,6 +608,7 @@ class Slide:
                 palette=palette,
                 text_color=font_color,
                 font_name=self.template_defaults.get("global", {}).get("font_name", DEFAULT_FONT),
+                emphasize=emphasize_list,
             )
         if backend != "native":
             raise ValueError(f"Unknown backend: {backend!r} (use 'native' or 'pyplot')")
@@ -628,6 +632,7 @@ class Slide:
             y_max=y_max,
             palette=palette,
             font_color=font_color,
+            emphasize=emphasize_list,
         )
 
     @property
@@ -707,6 +712,7 @@ class Slide:
         font_name_val = self._template_value("text", "font_name", font_name, DEFAULT_FONT)
         align_val = self._template_value("text", "align", align, "left")
         color_rgb = resolve_color(normalize_color(self._template_value("text", "color", color, None)))
+        marker_rgb = resolve_color(self.template_defaults.get("bullet", {}).get("marker_color"))
 
         x_inches = self._convert_position(x, self._slide_width)
         y_inches = self._convert_position(y, self._slide_height)
@@ -753,7 +759,7 @@ class Slide:
             if color_rgb is not None:
                 paragraph.font.color.rgb = color_rgb
             if bullet:
-                _set_bullet(paragraph)
+                _set_bullet(paragraph, color=marker_rgb)
             else:
                 _remove_bullet(paragraph)
 
@@ -988,11 +994,16 @@ def _insert_bullet_element(pPr: Any, element: Any) -> None:
     pPr.append(element)
 
 
-def _set_bullet(paragraph: Any, char: str = "\u2022") -> None:
-    """Mark a paragraph as a bulleted list entry."""
+def _set_bullet(paragraph: Any, char: str = "\u2022", color: Any = None) -> None:
+    """Mark a paragraph as a bulleted list entry, optionally with a marker color."""
     from pptx.oxml.ns import qn
 
     pPr = _bullet_props(paragraph)
+    if color is not None:
+        buClr = pPr.makeelement(qn("a:buClr"), {})
+        srgb = pPr.makeelement(qn("a:srgbClr"), {"val": f"{color[0]:02X}{color[1]:02X}{color[2]:02X}"})
+        buClr.append(srgb)
+        _insert_bullet_element(pPr, buClr)
     _insert_bullet_element(pPr, pPr.makeelement(qn("a:buChar"), {"char": char}))
 
 

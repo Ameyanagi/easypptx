@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-08-16
+
+### Added
+- **Fluent deck builder**: `Deck(theme=...)` / `pres.deck()` — build a whole presentation as one chain (`.title_slide().slide().bullets().chart().save()`). Calls validate eagerly (errors at the call site); rendering is lazy with content-aware layout: fixed blocks (text/bullets/tables) get natural estimated heights, flexible blocks (charts/images/figures) expand into the remaining space, and no coordinates are needed. Explicit x/y/width/height on any call opts that block out of auto-layout
+- **Auto-pagination**: overflowing content flows onto "(cont.)" slides and long bullet lists split across pages at full size; `slide(paginate=False)` compresses instead
+- `section()` divider slides, `notes()`, and a `tap(fn)` escape hatch to the low-level Slide API; a rendered deck cannot be reused (builder is consumed)
+- **Design blocks**: `stats()` KPI tile rows (accent numbers, uppercase labels, green/red deltas on tonal cards), `compare()` side-by-side cards, chart `headline=` message lines and `emphasize=` series highlighting (non-highlighted series mute to neutral in both chart backends), `kicker=` labels above titles, and theme-colored footers with page numbers (`Deck(footer=...)` / `Theme.footer`)
+- **Composed title slides**: asymmetric layout with a tonal side panel and accent edge; bullet markers render in the theme accent color deck-wide
+
 ## [0.9.0] - 2026-08-16
 
 Professional visual defaults. Decks built with a theme now look designed out of the box; render-verified on both light and dark themes.

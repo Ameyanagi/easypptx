@@ -74,6 +74,15 @@ def resolve_color(color: str | tuple[int, int, int] | list[int] | None) -> RGBCo
     return None
 
 
+def blend_colors(a: tuple[int, int, int], b: tuple[int, int, int], t: float) -> tuple[int, int, int]:
+    """Blend color a toward color b by factor t (0 = a, 1 = b)."""
+    return (
+        round(a[0] + (b[0] - a[0]) * t),
+        round(a[1] + (b[1] - a[1]) * t),
+        round(a[2] + (b[2] - a[2]) * t),
+    )
+
+
 def apply_shadow(shape: Any) -> None:
     """Apply the library's standard drop shadow to a shape."""
     shadow = shape.shadow

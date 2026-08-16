@@ -3,6 +3,7 @@
 from importlib.metadata import PackageNotFoundError, version
 
 from easypptx.chart import Chart
+from easypptx.deck import Deck
 from easypptx.grid import Grid
 from easypptx.image import Image
 from easypptx.markdown import from_markdown
@@ -25,6 +26,7 @@ except PackageNotFoundError:  # pragma: no cover - package not installed
 __all__ = [
     "Chart",
     "ChartStyle",
+    "Deck",
     "Grid",
     "Image",
     "Presentation",

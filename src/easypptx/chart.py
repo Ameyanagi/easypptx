@@ -221,6 +221,7 @@ class Chart:
         y_max: float | None = None,
         palette: list | None = None,
         font_color: Any = None,
+        emphasize: list[str] | None = None,
         **kwargs: Any,
     ) -> PPTXChart:
         """Add a chart to the slide.
@@ -246,6 +247,8 @@ class Chart:
             palette: Series colors as color names or RGB tuples (default: None)
             font_color: Color for all chart text — axes, tick labels, legend,
                 data labels, and title (default: None, PowerPoint defaults)
+            emphasize: Series names to highlight; all other series are muted
+                to a neutral tone so the message stands out (default: None)
             **kwargs: Additional chart-specific parameters
 
         Returns:
@@ -391,6 +394,20 @@ class Chart:
                 if rgb is not None:
                     chart_series.format.fill.solid()
                     chart_series.format.fill.fore_color.rgb = rgb
+
+        # Emphasis: mute every non-highlighted series toward neutral
+        if emphasize:
+            from easypptx.common import resolve_color
+
+            if rgb_font is not None:
+                luminance = 0.299 * rgb_font[0] + 0.587 * rgb_font[1] + 0.114 * rgb_font[2]
+                mute = RGBColor(0x55, 0x59, 0x5E) if luminance >= 128 else RGBColor(0xC9, 0xCD, 0xD2)
+            else:
+                mute = RGBColor(0xC9, 0xCD, 0xD2)
+            for chart_series in chart.plots[0].series:
+                if chart_series.name not in emphasize:
+                    chart_series.format.fill.solid()
+                    chart_series.format.fill.fore_color.rgb = mute
 
         return chart
 
