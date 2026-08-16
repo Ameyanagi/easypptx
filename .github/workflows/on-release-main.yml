@@ -32,6 +32,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs: [set-version]
+    # Must match the environment configured in the PyPI trusted publisher
+    environment: release
     permissions:
       # Required for PyPI Trusted Publishing (OIDC)
       id-token: write
