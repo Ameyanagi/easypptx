@@ -177,11 +177,22 @@ class TestGridGeometry:
 
 
 class TestDeprecations:
-    def test_pass_through_methods_warn(self):
+    def test_pass_through_methods_removed(self):
+        """The 0.6.0-deprecated pass-through APIs are gone in 0.7.0."""
         pres = Presentation()
-        slide = pres.add_slide()
-        with pytest.warns(DeprecationWarning, match="Slide.add_text"):
-            pres.add_text(slide, "deprecated path")
+        for name in (
+            "add_text",
+            "add_image",
+            "add_shape",
+            "add_table",
+            "add_chart",
+            "add_pyplot",
+            "add_matplotlib_slide",
+            "add_seaborn_slide",
+            "add_plot",
+            "add_image_slide",
+        ):
+            assert not hasattr(pres, name), name
 
 
 class TestCodexReviewRegressions:

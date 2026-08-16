@@ -97,8 +97,8 @@ def test_add_section_slide():
     assert slide.pptx_slide.background.fill.type is not None
 
 
-def test_add_image_slide():
-    """Test adding an image slide using the preset."""
+def test_add_image_gen_slide():
+    """Test adding an image slide."""
     pres = Presentation()
 
     # Mock image path since we're not actually reading an image
@@ -110,7 +110,7 @@ def test_add_image_slide():
         mock_add.return_value = MagicMock()
 
         # Add an image slide
-        slide = pres.add_image_slide("Test Image", mock_image_path)
+        slide, _image = pres.add_image_gen_slide(image_path=mock_image_path, title="Test Image")
 
         # Test that the slide has the correct elements
         shapes = slide.shapes
