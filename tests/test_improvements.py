@@ -25,14 +25,19 @@ class TestPositioningHelpers:
         assert height == "70.00%"
 
     def test_shift_band_inches(self):
+        from easypptx import in_
+
         # 0.75 inches is 10% of a 7.5-inch-high slide
-        y, height = shift_band(0.75, 6.0, 0.75, SLIDE_HEIGHT_EMU)
+        y, height = shift_band(in_(0.75), in_(6.0), in_(0.75), SLIDE_HEIGHT_EMU)
         assert y == "20.00%"
         assert height == "70.00%"
 
     def test_to_percent_and_pct(self):
+        from easypptx import in_
+
         assert to_percent("25%", SLIDE_HEIGHT_EMU) == 25.0
-        assert to_percent(7.5, SLIDE_HEIGHT_EMU) == pytest.approx(100.0)
+        assert to_percent(7.5, SLIDE_HEIGHT_EMU) == 7.5  # bare numbers are percent
+        assert to_percent(in_(7.5), SLIDE_HEIGHT_EMU) == pytest.approx(100.0)
         assert pct(12.5) == "12.50%"
 
 
@@ -172,11 +177,22 @@ class TestGridGeometry:
 
 
 class TestDeprecations:
-    def test_pass_through_methods_warn(self):
+    def test_pass_through_methods_removed(self):
+        """The 0.6.0-deprecated pass-through APIs are gone in 0.7.0."""
         pres = Presentation()
-        slide = pres.add_slide()
-        with pytest.warns(DeprecationWarning, match="Slide.add_text"):
-            pres.add_text(slide, "deprecated path")
+        for name in (
+            "add_text",
+            "add_image",
+            "add_shape",
+            "add_table",
+            "add_chart",
+            "add_pyplot",
+            "add_matplotlib_slide",
+            "add_seaborn_slide",
+            "add_plot",
+            "add_image_slide",
+        ):
+            assert not hasattr(pres, name), name
 
 
 class TestCodexReviewRegressions:

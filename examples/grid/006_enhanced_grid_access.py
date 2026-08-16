@@ -58,7 +58,7 @@ pres = Presentation()
 slide = pres.add_slide()
 slide.add_text(
     text="006 - Enhanced Grid Access API",
-    x="50%",
+    x="5%",
     y="5%",
     width="90%",
     height="10%",
@@ -70,7 +70,7 @@ slide.add_text(
 # Add a subtitle
 slide.add_text(
     text="Using grid[row] and grid[row, col] accessors",
-    x="50%",
+    x="5%",
     y="15%",
     width="90%",
     height="5%",
@@ -105,10 +105,9 @@ grid[0, 1].add_image(
     image_path=str(logo_path),
 )
 
-# Method 3: Using grid[row].add_text for the entire row
-# (in this case, it adds to the first available cell in row 1)
-grid[1].add_text(
-    text="This text was added using grid[1].add_text()",
+# Method 3: Using grid[row, col].add_text for the second row
+grid[1, 0].add_text(
+    text="This text was added using grid[1, 0].add_text()",
     font_size=14,
     align="center",
     vertical="middle",
@@ -121,9 +120,8 @@ data = [
     ["Widget B", "$15.50", 10],
 ]
 
-# Method 4: Using grid[row].add_table at index 1
-# (in this case, it adds to the second cell in row 1)
-grid[1].add_table(
+# Method 4: Using grid[row, col].add_table for the second row
+grid[1, 1].add_table(
     data=data,
     has_header=True,
 )
@@ -134,7 +132,7 @@ grid[1].add_table(
 dashboard_slide = pres.add_slide()
 dashboard_slide.add_text(
     text="Dashboard Using Enhanced Grid Access API",
-    x="50%",
+    x="5%",
     y="5%",
     width="90%",
     height="10%",
@@ -226,9 +224,8 @@ feature_slide, features_grid = pres.add_autogrid_slide(
     padding=5.0,
 )
 
-# Add feature items to each row without manually tracking columns
-# For row 0, this will add to (0,0) then (0,1)
-features_grid[0].add_textbox(
+# Add feature items to each row, addressing cells with [row, col]
+features_grid[0, 0].add_text(
     text="Simplified Syntax",
     font_size=24,
     font_bold=True,
@@ -236,15 +233,14 @@ features_grid[0].add_textbox(
     vertical="middle",
 )
 
-features_grid[0].add_textbox(
+features_grid[0, 1].add_text(
     text="Intuitive and concise API",
     font_size=18,
     align="center",
     vertical="middle",
 )
 
-# For row 1, this will add to (1,0) then (1,1)
-features_grid[1].add_textbox(
+features_grid[1, 0].add_text(
     text="Automatic Placement",
     font_size=24,
     font_bold=True,
@@ -252,15 +248,14 @@ features_grid[1].add_textbox(
     vertical="middle",
 )
 
-features_grid[1].add_textbox(
+features_grid[1, 1].add_text(
     text="Content flows naturally across rows",
     font_size=18,
     align="center",
     vertical="middle",
 )
 
-# For row 2, this will add to (2,0) then (2,1)
-features_grid[2].add_textbox(
+features_grid[2, 0].add_text(
     text="Reduced Code",
     font_size=24,
     font_bold=True,
@@ -268,15 +263,14 @@ features_grid[2].add_textbox(
     vertical="middle",
 )
 
-features_grid[2].add_textbox(
+features_grid[2, 1].add_text(
     text="Less typing, fewer parameters",
     font_size=18,
     align="center",
     vertical="middle",
 )
 
-# For row 3, this will add to (3,0) then (3,1)
-features_grid[3].add_textbox(
+features_grid[3, 0].add_text(
     text="All Content Types",
     font_size=24,
     font_bold=True,
@@ -284,7 +278,7 @@ features_grid[3].add_textbox(
     vertical="middle",
 )
 
-features_grid[3].add_textbox(
+features_grid[3, 1].add_text(
     text="Works with text, images, tables, charts",
     font_size=18,
     align="center",

@@ -127,12 +127,19 @@ class TestTable:
         assert mock_paragraph.font.size == Pt(14)
 
     def test_add_table_with_style(self):
-        """Test adding a table with a specific style."""
-        # Call add method with a style
-        self.table.add(self.sample_data, style=5)
+        """Test adding a table with a specific style sets a real tableStyleId."""
+        from pptx.oxml.ns import qn
 
-        # Verify table style was set
-        assert self.mock_table.style == 5
+        from easypptx import Presentation
+        from easypptx.table import TABLE_STYLE_GUIDS, Table
+
+        pres = Presentation()
+        slide = pres.add_slide()
+        table = Table(slide).add(self.sample_data, style=5)
+
+        style_el = table._tbl.find(qn("a:tblPr")).find(qn("a:tableStyleId"))
+        assert style_el is not None
+        assert style_el.text == TABLE_STYLE_GUIDS[5]
 
     def test_from_dataframe_basic(self):
         """Test creating a table from pandas DataFrame."""

@@ -98,14 +98,18 @@ pres = Presentation()
 slide = pres.add_slide()
 img = Image(slide)
 
-# Add an image
-img.add("image.png", x=1, y=2, width=4)
+# Add an image (bare numbers are percentages of the slide)
+img.add("image.png", x=10, y=20, width=40)
 
 # Add an image with maintenance of aspect ratio
-img.add("image.png", x=1, y=2, width=4)  # Height calculated automatically
+img.add("image.png", x=10, y=20, width=40)  # Height calculated automatically
 
 # Add an image with specific dimensions
-img.add("image.png", x=1, y=2, width=4, height=3)
+img.add("image.png", x=10, y=20, width=40, height=30)
+
+# Absolute positioning in inches uses the in_() helper
+from easypptx import in_
+img.add("image.png", x=in_(1), y=in_(2), width=in_(4))
 ```
 
 ## Creating Tables
@@ -119,26 +123,26 @@ from easypptx import Presentation
 pres = Presentation()
 slide = pres.add_slide()
 
-# Add a simple table
+# Add a simple table (positions are percentages of the slide)
 data = [["Header 1", "Header 2"], ["Cell A1", "Cell A2"], ["Cell B1", "Cell B2"]]
-slide.add_table(data, x=1, y=1, width=4, height=2)
+slide.add_table(data, x=10, y=10, width=40, height=25)
 
 # Add a table from a pandas DataFrame
 import pandas as pd
 df = pd.DataFrame({"Name": ["John", "Jane"], "Score": [85, 92]})
-slide.add_table(df, x=1, y=3, width=4, height=2)
+slide.add_table(df, x=10, y=40, width=40, height=25)
 
 # Include the DataFrame index as the first column
 from easypptx import Table
-Table(slide).from_dataframe(df, x=1, y=5, include_index=True)
+Table(slide).from_dataframe(df, x=55, y=10, include_index=True)
 
 # Add a table with a header row and style
 slide.add_table(
     data,
-    x=1,
-    y=5,
-    width=4,
-    height=2,
+    x=55,
+    y=40,
+    width=40,
+    height=25,
     has_header=True,
     style=5
 )
@@ -158,7 +162,7 @@ slide.add_chart(
     chart_type="pie",
     categories=["A", "B", "C"],
     values=[10, 20, 30],
-    x=1, y=1, width=4, height=3,
+    x=5, y=10, width=40, height=40,
     title="Chart Title"
 )
 
@@ -170,9 +174,23 @@ slide.add_chart(
     chart_type="column",
     category_column="Category",
     value_columns="Value",
-    x=6,
-    y=1,
+    x=50,
+    y=10,
     title="DataFrame Chart"
+)
+
+# Multi-series chart: each value column becomes a named series
+df2 = pd.DataFrame({
+    "Quarter": ["Q1", "Q2", "Q3"],
+    "Revenue": [100, 120, 140],
+    "Cost": [80, 85, 90],
+})
+slide.add_chart(
+    data=df2,
+    chart_type="line",
+    category_column="Quarter",
+    value_columns=["Revenue", "Cost"],
+    x=10, y=55, width=60, height=40,
 )
 ```
 
@@ -180,7 +198,7 @@ slide.add_chart(
 
 EasyPPTX provides a set of content methods on the Slide class to manipulate slide content without creating separate object instances.
 
-> **Deprecated:** The pass-through variants on `Presentation` that take a slide as the first argument (`pres.add_text(slide, ...)`, `pres.add_image(slide, ...)`, `pres.add_shape(slide, ...)`, `pres.add_table(slide, ...)`, `pres.add_chart(slide, ...)`, `pres.add_pyplot(slide, ...)`) still work but emit a `DeprecationWarning`. Use the `Slide` methods shown below instead.
+> **Removed in 0.7.0:** The pass-through variants on `Presentation` that took a slide as the first argument (`pres.add_text(slide, ...)`, `pres.add_image(slide, ...)`, `pres.add_shape(slide, ...)`, `pres.add_table(slide, ...)`, `pres.add_chart(slide, ...)`, `pres.add_pyplot(slide, ...)`) have been removed. Use the `Slide` methods shown below instead — see [Migrating to 0.7.0](migration.md).
 
 ```python
 from easypptx import Presentation
@@ -241,24 +259,73 @@ slide.add_chart(
     value_columns="Value"
 )
 
+# Add a bulleted list (items are strings or (text, level) tuples)
+slide.add_bullets(
+    [
+        "Revenue up 12%",
+        ("EMEA strongest region", 1),
+        "Costs down 3%",
+    ],
+    x="10%",
+    y="60%",
+    width="40%",
+    height="20%",
+)
+
+# Get or set speaker notes
+slide.notes = "Remember to mention the EMEA numbers."
+print(slide.notes)
+
 # Add a matplotlib figure (embedded via an in-memory stream, no temp files)
 import matplotlib.pyplot as plt
-from easypptx import Pyplot
 
 plt.figure(figsize=(10, 6))
 plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
 plt.title('Sample Plot')
 
-Pyplot.add(
-    slide=slide,
-    figure=plt.gcf(),
-    position={"x": "60%", "y": "50%", "width": "30%", "height": "20%"}
+slide.add_pyplot(
+    plt.gcf(),
+    x="60%",
+    y="50%",
+    width="30%",
+    height="20%",
 )
 ```
 
 Unknown parameters passed to these methods now trigger a warning instead of being silently ignored. Out-of-range percentages (e.g. `"150%"`) are clamped with a warning.
 
 ## Advanced Features
+
+### Markdown to Presentation
+
+*New in 0.7.0.* Build a whole deck from a markdown document:
+
+```python
+from easypptx import Presentation
+
+pres = Presentation.from_markdown("deck.md")
+pres.save("deck.pptx")
+```
+
+Headings become slides, lists become bullets, GFM tables become tables, and `<!-- notes: ... -->` comments become speaker notes. See [Markdown to Presentation](markdown.md) for the full syntax.
+
+### Styles and Themes
+
+*New in 0.7.0.* Reusable style objects and presentation-wide themes:
+
+```python
+from easypptx import Presentation, TextStyle
+
+# Built-in theme presets: "light", "dark", "corporate"
+pres = Presentation(theme="dark")
+slide = pres.add_slide(title="Themed Slide")
+
+# Reusable styles via the style= parameter
+heading = TextStyle(font_size=28, font_bold=True, color="cyan")
+slide.add_text("Results", y=25, style=heading)
+```
+
+See [Styling and Formatting](styling.md) for details.
 
 ### Grid Layout System
 
@@ -318,7 +385,10 @@ See [Percentage-Based Positioning](percentage_positioning.md) for more details.
 ```python
 from easypptx import Presentation, Text
 
-# Create a presentation with black background
+# The built-in dark theme sets the background and text colors in one step
+pres = Presentation(theme="dark")
+
+# Or set just a background color manually
 pres = Presentation(default_bg_color="black")
 slide = pres.add_slide()
 text = Text(slide)

@@ -6,7 +6,7 @@ EasyPPTX provides several ways to add data visualizations to your presentations:
 2. **Matplotlib figures** - Embedding matplotlib plots directly
 3. **Seaborn plots** - Adding seaborn visualizations by passing their figure
 
-> **Optional dependencies:** pandas support requires `pip install "easypptx[dataframe]"` and matplotlib support requires `pip install "easypptx[plot]"` (or install both with `"easypptx[all]"`). seaborn is not a dependency of EasyPPTX; seaborn plots work by passing their figure to `add_pyplot_slide` or `Pyplot.add`.
+> **Optional dependencies:** pandas support requires `pip install "easypptx[dataframe]"` and matplotlib support requires `pip install "easypptx[plot]"` (or install both with `"easypptx[all]"`). seaborn is not a dependency of EasyPPTX; seaborn plots work by passing their figure to `slide.add_pyplot` or `pres.add_pyplot_slide`.
 
 Matplotlib figures are embedded via in-memory streams, so no temporary files are written.
 
@@ -56,13 +56,45 @@ chart_slide = pres.add_chart_slide(
 
 `slide.add_chart` also accepts explicit `categories` and `values` lists instead of `data`. The aliases `value_column` (singular) and `chart_title` are accepted for `value_columns` and `title`.
 
+### Multi-Series Charts
+
+*New in 0.7.0.* Pass several column names to `value_columns` and each column is plotted as a named series:
+
+```python
+df = pd.DataFrame({
+    "Quarter": ["Q1", "Q2", "Q3"],
+    "Revenue": [100, 120, 140],
+    "Cost": [80, 85, 90],
+    "Profit": [20, 35, 50],
+})
+
+slide.add_chart(
+    data=df,
+    chart_type="line",
+    category_column="Quarter",
+    value_columns=["Revenue", "Cost", "Profit"],
+)
+```
+
+The lower-level `Chart.add` accepts an explicit `series` mapping:
+
+```python
+from easypptx import Chart
+
+Chart(slide).add(
+    chart_type="column",
+    categories=["Q1", "Q2", "Q3"],
+    series={"Rev": [100, 120, 140], "Cost": [80, 85, 90]},
+)
+```
+
 ## Matplotlib Integration
 
 You can embed matplotlib figures directly in your presentations:
 
 ```python
 import matplotlib.pyplot as plt
-from easypptx import Presentation, Pyplot
+from easypptx import Presentation
 
 # Create a matplotlib figure
 plt.figure(figsize=(10, 6))
@@ -75,21 +107,21 @@ plt.ylabel('y')
 # Create a presentation
 pres = Presentation()
 
-# Method 1: Using the Pyplot class directly
+# Method 1: slide.add_pyplot (new in 0.7.0)
 slide = pres.add_slide()
-Pyplot.add(
-    slide=slide,
-    figure=plt.gcf(),
-    position={"x": "10%", "y": "20%", "width": "80%", "height": "70%"},
+slide.add_pyplot(
+    plt.gcf(),
+    x=10,
+    y=20,
+    width=80,
+    height=70,
     dpi=300,
-    style={
-        "border": True,
-        "border_color": "blue",
-        "shadow": True
-    }
+    border=True,
+    border_color="blue",
+    shadow=True,
 )
 
-# Method 2: Using the add_pyplot_slide convenience method
+# Method 2: the add_pyplot_slide convenience method
 slide, picture = pres.add_pyplot_slide(
     figure=plt.gcf(),
     title="Matplotlib Example",
@@ -101,7 +133,7 @@ slide, picture = pres.add_pyplot_slide(
 )
 ```
 
-> **Deprecated:** `pres.add_matplotlib_slide(...)` still works but emits a `DeprecationWarning`. Use `pres.add_pyplot_slide(...)` instead.
+> **Removed in 0.7.0:** `pres.add_matplotlib_slide(...)` and `pres.add_plot(...)` have been removed. Use `slide.add_pyplot(...)` or `pres.add_pyplot_slide(...)` instead — see [Migrating to 0.7.0](migration.md).
 
 ## Seaborn Integration
 
@@ -131,11 +163,11 @@ slide, picture = pres.add_pyplot_slide(
 )
 ```
 
-> **Deprecated:** `pres.add_seaborn_slide(...)` still works but emits a `DeprecationWarning`. Use `pres.add_pyplot_slide(...)` as shown above.
+> **Removed in 0.7.0:** `pres.add_seaborn_slide(...)` has been removed. Use `pres.add_pyplot_slide(...)` as shown above.
 
 ## Unified API for Plots
 
-> **Deprecated:** The `pres.add_plot(...)` method still works but emits a `DeprecationWarning`. Use `pres.add_pyplot_slide(...)` for matplotlib/seaborn figures, or `pres.add_chart_slide(...)` for PowerPoint charts.
+Use `pres.add_pyplot_slide(...)` for matplotlib/seaborn figures, or `pres.add_chart_slide(...)` for PowerPoint charts:
 
 ```python
 from easypptx import Presentation
@@ -196,11 +228,7 @@ slide = pres.add_comparison_slide(
 )
 
 # Add matplotlib plot to the left side
-Pyplot.add(
-    slide=slide,
-    figure=fig1,
-    position={"x": "5%", "y": "20%", "width": "42%", "height": "70%"}
-)
+slide.add_pyplot(fig1, x="5%", y="20%", width="42%", height="70%")
 
 # Add PowerPoint chart to the right side
 slide.add_chart(

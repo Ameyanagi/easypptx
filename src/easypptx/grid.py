@@ -48,6 +48,7 @@ class GridCell:
         self.span_rows = 1
         self.span_cols = 1
         self.is_spanned = False  # Whether this cell is part of another cell's span
+        self.pad = 0.0  # Extra per-cell content padding, percent of slide
 
     def __repr__(self) -> str:
         """Return string representation of the cell."""
@@ -152,6 +153,67 @@ class GridCellProxy:
         """
         return self.grid.add_table(self.row, self.col, data=data, **kwargs)
 
+    def style(
+        self,
+        fill: str | tuple[int, int, int] | None = None,
+        border_color: str | tuple[int, int, int] | None = None,
+        border_width: float = 1.0,
+        padding: float | str | None = None,
+    ) -> GridCellProxy:
+        """Style this cell: background fill, border, and content padding.
+
+        Draws a background rectangle covering the full cell and optionally
+        sets padding that shrinks the area used by content added afterwards.
+        Returns the proxy so calls can be chained.
+
+        Args:
+            fill: Background color name or RGB tuple (default: None, no fill)
+            border_color: Border color name or RGB tuple (default: None, no border)
+            border_width: Border width in points (default: 1.0)
+            padding: Extra content padding as percent of the slide (default: None)
+
+        Examples:
+            ```python
+            grid[0, 0].style(fill="lightgray", padding=2).add_text("Card")
+            ```
+        """
+        from easypptx.common import resolve_color
+        from easypptx.positioning import parse_percent
+
+        cell = self.grid.get_cell(self.row, self.col)
+        if padding is not None:
+            cell.pad = parse_percent(padding)
+
+        if fill is not None or border_color is not None:
+            # Background covers the unpadded cell area
+            x, y, w, h = self.grid._cell_area(cell, padded=False)
+            shape = self.grid.parent.add_shape(x=x, y=y, width=w, height=h)
+
+            # Send the background to the bottom of the z-order so it never
+            # covers content that already exists in the cell
+            element = shape._element
+            tree = element.getparent()
+            tree.remove(element)
+            tree.insert(2, element)
+
+            fill_rgb = resolve_color(fill)
+            if fill_rgb is not None:
+                shape.fill.solid()
+                shape.fill.fore_color.rgb = fill_rgb
+            else:
+                shape.fill.background()
+
+            border_rgb = resolve_color(border_color)
+            if border_rgb is not None:
+                from pptx.util import Pt
+
+                shape.line.color.rgb = border_rgb
+                shape.line.width = Pt(border_width)
+            else:
+                shape.line.fill.background()
+
+        return self
+
     def add_grid(self, rows: int = 1, cols: int = 1, padding: float = 5.0, **kwargs) -> Grid:
         """Add a nested grid to this cell.
 
@@ -219,8 +281,8 @@ class Grid:
         y: PositionType = "0%",
         width: PositionType = "100%",
         height: PositionType = "100%",
-        rows: int = 1,
-        cols: int = 1,
+        rows: int | list[float] = 1,
+        cols: int | list[float] = 1,
         padding: float = 5.0,
     ) -> None:
         """Initialize a Grid layout.
@@ -231,8 +293,9 @@ class Grid:
             y: Y position of the grid (default: "0%")
             width: Width of the grid (default: "100%")
             height: Height of the grid (default: "100%")
-            rows: Number of rows (default: 1)
-            cols: Number of columns (default: 1)
+            rows: Number of rows, or a list of relative row weights,
+                e.g. [2, 1] for a top region twice as tall (default: 1)
+            cols: Number of columns, or a list of relative column weights (default: 1)
             padding: Padding between cells as percentage of cell size (default: 5.0)
         """
         self.parent = parent
@@ -240,8 +303,10 @@ class Grid:
         self.y = y
         self.width = width
         self.height = height
-        self.rows = rows
-        self.cols = cols
+        self.row_weights: list[float] = [1.0] * rows if isinstance(rows, int) else [float(w) for w in rows]
+        self.col_weights: list[float] = [1.0] * cols if isinstance(cols, int) else [float(w) for w in cols]
+        self.rows = len(self.row_weights)
+        self.cols = len(self.col_weights)
         self.padding = padding
 
         # Store template defaults when applied from a template
@@ -338,25 +403,29 @@ class Grid:
         # Convert percentage values to floats for calculations
         padding_factor = self.padding / 100.0
 
-        # Calculate the width and height of each cell including padding
-        cell_width_percent = 100.0 / self.cols
-        cell_height_percent = 100.0 / self.rows
-
-        # Calculate the effective width and height of each cell (excluding padding)
-        effective_cell_width = cell_width_percent * (1 - padding_factor)
-        effective_cell_height = cell_height_percent * (1 - padding_factor)
-
-        # Half of the padding (as percentage of total grid size)
-        half_padding_width = (cell_width_percent * padding_factor) / 2
-        half_padding_height = (cell_height_percent * padding_factor) / 2
+        # Per-row/column sizes from relative weights (equal splits by default)
+        total_row_weight = sum(self.row_weights)
+        total_col_weight = sum(self.col_weights)
+        col_sizes = [100.0 * w / total_col_weight for w in self.col_weights]
+        row_sizes = [100.0 * w / total_row_weight for w in self.row_weights]
+        col_offsets = [sum(col_sizes[:i]) for i in range(self.cols)]
+        row_offsets = [sum(row_sizes[:i]) for i in range(self.rows)]
 
         # Create cells
         for row in range(self.rows):
             cell_row = []
             for col in range(self.cols):
+                cell_width_percent = col_sizes[col]
+                cell_height_percent = row_sizes[row]
+
+                # Effective size excludes the per-cell padding
+                effective_cell_width = cell_width_percent * (1 - padding_factor)
+                effective_cell_height = cell_height_percent * (1 - padding_factor)
+                half_padding_width = (cell_width_percent * padding_factor) / 2
+                half_padding_height = (cell_height_percent * padding_factor) / 2
                 # Calculate cell position
-                x_percent = (col * cell_width_percent) + half_padding_width
-                y_percent = (row * cell_height_percent) + half_padding_height
+                x_percent = col_offsets[col] + half_padding_width
+                y_percent = row_offsets[row] + half_padding_height
 
                 # Convert to percentage strings
                 x_str = f"{x_percent:.2f}%"
@@ -423,12 +492,15 @@ class Grid:
         if start_row > end_row or start_col > end_col:
             raise CellMergeError("Start coordinates must be less than or equal to end coordinates")
 
-        # Check if any of the cells in the range are already merged
+        # Check if any of the cells in the range are already merged, either
+        # as spanned members or as the origin of another span
         for row in range(start_row, end_row + 1):
             for col in range(start_col, end_col + 1):
                 cell = self.cells[row][col]
                 if cell.is_spanned:
                     raise CellMergeError("Cell is already part of a merged cell")
+                if (cell.span_rows, cell.span_cols) != (1, 1):
+                    raise CellMergeError("Cell is already the origin of a merged region")
 
         # Get the first cell (top-left)
         first_cell = self.cells[start_row][start_col]
@@ -464,11 +536,12 @@ class Grid:
 
         return first_cell
 
-    def _cell_area(self, cell: GridCell) -> tuple[str, str, str, str]:
+    def _cell_area(self, cell: GridCell, padded: bool = True) -> tuple[str, str, str, str]:
         """Compute a cell's absolute slide position as percent strings.
 
-        The grid's own position may be given in percent or inches; cell
-        positions are always percentages of the grid area.
+        The grid's own position may be given in percent or absolute units;
+        cell positions are always percentages of the grid area. When padded
+        is True, the cell's own content padding (set via style()) is applied.
 
         Returns:
             (x, y, width, height) as percentage strings
@@ -482,6 +555,12 @@ class Grid:
         abs_y = grid_y + (to_percent(cell.y, self._slide_height) * grid_h / 100)
         abs_w = to_percent(cell.width, self._slide_width) * grid_w / 100
         abs_h = to_percent(cell.height, self._slide_height) * grid_h / 100
+
+        if padded and cell.pad:
+            abs_x += cell.pad
+            abs_y += cell.pad
+            abs_w -= 2 * cell.pad
+            abs_h -= 2 * cell.pad
 
         return pct(abs_x), pct(abs_y), pct(abs_w), pct(abs_h)
 
@@ -627,9 +706,14 @@ class Grid:
             ```
         """
         if isinstance(key, tuple) and len(key) == 2:
-            # Access as grid[row, col] -> return a GridCellProxy
             row, col = key
-            # Validate bounds
+
+            # Slice access spans (and merges) a rectangular region:
+            # grid[1, :] is the whole second row, grid[0:2, 1] spans two rows
+            if isinstance(row, slice) or isinstance(col, slice):
+                return self._span(row, col)
+
+            # Access as grid[row, col] -> return a GridCellProxy
             if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
                 raise OutOfBoundsError(f"Cell position ({row}, {col}) is out of bounds")
             return GridCellProxy(self, row, col)
@@ -660,6 +744,36 @@ class Grid:
             raise TypeError(
                 "Grid indices must be integers (for flat access) or tuples of the form (row, col) for cell access"
             )
+
+    def _span(self, row: int | slice, col: int | slice) -> GridCellProxy:
+        """Merge the region selected by slice indices and return its proxy."""
+
+        def bounds(key: int | slice, size: int, axis: str) -> tuple[int, int]:
+            if isinstance(key, slice):
+                if key.step not in (None, 1):
+                    raise ValueError(f"Grid {axis} slices do not support a step")
+                start, stop, _ = key.indices(size)
+                if stop <= start:
+                    raise OutOfBoundsError(f"Empty {axis} slice {key} for grid of size {size}")
+                return start, stop - 1
+            if key < 0:
+                key += size
+            if not 0 <= key < size:
+                raise OutOfBoundsError(f"Grid {axis} {key} is out of bounds")
+            return key, key
+
+        start_row, end_row = bounds(row, self.rows, "row")
+        start_col, end_col = bounds(col, self.cols, "column")
+
+        origin = self.cells[start_row][start_col]
+        span_rows = end_row - start_row + 1
+        span_cols = end_col - start_col + 1
+
+        # Merge unless this exact span already exists (repeat access is fine)
+        if (origin.span_rows, origin.span_cols) != (span_rows, span_cols):
+            self.merge_cells(start_row, start_col, end_row, end_col)
+
+        return GridCellProxy(self, start_row, start_col)
 
     @property
     def flat(self):
@@ -874,6 +988,31 @@ class Grid:
 
         return table_shape
 
+    def next(self) -> GridCellProxy:
+        """Return a proxy for the next free cell, growing the grid if needed.
+
+        Cells fill in row-major order; when every cell has content, a new
+        row is appended automatically.
+
+        Note:
+            Growing the grid resizes the cell geometry for future placements
+            only — shapes already on the slide keep their positions. Size the
+            grid up front (rows=...) when mixing with pre-placed content.
+
+        Examples:
+            ```python
+            grid.next().add_text("First free cell")
+            grid.next().add_image(image_path="a.png")
+            ```
+        """
+        for row in range(self.rows):
+            for col in range(self.cols):
+                cell = self.cells[row][col]
+                if cell.content is None and not cell.is_spanned:
+                    return GridCellProxy(self, row, col)
+        self._expand_grid(add_rows=1)
+        return GridCellProxy(self, self.rows - 1, 0)
+
     def append(self, content_func: Callable) -> None:
         """Append content to the grid and automatically update the layout.
 
@@ -958,18 +1097,26 @@ class Grid:
         original_rows = self.rows
         original_cols = self.cols
 
-        # Update dimensions
+        # Update dimensions (new rows/columns get weight 1)
+        self.row_weights.extend([1.0] * add_rows)
+        self.col_weights.extend([1.0] * add_cols)
         self.rows += add_rows
         self.cols += add_cols
 
         # Recalculate cell dimensions
         new_cells = self._create_cells()
 
-        # Copy content from old cells to new cells where applicable
+        # Copy content and metadata from old cells to new cells
         for row in range(original_rows):
             for col in range(original_cols):
                 if row < self.rows and col < self.cols:
-                    new_cells[row][col].content = self.cells[row][col].content
+                    old = self.cells[row][col]
+                    new = new_cells[row][col]
+                    new.content = old.content
+                    new.span_rows = old.span_rows
+                    new.span_cols = old.span_cols
+                    new.is_spanned = old.is_spanned
+                    new.pad = old.pad
 
         # Update cells
         self.cells = new_cells

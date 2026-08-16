@@ -82,6 +82,75 @@ def extract_categories_values(
     return categories, values
 
 
+def extract_chart_series(
+    data: Any,
+    category_column: str | int | None = None,
+    value_columns: str | list[str] | int | list[int] | None = None,
+) -> tuple[list, dict[str, list]]:
+    """Extract categories and one or more named value series from tabular data.
+
+    Args:
+        data: A pandas DataFrame, or a list of lists whose first row is a header
+        category_column: Name or index of the category column (default: first column)
+        value_columns: Name(s) or index(es) of the value column(s)
+            (default: the second column)
+
+    Returns:
+        (categories, series) where series maps series name -> list of values
+
+    Raises:
+        ValueError: If a named column is missing or the data has too few columns
+    """
+    columns = value_columns if isinstance(value_columns, list) else [value_columns]
+
+    if is_dataframe(data):
+        if category_column is None:
+            category_column = data.columns[0]
+
+        def df_column(column: Any, kind: str) -> Any:
+            if column in data.columns:
+                return data[column]
+            if isinstance(column, int) and 0 <= column < len(data.columns):
+                return data.iloc[:, column]
+            raise ValueError(f"{kind} column '{column}' not found in DataFrame")
+
+        categories = df_column(category_column, "Category").tolist()
+        series: dict[str, list] = {}
+        for column in columns:
+            if column is None:
+                if len(data.columns) < 2:
+                    raise ValueError("DataFrame must have at least two columns for automatic value extraction")
+                column = data.columns[1]
+            values = df_column(column, "Value")
+            series[str(getattr(values, "name", column))] = values.tolist()
+        return categories, series
+
+    if not data or len(data) < 2:
+        return [], {}
+
+    header = data[0]
+
+    def column_index(column: str | int | None, default: int, kind: str) -> int:
+        if column is None:
+            return default
+        if isinstance(column, int):
+            return column
+        try:
+            return header.index(column)
+        except ValueError:
+            raise ValueError(f"{kind} column '{column}' not found in header") from None
+
+    cat_idx = column_index(category_column, 0, "Category")
+    categories = [row[cat_idx] for row in data[1:]]
+    series = {}
+    for column in columns:
+        if column is None and len(header) < 2:
+            raise ValueError("Data must have at least two columns for automatic value extraction")
+        val_idx = column_index(column, 1, "Value")
+        series[str(header[val_idx])] = [row[val_idx] for row in data[1:]]
+    return categories, series
+
+
 class Chart:
     """Class for handling chart operations in PowerPoint slides.
 
@@ -135,13 +204,14 @@ class Chart:
         self,
         chart_type: str,
         categories: list,
-        values: list,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
-        width: PositionType = 6.0,
-        height: PositionType = 4.5,
+        values: list | None = None,
+        x: PositionType = 10,
+        y: PositionType = 20,
+        width: PositionType = 60,
+        height: PositionType = 60,
         title: str | None = None,
         has_legend: bool = True,
+        series: dict[str, list] | None = None,
         **kwargs: Any,
     ) -> PPTXChart:
         """Add a chart to the slide.
@@ -169,12 +239,19 @@ class Chart:
                 f"Unsupported chart type: {chart_type}. Supported types: {', '.join(self.CHART_TYPES.keys())}"
             )
 
-        if len(categories) != len(values):
-            raise ValueError("Categories and values must have the same length")
+        if series is None:
+            if values is None:
+                raise ValueError("Provide either 'values' or 'series'")
+            series = {"Series 1": values}
+
+        for name, series_values in series.items():
+            if len(categories) != len(series_values):
+                raise ValueError(f"Series '{name}' must have the same length as categories")
 
         chart_data = CategoryChartData()
         chart_data.categories = categories
-        chart_data.add_series("Series 1", values)
+        for name, series_values in series.items():
+            chart_data.add_series(name, series_values)
 
         # Get slide dimensions for percentage conversion
         slide_width = self.slide._get_slide_width()
@@ -217,10 +294,10 @@ class Chart:
         self,
         categories: list,
         values: list,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
-        width: PositionType = 6.0,
-        height: PositionType = 4.5,
+        x: PositionType = 10,
+        y: PositionType = 20,
+        width: PositionType = 60,
+        height: PositionType = 60,
         title: str | None = None,
         **kwargs: Any,
     ) -> PPTXChart:
@@ -255,10 +332,10 @@ class Chart:
         self,
         categories: list,
         values: list,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
-        width: PositionType = 6.0,
-        height: PositionType = 4.5,
+        x: PositionType = 10,
+        y: PositionType = 20,
+        width: PositionType = 60,
+        height: PositionType = 60,
         title: str | None = None,
         **kwargs: Any,
     ) -> PPTXChart:
@@ -293,10 +370,10 @@ class Chart:
         self,
         categories: list,
         values: list,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
-        width: PositionType = 6.0,
-        height: PositionType = 4.5,
+        x: PositionType = 10,
+        y: PositionType = 20,
+        width: PositionType = 60,
+        height: PositionType = 60,
         title: str | None = None,
         **kwargs: Any,
     ) -> PPTXChart:
@@ -333,10 +410,10 @@ class Chart:
         chart_type: str,
         category_column: str,
         value_column: str,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
-        width: PositionType = 6.0,
-        height: PositionType = 4.5,
+        x: PositionType = 10,
+        y: PositionType = 20,
+        width: PositionType = 60,
+        height: PositionType = 60,
         title: str | None = None,
         has_legend: bool = True,
         **kwargs: Any,

@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 from pptx.enum.shapes import MSO_SHAPE
 
-from easypptx import Chart, Presentation, Table, Text
+from easypptx import Chart, Presentation, Table, Text, in_
 
 # Create output directory
 output_dir = Path("output")
@@ -125,7 +125,7 @@ def create_gradient_example():
     slide.add_shape(
         shape_type=MSO_SHAPE.OVAL,
         x="70%",
-        y="-10%",
+        y=in_(-0.75),  # off-slide placement needs in_(); "-10%" would be clamped
         width="60%",
         height="50%",
         fill_color=(0, 80, 120),  # Lighter blue
@@ -134,7 +134,7 @@ def create_gradient_example():
     # Bottom left corner accent
     slide.add_shape(
         shape_type=MSO_SHAPE.OVAL,
-        x="-20%",
+        x=in_(-2.67),  # off-slide placement needs in_(); "-20%" would be clamped
         y="70%",
         width="60%",
         height="50%",

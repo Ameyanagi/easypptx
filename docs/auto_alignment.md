@@ -139,7 +139,7 @@ slide.add_multiple_objects(
 ```
 
 - `padding_percent`: Specifies the amount of space between objects as a percentage of the cell size
-- All position and size parameters support both percentage-based and absolute positioning
+- All position and size parameters support percentages (bare numbers or `"N%"` strings) and absolute inches via `in_()`
 
 ## Implementation Details
 

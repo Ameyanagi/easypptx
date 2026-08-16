@@ -13,6 +13,20 @@ Dark-themed presentations have several advantages:
 
 ## Creating Dark-Themed Presentations
 
+### The Built-In Dark Theme
+
+*New in 0.7.0.* The quickest route is the `"dark"` theme preset, which sets a near-black background, white body text, and a white centered title style in one step:
+
+```python
+from easypptx import Presentation
+
+pres = Presentation(theme="dark")
+slide = pres.add_slide(title="Dark Theme Presentation")
+slide.add_text("Body text is white by default", y=25)
+```
+
+See [Styling and Formatting](styling.md) for the full theme system, including custom `Theme` objects. The rest of this page shows the manual approach for full control.
+
 ### Setting Default Background Color
 
 You can set a default background color for all slides in a presentation:

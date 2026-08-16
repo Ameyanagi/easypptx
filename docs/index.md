@@ -10,10 +10,12 @@ A Python library for easily creating and manipulating PowerPoint presentations p
 ## Features
 
 - Simple, intuitive API for PowerPoint manipulation
-- Create slides with text, images, tables, and charts
-- Format elements with easy-to-use styling options
+- Create slides with text, images, tables, charts, and bulleted lists
+- Build whole decks from markdown with `Presentation.from_markdown`
+- Reusable styles (`TextStyle`, `TableStyle`, `ChartStyle`) and built-in themes (`light`, `dark`, `corporate`)
 - Default 16:9 aspect ratio with support for multiple ratio options
-- Percentage-based positioning for responsive layouts
+- Percentage-based positioning for responsive layouts (`x=10` means 10%; use `in_()` for inches)
+- Grid layout system with slice spans, weighted tracks, and auto-flow
 - Auto-alignment of multiple objects (grid, horizontal, vertical)
 - Default color scheme and Meiryo font
 - Support for reference PowerPoint templates
@@ -34,7 +36,16 @@ pip install "easypptx[plot]"       # matplotlib figure embedding
 pip install "easypptx[all]"        # both
 ```
 
-seaborn is not a dependency. seaborn plots still work: pass their figure to `add_pyplot_slide` or `Pyplot.add`.
+seaborn is not a dependency. seaborn plots still work: pass their figure to `slide.add_pyplot` or `pres.add_pyplot_slide`.
+
+## Migrating to 0.7.0
+
+Version 0.7.0 has two breaking changes:
+
+1. **Bare numbers are percentages.** `x=10` now means 10% of the slide (same as `x="10%"`); floats no longer mean inches. Use `in_(1.5)` (from `easypptx import in_`) for absolute inches.
+2. **Deprecated `Presentation` methods removed.** The `pres.add_text(slide, ...)`-style pass-throughs and `add_matplotlib_slide` / `add_seaborn_slide` / `add_plot` / `add_image_slide` are gone; use the `Slide` methods and `pres.add_pyplot_slide` / `pres.add_image_gen_slide`.
+
+See the [migration guide](migration.md) for before/after examples.
 
 ## Quick Start
 
@@ -48,31 +59,42 @@ pres = Presentation()
 # Add a slide with a title
 slide = pres.add_slide(title="EasyPPTX Demo")
 
-# Add text
+# Add text (positions are percentages of the slide; x=10 == "10%")
 slide.add_text("This presentation was created with EasyPPTX",
-               x="10%", y="30%", font_size=24)
+               x=10, y=30, font_size=24)
 
 # Add an image
-slide.add_image("path/to/image.png", x="10%", y="40%", width="40%")
+slide.add_image("path/to/image.png", x=10, y=40, width=40)
 
 # Create a table
 data = [["Name", "Value"], ["Item 1", 100], ["Item 2", 200]]
-slide.add_table(data, x="60%", y="30%", width="30%", height="15%")
+slide.add_table(data, x=60, y=30, width=30, height=15)
 
 # Add a chart from a pandas DataFrame
 df = pd.DataFrame({"Category": ["A", "B", "C"], "Value": [10, 20, 30]})
 slide.add_chart(data=df, chart_type="pie",
                 category_column="Category",
                 value_columns="Value",
-                x="60%", y="50%", title="Sample Chart")
+                x=60, y=50, title="Sample Chart")
 
 # Save the presentation
 pres.save("example.pptx")
+```
+
+Or write the deck in markdown and convert it:
+
+```python
+from easypptx import Presentation
+
+pres = Presentation.from_markdown("deck.md", theme="dark")
+pres.save("deck.pptx")
 ```
 
 ## Documentation
 
 - [Features Overview](features.md)
 - [User Guide](percentage_positioning.md)
+- [Markdown to Presentation](markdown.md)
+- [Migrating to 0.7.0](migration.md)
 - [API Reference](api_reference.md)
 - [Examples](https://github.com/Ameyanagi/EasyPPTX/tree/main/examples)

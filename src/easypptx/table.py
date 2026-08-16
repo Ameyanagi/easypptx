@@ -9,6 +9,41 @@ from pptx.util import Inches, Pt
 
 from easypptx.positioning import PositionType
 
+# Built-in PowerPoint table style GUIDs, addressable by small integer ids.
+# Sources: the standard Office table style gallery.
+TABLE_STYLE_GUIDS = {
+    0: "{2D5ABB26-0587-4C30-8999-92F81FD0307C}",  # No Style, No Grid
+    1: "{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}",  # Medium Style 2 - Accent 1
+    2: "{21E4AEA4-8DFA-4A89-87EB-49C32662AFE0}",  # Medium Style 2 - Accent 2
+    3: "{F5AB1C69-6EDB-4FF4-983F-18BD219EF322}",  # Medium Style 2 - Accent 3
+    4: "{00A15C55-8517-42AA-B614-E9B94910E393}",  # Medium Style 2 - Accent 4
+    5: "{7DF18680-E054-41AD-8BC1-D1AEF772440D}",  # Medium Style 2 - Accent 5
+    6: "{93296810-A885-4BE3-A3E7-6D5BEEA58F35}",  # Medium Style 2 - Accent 6
+    7: "{9D7B26C5-4107-4FEC-AEDC-1716B250A1EF}",  # Light Style 1
+    8: "{3B4B98B0-60AC-42C2-AFA5-B58CD77FA1E5}",  # Light Style 1 - Accent 1
+}
+
+
+def _apply_table_style(table: PPTXTable, style: int | str) -> None:
+    """Set the table's built-in style by small integer id or literal GUID."""
+    from pptx.oxml.ns import qn
+
+    guid = TABLE_STYLE_GUIDS.get(style) if isinstance(style, int) else style
+    if guid is None:
+        raise ValueError(f"Unknown table style id: {style!r}. Known ids: {sorted(TABLE_STYLE_GUIDS)} or a GUID string")
+
+    tbl = table._tbl
+    tblPr = tbl.find(qn("a:tblPr"))
+    if tblPr is None:
+        tblPr = tbl.makeelement(qn("a:tblPr"), {})
+        tbl.insert(0, tblPr)
+    style_id = tblPr.find(qn("a:tableStyleId"))
+    if style_id is None:
+        style_id = tblPr.makeelement(qn("a:tableStyleId"), {})
+        tblPr.append(style_id)
+    style_id.text = guid
+
+
 if TYPE_CHECKING:
     import pandas as pd
 
@@ -46,12 +81,12 @@ class Table:
     def add(
         self,
         data: list,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 20,
         width: PositionType | None = None,
         height: PositionType | None = None,
         first_row_header: bool = True,
-        style: int | None = None,
+        style: int | str | None = None,
         has_header: bool | None = None,
     ) -> PPTXTable:
         """Add a table to the slide.
@@ -116,15 +151,15 @@ class Table:
 
         # Apply table style if specified
         if style is not None:
-            table.style = style  # ty: ignore[unresolved-attribute]
+            _apply_table_style(table, style)
 
         return table
 
     def from_dataframe(
         self,
         df: pd.DataFrame,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 20,
         width: PositionType | None = None,
         height: PositionType | None = None,
         include_index: bool = False,

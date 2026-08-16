@@ -2,17 +2,15 @@
 
 from __future__ import annotations
 
-import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, cast
 
 from pptx import Presentation as PPTXPresentation
-from pptx.chart.chart import Chart as PPTXChart
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.shapes.autoshape import Shape as PPTXShape
-from pptx.util import Inches, Pt
+from pptx.util import Inches
 
 from easypptx import common
 from easypptx.grid import Grid
@@ -26,17 +24,13 @@ from easypptx.positioning import (
 )
 from easypptx.pyplot import Pyplot
 from easypptx.slide import Slide
+from easypptx.styles import Theme, resolve_theme
 from easypptx.table import Table
 from easypptx.template import Template, TemplateManager
 from easypptx.text import Text
 
 if TYPE_CHECKING:
     import pandas as pd
-
-
-def _deprecated(old: str, new: str) -> None:
-    """Emit a DeprecationWarning pointing callers at the replacement API."""
-    warnings.warn(f"{old} is deprecated; use {new} instead", DeprecationWarning, stacklevel=3)
 
 
 class Presentation:
@@ -105,6 +99,7 @@ class Presentation:
         blank_layout_index: int | None = None,
         default_bg_color: str | tuple[int, int, int] | None = None,
         template_toml: str | None = None,
+        theme: str | Theme | None = None,
     ) -> None:
         """Initialize a new empty presentation.
 
@@ -117,11 +112,16 @@ class Presentation:
             blank_layout_index: Index of blank layout in the slide_layouts (default: None, auto-detected)
             default_bg_color: Default background color for slides as string name or RGB tuple (default: None)
             template_toml: Path to a TOML template file to use for slides (default: None)
+            theme: Built-in theme name ("light", "dark", "corporate") or a
+                Theme instance applied to every slide (default: None)
 
         Raises:
             ValueError: If an invalid aspect ratio is specified
             FileNotFoundError: If the template file doesn't exist
         """
+        self.theme = resolve_theme(theme)
+        if default_bg_color is None and self.theme is not None:
+            default_bg_color = self.theme.bg_color
         self.default_bg_color = default_bg_color
 
         # Initialize the Template object and TemplateManager
@@ -229,6 +229,8 @@ class Presentation:
                 slide_width=self._slide_width_emu,
                 slide_height=self._slide_height_emu,
             )
+            if self.theme is not None:
+                slide.apply_template_defaults(self.theme.to_template())
             self._slide_cache[key] = slide
         return slide
 
@@ -266,6 +268,37 @@ class Presentation:
         """
         self.pptx_presentation.slide_width = Inches(width_inches)
         self.pptx_presentation.slide_height = Inches(height_inches)
+
+    @classmethod
+    def from_markdown(
+        cls,
+        source: str | Path,
+        theme: str | Theme | None = None,
+        template_toml: str | None = None,
+        base_dir: str | Path | None = None,
+    ) -> Presentation:
+        """Build a presentation from markdown text or a markdown file.
+
+        See :func:`easypptx.markdown.from_markdown` for the supported syntax.
+
+        Args:
+            source: Markdown content, or a path to a .md file
+            theme: Theme name or Theme instance; overrides the frontmatter theme (default: None)
+            template_toml: TOML template path; overrides the frontmatter template (default: None)
+            base_dir: Directory for resolving relative image paths (default: the file's directory)
+
+        Returns:
+            A Presentation with one slide per markdown section
+
+        Examples:
+            ```python
+            pres = Presentation.from_markdown("deck.md")
+            pres.save("deck.pptx")
+            ```
+        """
+        from easypptx.markdown import from_markdown
+
+        return from_markdown(source, theme=theme, template_toml=template_toml, base_dir=base_dir)
 
     @classmethod
     def open(cls, file_path: str | Path, blank_layout_index: int | None = None) -> Presentation:
@@ -325,8 +358,8 @@ class Presentation:
         title_y_padding: str | float | None = "5%",
         title_width: str | float | None = "90%",
         title_height: str | float | None = "10%",
-        title_font_size: int = 32,
-        title_align: str = "center",
+        title_font_size: int | None = None,
+        title_align: str | None = None,
         title_color: str | tuple[int, int, int] | None = None,
     ) -> Slide:
         """Add a new slide to the presentation.
@@ -343,9 +376,10 @@ class Presentation:
             title_y_padding: Vertical padding for title (default: "5%")
             title_width: Width of the title area (default: "90%")
             title_height: Height of the title area (default: "10%")
-            title_font_size: Font size for the title (default: 32)
-            title_align: Text alignment for the title (default: "center")
-            title_color: Title color as a name from COLORS or an RGB tuple (default: None)
+            title_font_size: Font size for the title (default: theme title size or 32)
+            title_align: Text alignment for the title (default: theme title align or "center")
+            title_color: Title color as a name from COLORS or an RGB tuple
+                (default: theme title color or None)
 
         Returns:
             A new Slide object
@@ -404,6 +438,17 @@ class Presentation:
 
             # Add title if provided
             if title is not None:
+                # Resolve title styling: explicit > theme > library default
+                title_style = self.theme.title if self.theme is not None else None
+                if title_font_size is None:
+                    title_font_size = (title_style.font_size if title_style else None) or 32
+                if title_align is None:
+                    title_align = (title_style.align if title_style else None) or "center"
+                if title_color is None and title_style is not None:
+                    title_color = title_style.color
+                title_font_name = title_style.font_name if title_style else None
+                title_font_bold = title_style.font_bold if title_style and title_style.font_bold is not None else True
+
                 # If general title_padding is provided, it overrides individual x and y padding
                 x_padding = title_padding if title_padding is not None else title_x_padding
                 y_padding = title_padding if title_padding is not None else title_y_padding
@@ -416,7 +461,8 @@ class Presentation:
                     width=title_width,
                     height=title_height,
                     font_size=title_font_size,
-                    font_bold=True,
+                    font_bold=title_font_bold,
+                    font_name=title_font_name,
                     align=title_align,
                     color=title_color,
                 )
@@ -880,8 +926,8 @@ class Presentation:
 
             slide.add_text(
                 text=title,
-                x=str(title_x) if title_x is not None else "0%",
-                y=str(title_y) if title_y is not None else "0%",
+                x=title_x if title_x is not None else "0%",
+                y=title_y if title_y is not None else "0%",
                 width="100%",
                 height=title_height,
                 font_size=title_font_size,
@@ -900,7 +946,7 @@ class Presentation:
 
             slide.add_text(
                 text=subtitle,
-                x=str(subtitle_x) if subtitle_x is not None else "0%",
+                x=subtitle_x if subtitle_x is not None else "0%",
                 y=subtitle_y if subtitle_y is not None else adjusted_y,
                 width="100%",
                 height=subtitle_height,
@@ -951,7 +997,7 @@ class Presentation:
 
             slide.add_text(
                 text=label,
-                x=str(label_x) if label_x is not None else "0%",
+                x=label_x if label_x is not None else "0%",
                 y=label_y,
                 width="100%",
                 height="5%",
@@ -961,97 +1007,6 @@ class Presentation:
             )
 
         return slide, image_shape
-
-    def add_image_slide(
-        self, title: str, image_path: str, label: str | None = None, custom_style: dict | None = None
-    ) -> Slide:
-        """Add a slide with a title and a centered image.
-
-        Args:
-            title: Text for the title
-            image_path: Path to the image file
-            label: Optional caption for the image (default: None)
-            custom_style: Optional custom styling for the image (default: None)
-
-        Returns:
-            A new Slide object configured as an image slide
-        """
-        _deprecated("Presentation.add_image_slide", "Presentation.add_image_gen_slide")
-        # Get the image slide preset
-        preset = self.template.get_preset("image_slide")
-
-        # Create a new slide using the preset
-        slide = self.add_slide_from_template("image_slide")
-
-        # Update the title text
-        title_shapes = [shape for shape in slide.shapes if shape.has_text_frame]
-        if title_shapes and len(title_shapes) > 0:
-            title_shape = title_shapes[0]
-            title_shape.text_frame.text = title
-
-        # Add the image
-        image_area = preset.get("image_area", {}).get(
-            "position", {"x": "10%", "y": "20%", "width": "80%", "height": "70%"}
-        )
-
-        # Get styling from preset or custom style
-        image_style = self.template.get_image_style(preset)
-        if custom_style:
-            image_style.update(custom_style)
-
-        # Create an Image object and call its add method
-        img = Image(slide)
-        image_shape = img.add(
-            image_path=image_path,
-            x=image_area.get("x", "10%"),
-            y=image_area.get("y", "20%"),
-            width=image_area.get("width", "80%"),
-            height=image_area.get("height", "70%"),
-            maintain_aspect_ratio=image_style.get("maintain_aspect_ratio", True),
-        )
-
-        # Apply styling to the image
-        if image_style.get("border", False):
-            image_shape.line.color.rgb = self.COLORS.get(image_style.get("border_color", "black"), self.COLORS["black"])
-            image_shape.line.width = image_style.get("border_width", 1)
-
-        # Apply shadow if specified
-        if image_style.get("shadow", False):
-            common.apply_shadow(image_shape)
-
-        # Apply brightness/contrast if specified
-        if "brightness" in image_style or "contrast" in image_style:
-            brightness = image_style.get("brightness", 0)
-            contrast = image_style.get("contrast", 0)
-            if hasattr(image_shape, "brightness_contrast"):
-                bc: Any = image_shape.brightness_contrast
-                bc.brightness = brightness
-                bc.contrast = contrast
-
-        # Add label if specified
-        if label:
-            # Position the label below the image
-            label_position = {
-                "x": image_area["x"],
-                "y": str(float(image_area["y"].replace("%", "")) + float(image_area["height"].replace("%", "")) + 2)
-                + "%",
-                "width": image_area["width"],
-                "height": "5%",
-            }
-
-            Text.add(
-                slide=slide,
-                text=label,
-                position=label_position,
-                font_name=self.DEFAULT_FONT,
-                font_size=14,
-                font_bold=False,
-                align="center",
-                vertical_align="top",
-                color="black",
-            )
-
-        return slide
 
     def add_comparison_slide(self, title: str, content_texts: list[str]) -> Slide:
         """Add a slide with title and two or more content areas for comparison.
@@ -1231,38 +1186,13 @@ class Presentation:
             chart_style["chart_type"] = chart_type
 
         # Import Chart class here to avoid circular import
-        from easypptx.chart import Chart
+        from easypptx.chart import Chart, extract_chart_series
 
         # Create a Chart object and add the chart
         chart_obj = Chart(slide)
 
-        # Extract chart data from data parameter
-        categories: list[Any] = []
-        values: list[Any] = []
-
-        # Simple extraction of categories and values for the example
-        if common.is_dataframe(data):
-            # It's a pandas DataFrame
-            df_data = cast("pd.DataFrame", data)
-            if category_column is not None and category_column in df_data.columns:
-                categories = df_data[category_column].tolist()
-            else:
-                categories = df_data.iloc[:, 0].tolist()
-
-            if value_columns is not None:
-                if isinstance(value_columns, str) and value_columns in df_data.columns:
-                    values = df_data[value_columns].tolist()
-                elif isinstance(value_columns, list) and len(value_columns) > 0 and value_columns[0] in df_data.columns:
-                    values = df_data[value_columns[0]].tolist()
-                else:
-                    values = df_data.iloc[:, 1].tolist()
-            else:
-                values = df_data.iloc[:, 1].tolist()
-        else:
-            # It's a list of lists
-            if data and len(data) > 1:
-                categories = [row[0] for row in data[1:]]
-                values = [row[1] for row in data[1:]]
+        # Extract categories and every requested value series
+        categories, series = extract_chart_series(data, category_column, value_columns)
 
         # Extract position values
         x = chart_position.get("x", "10%")
@@ -1273,7 +1203,7 @@ class Presentation:
         chart = chart_obj.add(
             chart_type=chart_style.get("chart_type", "column"),
             categories=categories,
-            values=values,
+            series=series,
             x=x,
             y=y,
             width=width,
@@ -1298,598 +1228,7 @@ class Presentation:
 
         return slide
 
-    def add_matplotlib_slide(
-        self,
-        title: str,
-        figure,
-        label: str | None = None,
-        dpi: int = 300,
-        file_format: str = "png",
-        custom_style: dict | None = None,
-    ) -> Slide:
-        """Add a slide with a title and a matplotlib figure.
-
-        Args:
-            title: Text for the title
-            figure: Matplotlib figure object (plt.figure() or plt.gcf())
-            label: Optional caption for the figure (default: None)
-            dpi: Resolution for the figure (default: 300)
-            file_format: Image format ("png" or "jpg") (default: "png")
-            custom_style: Optional custom styling for the image (default: None)
-
-        Returns:
-            A new Slide object with the matplotlib figure
-
-        Example:
-            ```python
-            import matplotlib.pyplot as plt
-
-            # Create a matplotlib figure
-            plt.figure(figsize=(10, 6))
-            plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
-            plt.title('Sample Plot')
-
-            # Add it to a presentation
-            slide = pres.add_matplotlib_slide(
-                title="Matplotlib Example",
-                figure=plt.gcf(),
-                label="Figure 1: Sample Plot"
-            )
-            ```
-        """
-        _deprecated("Presentation.add_matplotlib_slide", "Presentation.add_pyplot_slide")
-        # Create a new slide using the image slide preset
-        slide = self.add_slide_from_template("image_slide")
-
-        # Update the title text
-        title_shapes = [shape for shape in slide.shapes if shape.has_text_frame]
-        if title_shapes and len(title_shapes) > 0:
-            title_shape = title_shapes[0]
-            title_shape.text_frame.text = title
-
-        # Get the preset for positioning information
-        preset = self.template.get_preset("image_slide")
-        image_area = preset.get("image_area", {}).get(
-            "position", {"x": "10%", "y": "20%", "width": "80%", "height": "70%"}
-        )
-
-        # Get styling from preset or custom style
-        image_style = self.template.get_image_style(preset)
-        if custom_style:
-            image_style.update(custom_style)
-
-        # Add the matplotlib figure
-        Pyplot.add(slide=slide, figure=figure, position=image_area, dpi=dpi, file_format=file_format, style=image_style)
-
-        # Add label if specified
-        if label:
-            # Position the label below the image
-            label_position = {
-                "x": image_area["x"],
-                "y": str(float(image_area["y"].replace("%", "")) + float(image_area["height"].replace("%", "")) + 2)
-                + "%",
-                "width": image_area["width"],
-                "height": "5%",
-            }
-
-            Text.add(
-                slide=slide,
-                text=label,
-                position=label_position,
-                font_name=self.DEFAULT_FONT,
-                font_size=14,
-                font_bold=False,
-                align="center",
-                vertical_align="top",
-                color="black",
-            )
-
-        return slide
-
-    def add_seaborn_slide(
-        self,
-        title: str,
-        seaborn_plot,
-        label: str | None = None,
-        dpi: int = 300,
-        file_format: str = "png",
-        custom_style: dict | None = None,
-    ) -> Slide:
-        """Add a slide with a title and a seaborn plot.
-
-        Args:
-            title: Text for the title
-            seaborn_plot: Seaborn plot object (sns.barplot, sns.heatmap, etc.)
-            label: Optional caption for the figure (default: None)
-            dpi: Resolution for the figure (default: 300)
-            file_format: Image format ("png" or "jpg") (default: "png")
-            custom_style: Optional custom styling for the image (default: None)
-
-        Returns:
-            A new Slide object with the seaborn plot
-
-        Example:
-            ```python
-            import seaborn as sns
-
-            # Create a seaborn plot
-            tips = sns.load_dataset("tips")
-            sns_plot = sns.barplot(x="day", y="total_bill", data=tips)
-
-            # Add it to a presentation
-            slide = pres.add_seaborn_slide(
-                title="Seaborn Example",
-                seaborn_plot=sns_plot,
-                label="Figure 1: Tips by Day"
-            )
-            ```
-        """
-        _deprecated("Presentation.add_seaborn_slide", "Presentation.add_pyplot_slide")
-        # Extract the figure from the seaborn plot
-        if hasattr(seaborn_plot, "figure"):
-            figure = seaborn_plot.figure
-        elif hasattr(seaborn_plot, "fig"):
-            figure = seaborn_plot.fig
-        else:
-            import matplotlib.pyplot as plt
-
-            figure = plt.gcf()
-
-        # Use the matplotlib slide method
-        return self.add_matplotlib_slide(
-            title=title, figure=figure, label=label, dpi=dpi, file_format=file_format, custom_style=custom_style
-        )
-
-    def add_plot(
-        self, title: str, plot=None, data=None, plot_type: str = "matplotlib", label: str | None = None, **kwargs
-    ) -> Slide:
-        """Universal method to add various types of plots to a slide.
-
-        This is a convenience method that supports both matplotlib/seaborn plots
-        and native PowerPoint charts, providing a unified interface.
-
-        Args:
-            title: Text for the slide title
-            plot: Plot object (matplotlib.figure, seaborn plot, etc.) for plot_type="matplotlib" or "seaborn"
-            data: Data for PowerPoint charts for plot_type="pptx_chart"
-            plot_type: Type of plot ("matplotlib", "seaborn", "pptx_chart") (default: "matplotlib")
-            label: Optional caption for the plot
-            **kwargs: Additional arguments specific to the plot type
-
-        Returns:
-            A new Slide object with the plot
-
-        Example:
-            ```python
-            # Add a matplotlib plot
-            import matplotlib.pyplot as plt
-            plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
-            slide = pres.add_plot(
-                title="Matplotlib Plot",
-                plot=plt.gcf(),
-                plot_type="matplotlib"
-            )
-
-            # Add a seaborn plot
-            import seaborn as sns
-            tips = sns.load_dataset("tips")
-            sns_plot = sns.barplot(x="day", y="total_bill", data=tips)
-            slide = pres.add_plot(
-                title="Seaborn Plot",
-                plot=sns_plot,
-                plot_type="seaborn"
-            )
-
-            # Add a PowerPoint chart
-            import pandas as pd
-            data = pd.DataFrame({"Category": ["A", "B", "C"], "Value": [1, 4, 2]})
-            slide = pres.add_plot(
-                title="PowerPoint Chart",
-                data=data,
-                plot_type="pptx_chart",
-                chart_type="column",
-                category_column="Category",
-                value_columns="Value"
-            )
-            ```
-        """
-        _deprecated("Presentation.add_plot", "Presentation.add_pyplot_slide or Presentation.add_chart_slide")
-        if plot_type == "matplotlib":
-            if plot is None:
-                raise ValueError("'plot' argument is required for matplotlib plots")
-
-            return self.add_matplotlib_slide(
-                title=title,
-                figure=plot,
-                label=label,
-                dpi=kwargs.get("dpi", 300),
-                file_format=kwargs.get("file_format", "png"),
-                custom_style=kwargs.get("custom_style"),
-            )
-
-        elif plot_type == "seaborn":
-            if plot is None:
-                raise ValueError("'plot' argument is required for seaborn plots")
-
-            return self.add_seaborn_slide(
-                title=title,
-                seaborn_plot=plot,
-                label=label,
-                dpi=kwargs.get("dpi", 300),
-                file_format=kwargs.get("file_format", "png"),
-                custom_style=kwargs.get("custom_style"),
-            )
-
-        elif plot_type == "pptx_chart":
-            if data is None:
-                raise ValueError("'data' argument is required for PowerPoint charts")
-
-            return self.add_chart_slide(
-                title=title,
-                data=data,
-                chart_type=kwargs.get("chart_type"),
-                category_column=kwargs.get("category_column"),
-                value_columns=kwargs.get("value_columns"),
-                custom_style=kwargs.get("custom_style"),
-            )
-
-        else:
-            raise ValueError(f"Unsupported plot_type: {plot_type}. Use 'matplotlib', 'seaborn', or 'pptx_chart'.")
-
     # Direct object API methods for adding content to slides
-
-    def add_text(
-        self,
-        slide: Slide,
-        text: str,
-        x: float | str = 1.0,
-        y: float | str = 1.0,
-        width: float | str = 8.0,
-        height: float | str = 1.0,
-        font_size: int = 18,
-        font_bold: bool = False,
-        font_italic: bool = False,
-        font_name: str | None = None,
-        align: str = "left",
-        vertical: str = "top",
-        color: str | tuple[int, int, int] | None = "black",
-    ) -> PPTXShape:
-        """Add text directly to a slide.
-
-        Args:
-            slide: The slide to add text to
-            text: The text content
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Width in inches or percentage (default: 8.0)
-            height: Height in inches or percentage (default: 1.0)
-            font_size: Font size in points (default: 18)
-            font_bold: Whether text should be bold (default: False)
-            font_italic: Whether text should be italic (default: False)
-            font_name: Font name (default: None uses DEFAULT_FONT)
-            align: Text alignment, one of "left", "center", "right" (default: "left")
-            vertical: Vertical alignment, one of "top", "middle", "bottom" (default: "top")
-            color: Text color as string name from COLORS dict or RGB tuple (default: "black")
-        Returns:
-            The created text shape
-
-        Example:
-            ```python
-            slide = pres.add_slide()
-            pres.add_text(slide, "Hello World", x="10%", y="20%", font_size=24)
-
-            # For centering text
-            pres.add_text(slide, "Centered Title", x="50%", y="5%", align="center")
-            ```
-        """
-        _deprecated("Presentation.add_text", "Slide.add_text")
-        if font_name is None:
-            font_name = self.DEFAULT_FONT
-
-        # Forward all parameters to add_text
-        return slide.add_text(
-            text=text,
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            font_size=font_size,
-            font_bold=font_bold,
-            font_italic=font_italic,
-            font_name=font_name,
-            align=align,
-            vertical=vertical,
-            color=color,
-        )
-
-    def add_image(
-        self,
-        slide: Slide,
-        image_path: str,
-        x: float | str = 1.0,
-        y: float | str = 1.0,
-        width: float | str | None = None,
-        height: float | str | None = None,
-        crop: bool = False,
-        maintain_aspect_ratio: bool = True,
-        center: bool = True,
-        border: bool = False,
-        border_color: str = "black",
-        border_width: int = 1,
-        shadow: bool = False,
-    ) -> PPTXShape:
-        """Add an image directly to a slide.
-
-        Args:
-            slide: The slide to add the image to
-            image_path: Path to the image file
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Width in inches or percentage (default: None, auto-sized)
-            height: Height in inches or percentage (default: None, auto-sized)
-            crop: Whether to crop the image (default: False)
-            maintain_aspect_ratio: Whether to maintain aspect ratio (default: True)
-            center: Whether to center the image in the specified position (default: True)
-            border: Whether to add a border to the image (default: False)
-            border_color: Border color (default: "black")
-            border_width: Border width in points (default: 1)
-            shadow: Whether to add a shadow to the image (default: False)
-        Returns:
-            The created image shape
-
-        Example:
-            ```python
-            slide = pres.add_slide()
-            pres.add_image(slide, "path/to/image.jpg", x="10%", y="20%", width="60%")
-
-            # For centering an image
-            pres.add_image(slide, "path/to/image.jpg", x="50%", y="30%", width="80%", center=True)
-            ```
-        """
-        _deprecated("Presentation.add_image", "Slide.add_image")
-        if crop:
-            warnings.warn("The 'crop' parameter is not implemented and will be removed", stacklevel=2)
-        if not center:
-            warnings.warn("The 'center' parameter is not implemented and will be removed", stacklevel=2)
-
-        # Route through Image.add so maintain_aspect_ratio takes effect
-        image_shape = Image(slide).add(
-            image_path=image_path,
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            maintain_aspect_ratio=maintain_aspect_ratio,
-        )
-
-        # Apply styling
-        if border:
-            image_shape.line.color.rgb = self.COLORS.get(border_color, self.COLORS["black"])
-            image_shape.line.width = border_width
-
-        if shadow:
-            common.apply_shadow(image_shape)
-
-        return image_shape
-
-    def add_shape(
-        self,
-        slide: Slide,
-        shape_type: MSO_SHAPE | str = MSO_SHAPE.RECTANGLE,
-        x: float | str = 1.0,
-        y: float | str = 1.0,
-        width: float | str = 2.0,
-        height: float | str = 1.0,
-        fill_color: str | tuple[int, int, int] | None = None,
-        line_color: str | tuple[int, int, int] | None = None,
-        line_width: float = 1.0,
-        text: str | None = None,
-        font_size: int = 14,
-        font_name: str | None = None,
-        font_bold: bool = False,
-        font_color: str | tuple[int, int, int] | None = "black",
-        text_align: str = "center",
-        text_vertical: str = "middle",
-    ) -> PPTXShape:
-        """Add a shape directly to a slide.
-
-        Args:
-            slide: The slide to add the shape to
-            shape_type: The type of shape (default: MSO_SHAPE.RECTANGLE)
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Width in inches or percentage (default: 2.0)
-            height: Height in inches or percentage (default: 1.0)
-            fill_color: Fill color (default: None, no fill)
-            line_color: Line color (default: None, no line)
-            line_width: Line width in points (default: 1.0)
-            text: Text to add to the shape (default: None)
-            font_size: Font size in points (default: 14)
-            font_name: Font name (default: None uses DEFAULT_FONT)
-            font_bold: Whether text should be bold (default: False)
-            font_color: Text color (default: "black")
-            text_align: Text alignment (default: "center")
-            text_vertical: Vertical text alignment (default: "middle")
-        Returns:
-            The created shape
-
-        Example:
-            ```python
-            slide = pres.add_slide()
-            pres.add_shape(
-                slide,
-                shape_type=MSO_SHAPE.ROUNDED_RECTANGLE,
-                x="20%",
-                y="30%",
-                width="40%",
-                height="20%",
-                fill_color="blue",
-                text="Button",
-                font_color="white"
-            )
-
-            # For centered shape
-            pres.add_shape(
-                slide,
-                x="50%",
-                y="40%",
-                width="80%",
-                height="30%",
-                fill_color="blue",
-                text_align="center"
-            )
-            ```
-        """
-        _deprecated("Presentation.add_shape", "Slide.add_shape")
-        # Use the slide's native add_shape method
-        shape = slide.add_shape(shape_type=shape_type, x=x, y=y, width=width, height=height, fill_color=fill_color)
-
-        # Apply line color if specified
-        if line_color is not None:
-            if isinstance(line_color, str) and line_color in self.COLORS:
-                shape.line.color.rgb = self.COLORS[line_color]
-            elif isinstance(line_color, tuple) and len(line_color) == 3:
-                shape.line.color.rgb = RGBColor(*line_color)
-            shape.line.width = Pt(line_width)
-        else:
-            shape.line.fill.background()
-
-        # Add text if specified
-        if text is not None:
-            shape.text = text
-            if font_name is None:
-                font_name = self.DEFAULT_FONT
-
-            # Format text
-            for paragraph in shape.text_frame.paragraphs:
-                paragraph.font.size = Pt(font_size)
-                paragraph.font.name = font_name
-                paragraph.font.bold = font_bold
-
-                # Set text color
-                if isinstance(font_color, str) and font_color in self.COLORS:
-                    paragraph.font.color.rgb = self.COLORS[font_color]
-                elif isinstance(font_color, tuple) and len(font_color) == 3:
-                    paragraph.font.color.rgb = RGBColor(*font_color)
-
-                # Set text alignment
-                if text_align in self.ALIGN:
-                    paragraph.alignment = self.ALIGN[text_align]
-
-            # Set vertical alignment
-            if text_vertical in self.VERTICAL:
-                shape.text_frame.vertical_anchor = self.VERTICAL[text_vertical]
-
-        return shape
-
-    def add_table(
-        self,
-        slide: Slide,
-        data: list[list[Any]] | pd.DataFrame,
-        x: float | str = 1.0,
-        y: float | str = 1.0,
-        width: float | str = 8.0,
-        height: float | str = 4.0,
-        has_header: bool = True,
-        style: dict | None = None,
-    ) -> Any:
-        """Add a table directly to a slide.
-
-        Args:
-            slide: The slide to add the table to
-            data: Table data as a list of lists or pandas DataFrame
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Width in inches or percentage (default: 8.0)
-            height: Height in inches or percentage (default: 4.0)
-            has_header: Whether the first row is a header (default: True)
-            style: Dictionary of style options for the table (default: None)
-
-        Returns:
-            The created table shape
-
-        Example:
-            ```python
-            slide = pres.add_slide()
-            data = [["Name", "Value"], ["Item 1", 100], ["Item 2", 200]]
-            pres.add_table(slide, data, x="10%", y="20%", width="80%", height="60%")
-            ```
-        """
-        _deprecated("Presentation.add_table", "Slide.add_table")
-        if style is None:
-            style = self.template.default_table_style.copy()
-        return slide.add_table(data, x=x, y=y, width=width, height=height, has_header=has_header, style=style)
-
-    def add_chart(
-        self,
-        slide: Slide,
-        data: list[list[Any]] | pd.DataFrame,
-        chart_type: str = "column",
-        x: float | str = 1.0,
-        y: float | str = 1.0,
-        width: float | str = 8.0,
-        height: float | str = 4.0,
-        has_legend: bool = True,
-        legend_position: str = "bottom",
-        category_column: str | int | None = None,
-        value_columns: str | list[str] | int | list[int] | None = None,
-        has_title: bool = True,
-        chart_title: str | None = None,
-        has_data_labels: bool = False,
-        gridlines: bool = True,
-    ) -> PPTXChart:
-        """Add a chart directly to a slide.
-
-        Args:
-            slide: The slide to add the chart to
-            data: Chart data as a list of lists or pandas DataFrame
-            chart_type: Type of chart (default: "column")
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Width in inches or percentage (default: 8.0)
-            height: Height in inches or percentage (default: 4.0)
-            has_legend: Whether to include a legend (default: True)
-            legend_position: Legend position (default: "bottom")
-            category_column: Name or index of the column to use as categories (default: None)
-            value_columns: Names or indices of columns to use as values (default: None)
-            has_title: Whether to include a title (default: True)
-            chart_title: Chart title (default: None)
-            has_data_labels: Whether to include data labels (default: False)
-            gridlines: Whether to include gridlines (default: True)
-
-        Returns:
-            The created chart object
-
-        Example:
-            ```python
-            slide = pres.add_slide()
-            data = [["Category", "Value"], ["A", 10], ["B", 20], ["C", 30]]
-            pres.add_chart(
-                slide,
-                data,
-                chart_type="pie",
-                x="10%",
-                y="20%",
-                width="80%",
-                height="60%",
-                chart_title="Sales by Region"
-            )
-            ```
-        """
-        _deprecated("Presentation.add_chart", "Slide.add_chart")
-        return slide.add_chart(
-            data=data,
-            chart_type=chart_type,
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            category_column=category_column,
-            value_columns=value_columns,
-            title=chart_title,
-            has_legend=has_legend,
-            legend_position=legend_position,
-        )
 
     def add_grid(
         self,
@@ -2295,7 +1634,7 @@ class Presentation:
         if content_padding_val is not None or content_x_padding_val is not None:
             content_x = content_padding_val if content_padding_val is not None else content_x_padding_val
             if content_x is not None:
-                grid_x = str(content_x)
+                grid_x = content_x
 
         # Add title if provided
         if title:
@@ -2584,7 +1923,7 @@ class Presentation:
 
         # Apply content x padding if specified (for grid positioning)
         content_x = resolve_padding(content_padding, content_x_padding)
-        grid_x = str(content_x) if content_x is not None else "0%"
+        grid_x = content_x if content_x is not None else "0%"
 
         if title:
             # Calculate title position with padding
@@ -2594,8 +1933,8 @@ class Presentation:
             # Add the title to the slide
             slide.add_text(
                 text=title,
-                x=str(title_x) if title_x is not None else "0%",
-                y=str(title_y) if title_y is not None else "0%",
+                x=title_x if title_x is not None else "0%",
+                y=title_y if title_y is not None else "0%",
                 width="100%",
                 height=title_height,
                 font_size=title_font_size,
@@ -2764,8 +2103,8 @@ class Presentation:
 
             slide.add_text(
                 text=title,
-                x=str(title_x) if title_x is not None else "0%",
-                y=str(title_y) if title_y is not None else "0%",
+                x=title_x if title_x is not None else "0%",
+                y=title_y if title_y is not None else "0%",
                 width="100%",
                 height=title_height,
                 font_size=title_font_size,
@@ -2784,7 +2123,7 @@ class Presentation:
 
             slide.add_text(
                 text=subtitle,
-                x=str(subtitle_x) if subtitle_x is not None else "0%",
+                x=subtitle_x if subtitle_x is not None else "0%",
                 y=subtitle_y if subtitle_y is not None else adjusted_y,
                 width="100%",
                 height=subtitle_height,
@@ -2838,7 +2177,7 @@ class Presentation:
 
             slide.add_text(
                 text=label,
-                x=str(label_x) if label_x is not None else "0%",
+                x=label_x if label_x is not None else "0%",
                 y=label_y,
                 width="100%",
                 height="5%",
@@ -2848,77 +2187,3 @@ class Presentation:
             )
 
         return slide, pyplot
-
-    def add_pyplot(
-        self,
-        slide: Slide,
-        figure,
-        x: float | str = 1.0,
-        y: float | str = 1.0,
-        width: float | str = 8.0,
-        height: float | str = 4.0,
-        dpi: int = 300,
-        file_format: str = "png",
-        border: bool = False,
-        border_color: str = "black",
-        border_width: int = 1,
-        shadow: bool = False,
-        maintain_aspect_ratio: bool = True,
-        center: bool = True,
-    ) -> PPTXShape:
-        """Add a matplotlib or seaborn figure directly to a slide.
-
-        Args:
-            slide: The slide to add the figure to
-            figure: Matplotlib figure object (plt.figure() or plt.gcf())
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Width in inches or percentage (default: 8.0)
-            height: Height in inches or percentage (default: 4.0)
-            dpi: Resolution for the figure (default: 300)
-            file_format: Image format ("png" or "jpg") (default: "png")
-            border: Whether to add a border to the image (default: False)
-            border_color: Border color (default: "black")
-            border_width: Border width in points (default: 1)
-            shadow: Whether to add a shadow to the image (default: False)
-            maintain_aspect_ratio: Whether to maintain aspect ratio (default: True)
-            center: Whether to center the image in the specified position (default: True)
-
-        Returns:
-            The created image shape
-
-        Example:
-            ```python
-            import matplotlib.pyplot as plt
-
-            # Create a matplotlib figure
-            plt.figure(figsize=(10, 6))
-            plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
-            plt.title('Sample Plot')
-
-            # Add it to a slide
-            slide = pres.add_slide()
-            pres.add_pyplot(
-                slide,
-                plt.gcf(),
-                x="10%",
-                y="20%",
-                width="80%",
-                height="60%",
-                border=True,
-                shadow=True
-            )
-            ```
-        """
-        _deprecated("Presentation.add_pyplot", "Pyplot.add or GridCellProxy.add_pyplot")
-        position = {"x": x, "y": y, "width": width, "height": height}
-        style = {
-            "border": border,
-            "border_color": border_color,
-            "border_width": border_width,
-            "shadow": shadow,
-            "maintain_aspect_ratio": maintain_aspect_ratio,
-            "center": center,
-        }
-
-        return Pyplot.add(slide=slide, figure=figure, position=position, dpi=dpi, file_format=file_format, style=style)

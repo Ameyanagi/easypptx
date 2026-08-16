@@ -16,7 +16,8 @@ class Presentation:
                  reference_pptx: Optional[str] = None,
                  blank_layout_index: Optional[int] = None,
                  default_bg_color: Optional[Union[str, Tuple[int, int, int]]] = None,
-                 template_toml: Optional[str] = None) -> None:
+                 template_toml: Optional[str] = None,
+                 theme: Union[str, Theme, None] = None) -> None:
         """Initialize a new empty presentation.
 
         Args:
@@ -28,10 +29,29 @@ class Presentation:
             blank_layout_index: Index of blank layout in the slide_layouts (default: None, auto-detected)
             default_bg_color: Default background color for slides as string name or RGB tuple (default: None)
             template_toml: Path to a TOML template used as the default for all new slides (default: None)
+            theme: Built-in theme name ("light", "dark", "corporate") or a Theme instance (default: None)
 
         Raises:
             ValueError: If an invalid aspect ratio is specified
             FileNotFoundError: If the template file doesn't exist
+        """
+
+    @classmethod
+    def from_markdown(cls,
+                      source: Union[str, Path],
+                      theme: Union[str, Theme, None] = None,
+                      template_toml: Optional[str] = None,
+                      base_dir: Union[str, Path, None] = None) -> "Presentation":
+        """Build a presentation from markdown text or a markdown file.
+
+        Args:
+            source: Markdown content, or a path to a .md file
+            theme: Theme name or Theme instance; overrides the frontmatter theme (default: None)
+            template_toml: TOML template path; overrides the frontmatter template (default: None)
+            base_dir: Directory for resolving relative image paths (default: the file's directory)
+
+        Returns:
+            A Presentation with one slide per markdown section
         """
 
     @classmethod
@@ -60,8 +80,8 @@ class Presentation:
         title_y_padding: Optional[Union[str, float]] = "5%",
         title_width: Optional[Union[str, float]] = "90%",
         title_height: Optional[Union[str, float]] = "10%",
-        title_font_size: int = 32,
-        title_align: str = "center",
+        title_font_size: Optional[int] = None,
+        title_align: Optional[str] = None,
         title_color: Optional[Union[str, Tuple[int, int, int]]] = None,
     ) -> Slide:
         """Add a new slide to the presentation.
@@ -78,9 +98,9 @@ class Presentation:
             title_y_padding: Vertical padding for the title (default: "5%")
             title_width: Width of the title area (default: "90%")
             title_height: Height of the title area (default: "10%")
-            title_font_size: Font size for the title (default: 32)
-            title_align: Text alignment for the title (default: "center")
-            title_color: Title color as a name from COLORS or an RGB tuple (default: None)
+            title_font_size: Font size for the title (default: theme title size or 32)
+            title_align: Text alignment for the title (default: theme title align or "center")
+            title_color: Title color as a name from COLORS or an RGB tuple (default: theme title color or None)
 
         Returns:
             A new Slide object
@@ -119,26 +139,27 @@ class Slide:
     def add_text(
         self,
         text: str,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
-        width: PositionType = 8.0,
-        height: PositionType = 1.0,
-        font_size: int = 18,
-        font_bold: bool = False,
-        font_italic: bool = False,
-        font_name: str = "Meiryo",
-        align: str = "left",
-        vertical: str = "top",
+        x: Optional[PositionType] = None,
+        y: Optional[PositionType] = None,
+        width: Optional[PositionType] = None,
+        height: Optional[PositionType] = None,
+        font_size: Optional[int] = None,
+        font_bold: Optional[bool] = None,
+        font_italic: Optional[bool] = None,
+        font_name: Optional[str] = None,
+        align: Optional[str] = None,
+        vertical: Optional[str] = None,
         color: Optional[Union[str, Tuple[int, int, int]]] = None,
+        style: Optional[TextStyle] = None,
     ) -> PPTXShape:
         """Add a text box to the slide.
 
         Args:
             text: The text content
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Width in inches or percentage (default: 8.0)
-            height: Height in inches or percentage (default: 1.0)
+            x: X position as percent (number or "N%") or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 5)
+            width: Width as percent or in_() length (default: 90)
+            height: Height as percent or in_() length (default: 10)
             font_size: Font size in points (default: 18)
             font_bold: Whether text should be bold (default: False)
             font_italic: Whether text should be italic (default: False)
@@ -146,27 +167,64 @@ class Slide:
             align: Text alignment, one of "left", "center", "right" (default: "left")
             vertical: Vertical alignment, one of "top", "middle", "bottom" (default: "top")
             color: Text color as string name from COLORS dict or RGB tuple (default: None)
+            style: A TextStyle filling any formatting left unset (default: None)
 
         Returns:
             The created shape object
         """
 
+    def add_bullets(
+        self,
+        items: List[Union[str, Tuple[str, int]]],
+        x: PositionType = 5,
+        y: PositionType = 20,
+        width: PositionType = 90,
+        height: PositionType = 70,
+        font_size: Optional[int] = None,
+        font_name: Optional[str] = None,
+        color: Optional[Union[str, Tuple[int, int, int]]] = None,
+        align: Optional[str] = None,
+        bullet: bool = True,
+        style: Optional[TextStyle] = None,
+    ) -> PPTXShape:
+        """Add a bulleted (or plain stacked) list of paragraphs to the slide.
+
+        New in 0.7.0.
+
+        Args:
+            items: List entries; each item is a string (level 0) or a
+                (text, level) tuple for nested bullets (level 0-4)
+            x: X position as percent or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 20)
+            width: Width as percent or in_() length (default: 90)
+            height: Height as percent or in_() length (default: 70)
+            font_size: Font size in points (default: 18)
+            font_name: Font name (default: "Meiryo")
+            color: Text color name or RGB tuple (default: None)
+            align: Text alignment "left"/"center"/"right" (default: "left")
+            bullet: Draw bullet characters; False gives plain stacked paragraphs (default: True)
+            style: A TextStyle filling any formatting left unset (default: None)
+
+        Returns:
+            The created text box shape
+        """
+
     def add_image(
         self,
         image_path: str,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 5,
         width: Optional[PositionType] = None,
         height: Optional[PositionType] = None,
     ) -> PPTXShape:
         """Add an image to the slide.
 
         Args:
-            image_path: Path to the image file
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Width in inches or percentage (default: None, maintains aspect ratio)
-            height: Height in inches or percentage (default: None, maintains aspect ratio)
+            image_path: Path to the image file, or a binary file-like object
+            x: X position as percent or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 5)
+            width: Width as percent or in_() length (default: None, maintains aspect ratio)
+            height: Height as percent or in_() length (default: None, maintains aspect ratio)
 
         Returns:
             The created picture shape
@@ -175,13 +233,51 @@ class Slide:
             FileNotFoundError: If the image file doesn't exist
         """
 
+    def add_pyplot(
+        self,
+        figure: Any,
+        x: PositionType = 5,
+        y: PositionType = 15,
+        width: PositionType = 90,
+        height: PositionType = 75,
+        dpi: int = 300,
+        file_format: str = "png",
+        border: bool = False,
+        border_color: str = "black",
+        border_width: int = 1,
+        shadow: bool = False,
+        maintain_aspect_ratio: bool = True,
+    ) -> PPTXShape:
+        """Add a matplotlib (or seaborn) figure to the slide.
+
+        New in 0.7.0.
+
+        Args:
+            figure: Matplotlib figure object (plt.figure(), plt.gcf(), or a
+                seaborn plot's .figure)
+            x: X position as percent or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 15)
+            width: Width as percent or in_() length (default: 90)
+            height: Height as percent or in_() length (default: 75)
+            dpi: Resolution for the figure (default: 300)
+            file_format: Image format ("png" or "jpg") (default: "png")
+            border: Whether to draw a border around the image (default: False)
+            border_color: Border color name or RGB tuple (default: "black")
+            border_width: Border width in points (default: 1)
+            shadow: Whether to apply a drop shadow (default: False)
+            maintain_aspect_ratio: Whether to keep the figure's aspect ratio (default: True)
+
+        Returns:
+            The created picture shape
+        """
+
     def add_shape(
         self,
         shape_type: Union[MSO_SHAPE, str] = MSO_SHAPE.RECTANGLE,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
-        width: PositionType = 5.0,
-        height: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 5,
+        width: PositionType = 40,
+        height: PositionType = 10,
         fill_color: Optional[Union[str, Tuple[int, int, int]]] = None,
     ) -> PPTXShape:
         """Add a shape to the slide.
@@ -189,10 +285,10 @@ class Slide:
         Args:
             shape_type: The shape type, as an MSO_SHAPE value or its name,
                 e.g. "ROUNDED_RECTANGLE" (default: MSO_SHAPE.RECTANGLE)
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Width in inches or percentage (default: 5.0)
-            height: Height in inches or percentage (default: 1.0)
+            x: X position as percent or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 5)
+            width: Width as percent or in_() length (default: 40)
+            height: Height as percent or in_() length (default: 10)
             fill_color: Fill color as string name from COLORS dict or RGB tuple (default: None)
 
         Returns:
@@ -205,23 +301,24 @@ class Slide:
     def add_table(
         self,
         data: Any,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 20,
         width: Optional[PositionType] = None,
         height: Optional[PositionType] = None,
-        has_header: bool = True,
-        style: Optional[Union[int, dict]] = None,
+        has_header: Optional[bool] = None,
+        style: Optional[Union[int, dict, TableStyle]] = None,
     ) -> PPTXTable:
         """Add a table to the slide.
 
         Args:
             data: Table data as a list of lists or pandas DataFrame
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Total width in inches or percentage (default: None, auto-sized)
-            height: Total height in inches or percentage (default: None, auto-sized)
+            x: X position as percent or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 20)
+            width: Total width as percent or in_() length (default: None, auto-sized)
+            height: Total height as percent or in_() length (default: None, auto-sized)
             has_header: Whether the first row is a header (default: True)
-            style: Table style ID, or a style dict with a "style_id" key (default: None)
+            style: Table style ID, a style dict with a "style_id" key,
+                or a TableStyle (default: None)
 
         Returns:
             The created table object
@@ -230,45 +327,58 @@ class Slide:
     def add_chart(
         self,
         data: Any = None,
-        chart_type: str = "column",
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
-        width: PositionType = 6.0,
-        height: PositionType = 4.5,
+        chart_type: Optional[str] = None,
+        x: PositionType = 10,
+        y: PositionType = 20,
+        width: PositionType = 60,
+        height: PositionType = 60,
         categories: Optional[list] = None,
         values: Optional[list] = None,
         category_column: Optional[Union[str, int]] = None,
         value_columns: Optional[Union[str, List[str], int, List[int]]] = None,
         title: Optional[str] = None,
-        has_legend: bool = True,
-        legend_position: str = "right",
+        has_legend: Optional[bool] = None,
+        legend_position: Optional[str] = None,
+        style: Optional[ChartStyle] = None,
     ) -> PPTXChart:
         """Add a chart to the slide.
 
         Either pass explicit categories and values lists, or pass data
         (a list of lists with a header row, or a pandas DataFrame)
-        together with optional category_column / value_columns.
+        together with optional category_column / value_columns. Passing
+        several value_columns plots each column as a named series.
 
         Args:
             data: Chart data as a list of lists or pandas DataFrame (default: None)
             chart_type: Type of chart ('column', 'bar', 'line', 'pie', 'area', 'scatter')
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Width in inches or percentage (default: 6.0)
-            height: Height in inches or percentage (default: 4.5)
+                (default: "column")
+            x: X position as percent or in_() length (default: 10)
+            y: Y position as percent or in_() length (default: 20)
+            width: Width as percent or in_() length (default: 60)
+            height: Height as percent or in_() length (default: 60)
             categories: Explicit list of category labels (default: None)
             values: Explicit list of data values (default: None)
             category_column: Name or index of the column to use as categories (default: None)
-            value_columns: Name(s) or index(es) of column(s) to use as values (default: None)
+            value_columns: Name(s) or index(es) of column(s) to use as values;
+                a list creates one series per column (default: None)
             title: Chart title (default: None)
             has_legend: Whether to show legend (default: True)
             legend_position: Legend position (default: "right")
+            style: A ChartStyle filling any chart options left unset (default: None)
 
         Returns:
             The created chart object
 
         Raises:
             ValueError: If neither data nor categories/values are provided
+        """
+
+    @property
+    def notes(self) -> str:
+        """The slide's speaker notes (empty string if none exist).
+
+        New in 0.7.0. Assign a string to set the notes:
+        slide.notes = "Talking points for this slide"
         """
 
     def add_multiple_objects(
@@ -288,10 +398,10 @@ class Slide:
                 Each dict should have 'type' ('text', 'image', or 'shape') and type-specific parameters
             layout: Layout type ('grid', 'horizontal', 'vertical')
             padding_percent: Padding between objects as percentage of container
-            start_x: Starting X position of container in inches or percentage
-            start_y: Starting Y position of container in inches or percentage
-            width: Width of container in inches or percentage
-            height: Height of container in inches or percentage
+            start_x: Starting X position of container as percent or in_() length
+            start_y: Starting Y position of container as percent or in_() length
+            width: Width of container as percent or in_() length
+            height: Height of container as percent or in_() length
 
         Returns:
             List of created shape objects
@@ -327,8 +437,8 @@ class Slide:
 Notes:
 
 - `slide.add_chart` accepts `value_column` (singular) as an alias for `value_columns`, and `chart_title` as an alias for `title`. `slide.add_table` accepts `first_row_header` as an alias for `has_header`.
-- Unknown parameters passed to Slide content methods trigger a warning instead of being silently ignored. Out-of-range percentages (e.g. `"150%"`) are clamped with a warning.
-- The pass-through variants on `Presentation` that take a slide as the first argument (`pres.add_text(slide, ...)`, `pres.add_image(slide, ...)`, `pres.add_shape(slide, ...)`, `pres.add_table(slide, ...)`, `pres.add_chart(slide, ...)`, `pres.add_pyplot(slide, ...)`) are deprecated. They still work but emit a `DeprecationWarning`; use the `Slide` methods instead. `Presentation.add_matplotlib_slide`, `add_seaborn_slide`, and `add_plot` are deprecated in favor of `add_pyplot_slide`, and `add_image_slide` in favor of `add_image_gen_slide`.
+- Unknown parameters passed to Slide content methods trigger a warning instead of being silently ignored. Out-of-range percentages (e.g. `150` or `"150%"`) are clamped with a warning.
+- **Removed in 0.7.0:** The pass-through variants on `Presentation` that took a slide as the first argument (`pres.add_text(slide, ...)`, `pres.add_image(slide, ...)`, `pres.add_shape(slide, ...)`, `pres.add_table(slide, ...)`, `pres.add_chart(slide, ...)`, `pres.add_pyplot(slide, ...)`) have been removed; use the `Slide` methods instead. `Presentation.add_matplotlib_slide`, `add_seaborn_slide`, and `add_plot` have been removed in favor of `add_pyplot_slide` (or `slide.add_pyplot`), and `add_image_slide` in favor of `add_image_gen_slide`. See [Migrating to 0.7.0](migration.md).
 
 ## Text Class
 
@@ -363,10 +473,10 @@ class Text:
             font_name: Font name (default: "Meiryo")
             color: Text color as string name from COLORS dict or RGB tuple (default: "black")
             align: Text alignment, one of "left", "center", "right" (default: "center")
-            x: X position in inches or percentage (default: "10%")
-            y: Y position in inches or percentage (default: "5%")
-            width: Width in inches or percentage (default: "80%")
-            height: Height in inches or percentage (default: "15%")
+            x: X position as percent or in_() length (default: "10%")
+            y: Y position as percent or in_() length (default: "5%")
+            width: Width as percent or in_() length (default: "80%")
+            height: Height as percent or in_() length (default: "15%")
 
         Returns:
             The created shape object
@@ -375,10 +485,10 @@ class Text:
     def add_paragraph(
         self,
         text: str,
-        x: PositionType = 1.0,
-        y: PositionType = 2.0,
-        width: PositionType = 8.0,
-        height: PositionType = 1.0,
+        x: PositionType = 10,
+        y: PositionType = 20,
+        width: PositionType = 80,
+        height: PositionType = 10,
         font_size: int = 18,
         font_bold: bool = False,
         font_italic: bool = False,
@@ -391,10 +501,10 @@ class Text:
 
         Args:
             text: The paragraph text
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 2.0)
-            width: Width in inches or percentage (default: 8.0)
-            height: Height in inches or percentage (default: 1.0)
+            x: X position as percent or in_() length (default: 10)
+            y: Y position as percent or in_() length (default: 20)
+            width: Width as percent or in_() length (default: 80)
+            height: Height as percent or in_() length (default: 10)
             font_size: Font size in points (default: 18)
             font_bold: Whether text should be bold (default: False)
             font_italic: Whether text should be italic (default: False)
@@ -434,26 +544,33 @@ class Text:
 
 ## Position Type
 
-EasyPPTX uses a special type for position parameters that supports both absolute and percentage-based positioning:
+EasyPPTX uses a special type for position parameters. **Changed in 0.7.0:** bare numbers are percentages of the slide dimension; absolute inches use the `in_()` helper (floats no longer mean inches):
 
 ```python
 # Type for position parameters
-PositionType = Union[float, str]
+PositionType = Union[float, str, Length]
 
 # Examples:
-x = 1.0       # 1 inch (absolute)
-x = "50%"     # 50% of slide width (percentage)
+from easypptx import in_
+
+x = 50        # 50% of slide width (percentage)
+x = "50%"     # 50% of slide width (percentage string)
+x = in_(1.5)  # 1.5 inches (absolute Length)
 ```
+
+Percentages outside 0-100 are clamped with a warning; `in_()` lengths are not clamped.
 
 ### Positioning Helpers
 
-The `easypptx.positioning` module provides percent/inch conversion helpers used throughout the library:
+The `easypptx.positioning` module provides the `in_()` helper and percent/inch conversion functions used throughout the library:
 
 ```python
+from easypptx import in_         # in_(1.5) -> absolute length of 1.5 inches
+
 from easypptx.positioning import (
     is_percent,             # True if a value is a percentage string like "50%"
-    parse_percent,          # "50%" -> 50.0
-    pct,                    # 50.0 -> "50%"
+    parse_percent,          # "50%" -> 50.0 (bare numbers pass through)
+    pct,                    # 50.0 -> "50.00%"
     to_percent,             # Convert a position value to a percentage of a dimension
     to_inches,              # Convert a position value to inches
     shift_band,             # Shift a position band (e.g. below a title area)
@@ -461,6 +578,51 @@ from easypptx.positioning import (
     apply_content_padding,  # Apply padding to a content area
 )
 ```
+
+## Styles and Themes
+
+New in 0.7.0. The `easypptx.styles` module (re-exported from `easypptx`) provides reusable style dataclasses and presentation-wide themes. See [Styling and Formatting](styling.md) for usage.
+
+```python
+@dataclass
+class TextStyle:
+    """Formatting for text content (add_text, add_bullets, titles)."""
+    font_name: Optional[str] = None
+    font_size: Optional[int] = None
+    font_bold: Optional[bool] = None
+    font_italic: Optional[bool] = None
+    color: Optional[Union[str, Tuple[int, int, int]]] = None
+    align: Optional[str] = None
+    vertical: Optional[str] = None
+
+@dataclass
+class TableStyle:
+    """Formatting for tables."""
+    has_header: Optional[bool] = None
+    style_id: Optional[int] = None
+
+@dataclass
+class ChartStyle:
+    """Formatting for charts."""
+    chart_type: Optional[str] = None
+    has_legend: Optional[bool] = None
+    legend_position: Optional[str] = None
+
+@dataclass
+class Theme:
+    """A presentation-wide look: background, title style, and body style.
+
+    Built-in presets are available by name: Presentation(theme="dark").
+    Presets: "light", "dark", "corporate".
+    """
+    name: str = "custom"
+    bg_color: Optional[Union[str, Tuple[int, int, int]]] = None
+    title: TextStyle = field(default_factory=TextStyle)
+    body: TextStyle = field(default_factory=TextStyle)
+    accent_color: Optional[Union[str, Tuple[int, int, int]]] = None
+```
+
+Style objects are passed via the `style=` parameter of `add_text`, `add_bullets`, `add_table`, and `add_chart`; explicit keyword arguments always beat the style object. Themes set the default slide background, cascade body text styling via template defaults, and style `add_slide` titles.
 
 ## Constants
 
@@ -552,8 +714,8 @@ class Grid:
                  y: PositionType = "0%",
                  width: PositionType = "100%",
                  height: PositionType = "100%",
-                 rows: int = 1,
-                 cols: int = 1,
+                 rows: Union[int, List[float]] = 1,
+                 cols: Union[int, List[float]] = 1,
                  padding: float = 5.0) -> None:
         """Initialize a Grid layout.
 
@@ -563,8 +725,9 @@ class Grid:
             y: Y position of the grid (default: "0%")
             width: Width of the grid (default: "100%")
             height: Height of the grid (default: "100%")
-            rows: Number of rows (default: 1)
-            cols: Number of columns (default: 1)
+            rows: Number of rows, or a list of relative row weights,
+                e.g. [2, 1] for a top region twice as tall (default: 1)
+            cols: Number of columns, or a list of relative column weights (default: 1)
             padding: Padding between cells as percentage of cell size (default: 5.0)
         """
 
@@ -642,17 +805,34 @@ class Grid:
         """
 
     def __getitem__(self, key):
-        """Access a cell or range of cells using indexing.
+        """Access a cell (or span of cells) using indexing.
+
+        Supports grid[row, col], flat access grid[index], and — new in
+        0.7.0 — slice spans such as grid[1, :] (the whole second row) or
+        grid[0:2, 1] (two rows of one column). A slice span merges the
+        region and returns its GridCellProxy; step slices are rejected
+        with a ValueError.
 
         Args:
-            key: A tuple of (row, col) or a single index for flattened access
+            key: A tuple of (row, col) — either may be a slice — or a
+                single int for flattened access
 
         Returns:
-            The requested GridCell object or a list of cells
+            A GridCellProxy for the requested cell or merged span
 
         Raises:
             OutOfBoundsError: If the requested cell is out of bounds
             TypeError: If the key is not in the right format
+        """
+
+    def next(self) -> "GridCellProxy":
+        """Return a proxy for the next free cell, growing the grid if needed.
+
+        New in 0.7.0. Cells fill in row-major order; when every cell has
+        content, a new row is appended automatically.
+
+        Example:
+            grid.next().add_text("First free cell")
         """
 
     @property
@@ -711,6 +891,35 @@ class Grid:
 
         Returns:
             The created Grid object
+        """
+```
+
+## GridCellProxy Class
+
+`grid[row, col]` (and `grid.next()`) return a `GridCellProxy` with content methods (`add_text`, `add_image`, `add_pyplot`, `add_table`, `add_grid`) that size and position content to the cell. New in 0.7.0, the proxy also supports cell styling:
+
+```python
+class GridCellProxy:
+    def style(self,
+              fill: Optional[Union[str, Tuple[int, int, int]]] = None,
+              border_color: Optional[Union[str, Tuple[int, int, int]]] = None,
+              border_width: float = 1.0,
+              padding: Optional[Union[float, str]] = None) -> "GridCellProxy":
+        """Style this cell: background fill, border, and content padding.
+
+        Draws a background rectangle covering the full cell and optionally
+        sets padding that shrinks the area used by content added afterwards.
+        Returns the proxy so calls can be chained.
+
+        Args:
+            fill: Background color name or RGB tuple (default: None, no fill)
+            border_color: Border color name or RGB tuple (default: None, no border)
+            border_width: Border width in points (default: 1.0)
+            padding: Extra content padding as percent of the slide (default: None)
+
+        Example:
+            grid[0, 0].style(fill="lightgray", border_color="gray",
+                             border_width=1, padding=2).add_text("Card")
         """
 ```
 

@@ -24,6 +24,7 @@ from easypptx.common import (
     warn_ignored_kwargs,
 )
 from easypptx.positioning import PositionType, to_inches
+from easypptx.styles import ChartStyle, TableStyle, TextStyle
 
 if TYPE_CHECKING:
     from pptx.chart.chart import Chart as PPTXChart
@@ -177,16 +178,17 @@ class Slide:
         align: str | None = None,
         vertical: str | None = None,
         color: str | tuple[int, int, int] | None = None,
+        style: TextStyle | None = None,
         **kwargs: Any,
     ) -> PPTXShape:
         """Add a text box to the slide.
 
         Args:
             text: The text content
-            x: X position in inches or percentage (default: 1.0)
-            y: Y position in inches or percentage (default: 1.0)
-            width: Width in inches or percentage (default: 8.0)
-            height: Height in inches or percentage (default: 1.0)
+            x: X position as percent (number or "N%") or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 5)
+            width: Width as percent or in_() length (default: 90)
+            height: Height as percent or in_() length (default: 10)
             font_size: Font size in points (default: 18)
             font_bold: Whether text should be bold (default: False)
             font_italic: Whether text should be italic (default: False)
@@ -205,11 +207,22 @@ class Slide:
             vertical = kwargs.pop("vertical_align")
         warn_ignored_kwargs("Slide.add_text", kwargs)
 
+        # A TextStyle fills any formatting the caller left unset
+        if style is not None:
+            sk = style.to_kwargs()
+            font_size = font_size if font_size is not None else sk.get("font_size")
+            font_bold = font_bold if font_bold is not None else sk.get("font_bold")
+            font_italic = font_italic if font_italic is not None else sk.get("font_italic")
+            font_name = font_name if font_name is not None else sk.get("font_name")
+            align = align if align is not None else sk.get("align")
+            vertical = vertical if vertical is not None else sk.get("vertical")
+            color = color if color is not None else sk.get("color")
+
         # Resolve parameters: explicit value > template default > fallback
-        x_val = self._template_value("text", "x", x, 1.0)
-        y_val = self._template_value("text", "y", y, 1.0)
-        width_val = self._template_value("text", "width", width, 8.0)
-        height_val = self._template_value("text", "height", height, 1.0)
+        x_val = self._template_value("text", "x", x, 5)
+        y_val = self._template_value("text", "y", y, 5)
+        width_val = self._template_value("text", "width", width, 90)
+        height_val = self._template_value("text", "height", height, 10)
         font_size_val = self._template_value("text", "font_size", font_size, 18)
         font_bold_val = self._template_value("text", "font_bold", font_bold, False)
         font_italic_val = self._template_value("text", "font_italic", font_italic, False)
@@ -258,8 +271,8 @@ class Slide:
     def add_image(
         self,
         image_path: str | IO[bytes],
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 5,
         width: PositionType | None = None,
         height: PositionType | None = None,
         **kwargs: Any,
@@ -317,10 +330,10 @@ class Slide:
     def add_shape(
         self,
         shape_type: MSO_SHAPE | str = MSO_SHAPE.RECTANGLE,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
-        width: PositionType = 5.0,
-        height: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 5,
+        width: PositionType = 40,
+        height: PositionType = 10,
         fill_color: str | tuple[int, int, int] | None = None,
         **kwargs: Any,
     ) -> PPTXShape:
@@ -370,12 +383,12 @@ class Slide:
     def add_table(
         self,
         data: Any,
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
+        x: PositionType = 5,
+        y: PositionType = 20,
         width: PositionType | None = None,
         height: PositionType | None = None,
-        has_header: bool = True,
-        style: int | dict | None = None,
+        has_header: bool | None = None,
+        style: int | dict | TableStyle | None = None,
         **kwargs: Any,
     ) -> PPTXTable:
         """Add a table to the slide.
@@ -400,7 +413,16 @@ class Slide:
             has_header = kwargs.pop("first_row_header")
         warn_ignored_kwargs("Slide.add_table", kwargs)
 
-        style_id = style.get("style_id") if isinstance(style, dict) else style
+        if isinstance(style, TableStyle):
+            if has_header is None:
+                has_header = style.has_header
+            style_id = style.style_id
+        elif isinstance(style, dict):
+            style_id = style.get("style_id")
+        else:
+            style_id = style
+        if has_header is None:
+            has_header = True
 
         table_data = [list(data.columns), *data.values.tolist()] if is_dataframe(data) else data
 
@@ -417,18 +439,19 @@ class Slide:
     def add_chart(
         self,
         data: Any = None,
-        chart_type: str = "column",
-        x: PositionType = 1.0,
-        y: PositionType = 1.0,
-        width: PositionType = 6.0,
-        height: PositionType = 4.5,
+        chart_type: str | None = None,
+        x: PositionType = 10,
+        y: PositionType = 20,
+        width: PositionType = 60,
+        height: PositionType = 60,
         categories: list | None = None,
         values: list | None = None,
         category_column: str | int | None = None,
         value_columns: str | list[str] | int | list[int] | None = None,
         title: str | None = None,
-        has_legend: bool = True,
-        legend_position: str = "right",
+        has_legend: bool | None = None,
+        legend_position: str | None = None,
+        style: ChartStyle | None = None,
         **kwargs: Any,
     ) -> PPTXChart:
         """Add a chart to the slide.
@@ -460,7 +483,7 @@ class Slide:
         Raises:
             ValueError: If neither data nor categories/values are provided
         """
-        from easypptx.chart import Chart, extract_categories_values
+        from easypptx.chart import Chart, extract_chart_series
 
         if value_columns is None and "value_column" in kwargs:
             value_columns = kwargs.pop("value_column")
@@ -468,15 +491,28 @@ class Slide:
             title = kwargs.pop("chart_title")
         warn_ignored_kwargs("Slide.add_chart", kwargs)
 
-        if categories is None or values is None:
+        # A ChartStyle fills any chart options the caller left unset
+        if style is not None:
+            sk = style.to_kwargs()
+            chart_type = chart_type if chart_type is not None else sk.get("chart_type")
+            has_legend = has_legend if has_legend is not None else sk.get("has_legend")
+            legend_position = legend_position if legend_position is not None else sk.get("legend_position")
+        chart_type = chart_type if chart_type is not None else "column"
+        has_legend = has_legend if has_legend is not None else True
+        legend_position = legend_position if legend_position is not None else "right"
+
+        series: dict[str, list] | None = None
+        if categories is not None and values is not None:
+            series = {"Series 1": values}
+        else:
             if data is None:
                 raise ValueError("Provide either 'data' or both 'categories' and 'values'")
-            categories, values = extract_categories_values(data, category_column, value_columns)
+            categories, series = extract_chart_series(data, category_column, value_columns)
 
         return Chart(self).add(
             chart_type=chart_type,
             categories=categories,
-            values=values,
+            series=series,
             x=x,
             y=y,
             width=width,
@@ -484,6 +520,172 @@ class Slide:
             title=title,
             has_legend=has_legend,
             legend_position=legend_position,
+        )
+
+    @property
+    def notes(self) -> str:
+        """The slide's speaker notes (empty string if none exist)."""
+        if not self.pptx_slide.has_notes_slide:
+            return ""
+        frame = self.pptx_slide.notes_slide.notes_text_frame
+        return frame.text if frame is not None else ""
+
+    @notes.setter
+    def notes(self, text: str) -> None:
+        """Set the slide's speaker notes."""
+        frame = self.pptx_slide.notes_slide.notes_text_frame
+        if frame is None:  # pragma: no cover - malformed notes master
+            raise ValueError("This slide's notes layout has no notes text frame")
+        frame.text = text
+
+    def add_bullets(
+        self,
+        items: list[str | tuple[str, int]],
+        x: PositionType = 5,
+        y: PositionType = 20,
+        width: PositionType = 90,
+        height: PositionType = 70,
+        font_size: int | None = None,
+        font_name: str | None = None,
+        font_bold: bool | None = None,
+        font_italic: bool | None = None,
+        color: str | tuple[int, int, int] | None = None,
+        align: str | None = None,
+        bullet: bool = True,
+        style: TextStyle | None = None,
+        **kwargs: Any,
+    ) -> PPTXShape:
+        """Add a bulleted (or plain stacked) list of paragraphs to the slide.
+
+        Args:
+            items: List entries; each item is a string (level 0) or a
+                (text, level) tuple for nested bullets (level 0-4)
+            x: X position as percent or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 20)
+            width: Width as percent or in_() length (default: 90)
+            height: Height as percent or in_() length (default: 70)
+            font_size: Font size in points (default: 18)
+            font_name: Font name (default: "Meiryo")
+            color: Text color name or RGB tuple (default: None)
+            align: Text alignment "left"/"center"/"right" (default: "left")
+            bullet: Draw bullet characters; False gives plain stacked paragraphs (default: True)
+            **kwargs: Unknown parameters trigger a warning
+
+        Returns:
+            The created text box shape
+
+        Examples:
+            ```python
+            slide.add_bullets([
+                "Revenue up 12%",
+                ("EMEA strongest region", 1),
+                "Costs down 3%",
+            ])
+            ```
+        """
+        warn_ignored_kwargs("Slide.add_bullets", kwargs)
+
+        if style is not None:
+            sk = style.to_kwargs()
+            font_size = font_size if font_size is not None else sk.get("font_size")
+            font_name = font_name if font_name is not None else sk.get("font_name")
+            font_bold = font_bold if font_bold is not None else sk.get("font_bold")
+            font_italic = font_italic if font_italic is not None else sk.get("font_italic")
+            align = align if align is not None else sk.get("align")
+            color = color if color is not None else sk.get("color")
+
+        font_size_val = self._template_value("text", "font_size", font_size, 18)
+        font_name_val = self._template_value("text", "font_name", font_name, DEFAULT_FONT)
+        align_val = self._template_value("text", "align", align, "left")
+        color_rgb = resolve_color(normalize_color(self._template_value("text", "color", color, None)))
+
+        x_inches = self._convert_position(x, self._slide_width)
+        y_inches = self._convert_position(y, self._slide_height)
+        width_inches = self._convert_position(width, self._slide_width)
+        height_inches = self._convert_position(height, self._slide_height)
+
+        text_box = self.pptx_slide.shapes.add_textbox(
+            Inches(x_inches), Inches(y_inches), Inches(width_inches), Inches(height_inches)
+        )
+        text_frame = text_box.text_frame
+        text_frame.word_wrap = True
+
+        for i, item in enumerate(items):
+            text, level = item if isinstance(item, tuple) else (item, 0)
+            paragraph = text_frame.paragraphs[0] if i == 0 else text_frame.add_paragraph()
+            paragraph.text = str(text)
+            paragraph.level = max(0, min(4, int(level)))
+            paragraph.font.size = Pt(font_size_val)
+            paragraph.font.name = font_name_val
+            if font_bold is not None:
+                paragraph.font.bold = font_bold
+            if font_italic is not None:
+                paragraph.font.italic = font_italic
+            if align_val in ALIGN:
+                paragraph.alignment = ALIGN[align_val]
+            if color_rgb is not None:
+                paragraph.font.color.rgb = color_rgb
+            if bullet:
+                _set_bullet(paragraph)
+            else:
+                _remove_bullet(paragraph)
+
+        return text_box
+
+    def add_pyplot(
+        self,
+        figure: Any,
+        x: PositionType = 5,
+        y: PositionType = 15,
+        width: PositionType = 90,
+        height: PositionType = 75,
+        dpi: int = 300,
+        file_format: str = "png",
+        border: bool = False,
+        border_color: str = "black",
+        border_width: int = 1,
+        shadow: bool = False,
+        maintain_aspect_ratio: bool = True,
+        **kwargs: Any,
+    ) -> PPTXShape:
+        """Add a matplotlib (or seaborn) figure to the slide.
+
+        Args:
+            figure: Matplotlib figure object (plt.figure(), plt.gcf(), or a
+                seaborn plot's .figure)
+            x: X position as percent or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 15)
+            width: Width as percent or in_() length (default: 90)
+            height: Height as percent or in_() length (default: 75)
+            dpi: Resolution for the figure (default: 300)
+            file_format: Image format ("png" or "jpg") (default: "png")
+            border: Whether to draw a border around the image (default: False)
+            border_color: Border color name or RGB tuple (default: "black")
+            border_width: Border width in points (default: 1)
+            shadow: Whether to apply a drop shadow (default: False)
+            maintain_aspect_ratio: Whether to keep the figure's aspect ratio (default: True)
+            **kwargs: Unknown parameters trigger a warning
+
+        Returns:
+            The created picture shape
+        """
+        from easypptx.pyplot import Pyplot
+
+        warn_ignored_kwargs("Slide.add_pyplot", kwargs)
+
+        return Pyplot.add(
+            slide=self,
+            figure=figure,
+            position={"x": x, "y": y, "width": width, "height": height},
+            dpi=dpi,
+            file_format=file_format,
+            style={
+                "border": border,
+                "border_color": border_color,
+                "border_width": border_width,
+                "shadow": shadow,
+                "maintain_aspect_ratio": maintain_aspect_ratio,
+            },
         )
 
     def add_multiple_objects(
@@ -534,16 +736,16 @@ class Slide:
 
         cell_width = container_width / cols
         cell_height = container_height / rows
-        obj_width = cell_width * (1 - padding)
-        obj_height = cell_height * (1 - padding)
+        obj_width = Inches(cell_width * (1 - padding))
+        obj_height = Inches(cell_height * (1 - padding))
 
         created_objects = []
 
         for i, obj_data in enumerate(objects_data):
             col = i % cols
             row = i // cols
-            obj_x = container_x + (col * cell_width) + (cell_width * padding / 2)
-            obj_y = container_y + (row * cell_height) + (cell_height * padding / 2)
+            obj_x = Inches(container_x + (col * cell_width) + (cell_width * padding / 2))
+            obj_y = Inches(container_y + (row * cell_height) + (cell_height * padding / 2))
 
             obj_type = obj_data.get("type", "text")
 
@@ -629,6 +831,46 @@ class Slide:
             fill.fore_color.rgb = RGBColor(*color)
         else:
             raise ValueError("Color must be a string name or RGB tuple")
+
+
+def _bullet_props(paragraph: Any) -> Any:
+    """Get the paragraph-properties XML element, clearing existing bullet settings."""
+    from pptx.oxml.ns import qn
+
+    pPr = paragraph._p.get_or_add_pPr()
+    for tag in ("a:buNone", "a:buChar", "a:buAutoNum"):
+        el = pPr.find(qn(tag))
+        if el is not None:
+            pPr.remove(el)
+    return pPr
+
+
+def _insert_bullet_element(pPr: Any, element: Any) -> None:
+    """Insert a bullet element in schema order (before a:tabLst/a:defRPr/a:extLst)."""
+    from pptx.oxml.ns import qn
+
+    for anchor_tag in ("a:tabLst", "a:defRPr", "a:extLst"):
+        anchor = pPr.find(qn(anchor_tag))
+        if anchor is not None:
+            anchor.addprevious(element)
+            return
+    pPr.append(element)
+
+
+def _set_bullet(paragraph: Any, char: str = "\u2022") -> None:
+    """Mark a paragraph as a bulleted list entry."""
+    from pptx.oxml.ns import qn
+
+    pPr = _bullet_props(paragraph)
+    _insert_bullet_element(pPr, pPr.makeelement(qn("a:buChar"), {"char": char}))
+
+
+def _remove_bullet(paragraph: Any) -> None:
+    """Mark a paragraph as having no bullet."""
+    from pptx.oxml.ns import qn
+
+    pPr = _bullet_props(paragraph)
+    _insert_bullet_element(pPr, pPr.makeelement(qn("a:buNone"), {}))
 
 
 # Backward-compatible export: PositionType historically lived in this module

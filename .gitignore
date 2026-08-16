@@ -147,3 +147,4 @@ examples/**/output/
 *.bak
 
 **/.claude/settings.local.json
+.DS_Store

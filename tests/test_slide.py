@@ -106,13 +106,15 @@ def test_slide_convert_position():
     # Mock slide dimension (10 inches = 9144000 EMUs)
     slide_dimension = 9144000
 
-    # Test percentage conversion
+    # Test percentage conversion (strings and bare numbers are both percent)
     percent_50 = slide_obj._convert_position("50%", slide_dimension)
     assert percent_50 == 5.0  # 50% of 10 inches = 5 inches
 
-    percent_25 = slide_obj._convert_position("25%", slide_dimension)
+    percent_25 = slide_obj._convert_position(25, slide_dimension)
     assert percent_25 == 2.5  # 25% of 10 inches = 2.5 inches
 
-    # Test absolute positioning
-    absolute_3 = slide_obj._convert_position(3.0, slide_dimension)
-    assert absolute_3 == 3.0  # Should remain as 3.0 inches
+    # Test absolute positioning via in_()
+    from easypptx import in_
+
+    absolute_3 = slide_obj._convert_position(in_(3.0), slide_dimension)
+    assert absolute_3 == 3.0  # 3 inches stays 3 inches

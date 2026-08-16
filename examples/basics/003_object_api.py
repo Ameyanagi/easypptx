@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 from pptx.enum.shapes import MSO_SHAPE
 
-from easypptx import Presentation
+from easypptx import Image, Presentation
 
 # Create a folder for outputs if it doesn't exist
 output_dir = Path("output")
@@ -26,10 +26,9 @@ title_slide = pres.add_title_slide(title="Object API Examples", subtitle="Direct
 text_slide = pres.add_content_slide(title="Text Examples")
 
 # Add text directly to the slide
-pres.add_text(slide=text_slide, text="This is regular text", x="10%", y="20%", width="80%", height="8%", font_size=18)
+text_slide.add_text(text="This is regular text", x="10%", y="20%", width="80%", height="8%", font_size=18)
 
-pres.add_text(
-    slide=text_slide,
+text_slide.add_text(
     text="This is bold, italic, blue text",
     x="10%",
     y="30%",
@@ -41,12 +40,9 @@ pres.add_text(
     color="blue",
 )
 
-pres.add_text(
-    slide=text_slide, text="Right-aligned text", x="10%", y="40%", width="80%", height="8%", font_size=18, align="right"
-)
+text_slide.add_text(text="Right-aligned text", x="10%", y="40%", width="80%", height="8%", font_size=18, align="right")
 
-pres.add_text(
-    slide=text_slide,
+text_slide.add_text(
     text="Middle-aligned text with custom color",
     x="10%",
     y="50%",
@@ -61,80 +57,32 @@ pres.add_text(
 # Slide 2: Shapes
 shape_slide = pres.add_content_slide(title="Shape Examples")
 
-# Add various shapes
-pres.add_shape(
-    slide=shape_slide,
-    shape_type=MSO_SHAPE.RECTANGLE,
-    x="10%",
-    y="20%",
-    width="30%",
-    height="15%",
-    fill_color="blue",
-    text="Rectangle",
-    font_color="white",
-)
+# Add various shapes (slide.add_shape does not draw text itself,
+# so a label is added on top with slide.add_text)
 
-pres.add_shape(
-    slide=shape_slide,
-    shape_type=MSO_SHAPE.ROUNDED_RECTANGLE,
-    x="60%",
-    y="20%",
-    width="30%",
-    height="15%",
-    fill_color="green",
-    line_color="darkgray",
-    line_width=2.0,
-    text="Rounded Rectangle",
-    font_color="white",
-)
 
-pres.add_shape(
-    slide=shape_slide,
-    shape_type=MSO_SHAPE.OVAL,
-    x="10%",
-    y="45%",
-    width="30%",
-    height="15%",
-    fill_color="red",
-    text="Oval",
-    font_color="white",
-)
+def add_labeled_shape(slide, shape_type, x, y, width, height, fill_color, label, label_color):
+    slide.add_shape(shape_type=shape_type, x=x, y=y, width=width, height=height, fill_color=fill_color)
+    slide.add_text(
+        text=label,
+        x=x,
+        y=y,
+        width=width,
+        height=height,
+        align="center",
+        vertical="middle",
+        color=label_color,
+    )
 
-pres.add_shape(
-    slide=shape_slide,
-    shape_type=MSO_SHAPE.PENTAGON,
-    x="60%",
-    y="45%",
-    width="30%",
-    height="15%",
-    fill_color="orange",
-    text="Pentagon",
-    font_color="white",
-)
 
-pres.add_shape(
-    slide=shape_slide,
-    shape_type=MSO_SHAPE.CHEVRON,
-    x="10%",
-    y="70%",
-    width="30%",
-    height="15%",
-    fill_color="cyan",
-    text="Chevron",
-    font_color="black",
+add_labeled_shape(shape_slide, MSO_SHAPE.RECTANGLE, "10%", "20%", "30%", "15%", "blue", "Rectangle", "white")
+add_labeled_shape(
+    shape_slide, MSO_SHAPE.ROUNDED_RECTANGLE, "60%", "20%", "30%", "15%", "green", "Rounded Rectangle", "white"
 )
-
-pres.add_shape(
-    slide=shape_slide,
-    shape_type=MSO_SHAPE.STAR_5_POINT,
-    x="60%",
-    y="70%",
-    width="20%",
-    height="15%",
-    fill_color="yellow",
-    text="Star",
-    font_color="black",
-)
+add_labeled_shape(shape_slide, MSO_SHAPE.OVAL, "10%", "45%", "30%", "15%", "red", "Oval", "white")
+add_labeled_shape(shape_slide, MSO_SHAPE.PENTAGON, "60%", "45%", "30%", "15%", "orange", "Pentagon", "white")
+add_labeled_shape(shape_slide, MSO_SHAPE.CHEVRON, "10%", "70%", "30%", "15%", "cyan", "Chevron", "black")
+add_labeled_shape(shape_slide, MSO_SHAPE.STAR_5_POINT, "60%", "70%", "20%", "15%", "yellow", "Star", "black")
 
 # Slide 3: Table
 table_slide = pres.add_content_slide(title="Table Example")
@@ -149,19 +97,13 @@ table_data = [
 ]
 
 # Add table to slide
-pres.add_table(
-    slide=table_slide,
+table_slide.add_table(
     data=table_data,
     x="10%",
     y="20%",
     width="80%",
     height="50%",
     has_header=True,
-    style={
-        "first_row": {"bold": True, "bg_color": "blue", "text_color": "white"},
-        "banded_rows": True,
-        "band_color": "lightgray",
-    },
 )
 
 # Slide 4: Chart
@@ -176,8 +118,7 @@ chart_data = pd.DataFrame({
 })
 
 # Add chart to slide
-pres.add_chart(
-    slide=chart_slide,
+chart_slide.add_chart(
     data=chart_data,
     chart_type="column",
     x="10%",
@@ -188,10 +129,7 @@ pres.add_chart(
     legend_position="bottom",
     category_column="Quarter",
     value_columns=["Sales", "Expenses", "Profit"],
-    has_title=True,
     chart_title="Quarterly Performance",
-    has_data_labels=True,
-    gridlines=True,
 )
 
 # Slide 5: Image
@@ -200,29 +138,12 @@ image_slide = pres.add_content_slide(title="Image Example")
 # Create a sample image path
 # Check if the output/images directory exists, if not use a placeholder text
 image_dir = output_dir / "images"
-if image_dir.exists() and any(image_dir.glob("*.png")):
-    # Use the first image found
-    images = list(image_dir.glob("*.png"))
-    if images:
-        sample_image = str(images[0])
-    else:
-        # Create a dummy image
-        sample_image = None
-        pres.add_text(
-            slide=image_slide,
-            text="Sample image not found in output/images directory",
-            x="10%",
-            y="40%",
-            width="80%",
-            height="10%",
-            font_size=16,
-            align="center",
-        )
+images = list(image_dir.glob("*.png")) if image_dir.exists() else []
+if images:
+    sample_image = str(images[0])
 else:
-    # Create a dummy image
     sample_image = None
-    pres.add_text(
-        slide=image_slide,
+    image_slide.add_text(
         text="Sample image not found in output/images directory",
         x="10%",
         y="40%",
@@ -233,38 +154,31 @@ else:
     )
 
 # If we have an image, add it to the slide
+# (border/shadow styling from the old API was dropped)
 if sample_image:
-    pres.add_image(
-        slide=image_slide,
-        image_path=sample_image,
+    Image(image_slide).add(
+        sample_image,
         x="20%",
         y="20%",
         width="60%",
-        height="60%",
         maintain_aspect_ratio=True,
-        border=True,
-        border_color="blue",
-        shadow=True,
     )
 
 # Slide 6: Combination of elements
 combined_slide = pres.add_content_slide(title="Combined Elements")
 
-# Add a shape as background panel
-pres.add_shape(
-    slide=combined_slide,
+# Add a shape as background panel (line_color styling from the old API was dropped)
+combined_slide.add_shape(
     shape_type=MSO_SHAPE.ROUNDED_RECTANGLE,
     x="5%",
     y="15%",
     width="90%",
     height="75%",
     fill_color=(240, 240, 240),
-    line_color="gray",
 )
 
 # Add title text
-pres.add_text(
-    slide=combined_slide,
+combined_slide.add_text(
     text="Dashboard Title",
     x="10%",
     y="20%",
@@ -283,15 +197,12 @@ table_data_small = [
     ["Conversion", "4.8%"],
 ]
 
-pres.add_table(
-    slide=combined_slide, data=table_data_small, x="10%", y="35%", width="35%", height="20%", has_header=True
-)
+combined_slide.add_table(data=table_data_small, x="10%", y="35%", width="35%", height="20%", has_header=True)
 
 # Add small chart
 chart_data_small = pd.DataFrame({"Month": ["Jan", "Feb", "Mar", "Apr"], "Value": [42, 35, 65, 58]})
 
-pres.add_chart(
-    slide=combined_slide,
+combined_slide.add_chart(
     data=chart_data_small,
     chart_type="line",
     x="55%",
@@ -300,50 +211,30 @@ pres.add_chart(
     height="20%",
     category_column="Month",
     value_columns="Value",
-    has_title=True,
     chart_title="Monthly Trend",
     has_legend=False,
 )
 
-# Add text boxes at the bottom
-pres.add_shape(
-    slide=combined_slide,
-    shape_type=MSO_SHAPE.RECTANGLE,
-    x="10%",
-    y="65%",
-    width="20%",
-    height="15%",
-    fill_color="blue",
-    text="$1.24M\nTotal Revenue",
-    font_color="white",
-    font_size=14,
-)
-
-pres.add_shape(
-    slide=combined_slide,
-    shape_type=MSO_SHAPE.RECTANGLE,
-    x="40%",
-    y="65%",
-    width="20%",
-    height="15%",
-    fill_color="green",
-    text="+15.2%\nGrowth",
-    font_color="white",
-    font_size=14,
-)
-
-pres.add_shape(
-    slide=combined_slide,
-    shape_type=MSO_SHAPE.RECTANGLE,
-    x="70%",
-    y="65%",
-    width="20%",
-    height="15%",
-    fill_color="orange",
-    text="4.8%\nConversion",
-    font_color="white",
-    font_size=14,
-)
+# Add labeled KPI boxes at the bottom
+for box_x, box_color, box_text in [
+    ("10%", "blue", "$1.24M\nTotal Revenue"),
+    ("40%", "green", "+15.2%\nGrowth"),
+    ("70%", "orange", "4.8%\nConversion"),
+]:
+    combined_slide.add_shape(
+        shape_type=MSO_SHAPE.RECTANGLE, x=box_x, y="65%", width="20%", height="15%", fill_color=box_color
+    )
+    combined_slide.add_text(
+        text=box_text,
+        x=box_x,
+        y="65%",
+        width="20%",
+        height="15%",
+        font_size=14,
+        color="white",
+        align="center",
+        vertical="middle",
+    )
 
 # Add a closing slide
 thank_you_slide = pres.add_section_slide(title="Thank You!")

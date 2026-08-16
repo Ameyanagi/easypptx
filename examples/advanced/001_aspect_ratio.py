@@ -7,7 +7,7 @@ and how to view the slide dimensions of each presentation.
 
 from pathlib import Path
 
-from easypptx import Presentation, Text
+from easypptx import Presentation, Text, in_
 
 # Create output directory
 output_dir = Path("output")
@@ -34,9 +34,9 @@ def create_presentation(aspect_ratio, filename):
     width_inches = width_emu / 914400
     height_inches = height_emu / 914400
 
-    text.add_paragraph(f"Width: {width_inches:.2f} inches", y=2)
-    text.add_paragraph(f"Height: {height_inches:.2f} inches", y=2.5)
-    text.add_paragraph(f"Aspect Ratio: {ratio:.2f}", y=3)
+    text.add_paragraph(f"Width: {width_inches:.2f} inches", y=in_(2))
+    text.add_paragraph(f"Height: {height_inches:.2f} inches", y=in_(2.5))
+    text.add_paragraph(f"Aspect Ratio: {ratio:.2f}", y=in_(3))
 
     # Save the presentation
     output_path = output_dir / filename
@@ -74,9 +74,9 @@ ratio = width_emu / height_emu
 width_inches = width_emu / 914400
 height_inches = height_emu / 914400
 
-text.add_paragraph(f"Width: {width_inches:.2f} inches", y=2)
-text.add_paragraph(f"Height: {height_inches:.2f} inches", y=2.5)
-text.add_paragraph(f"Aspect Ratio: {ratio:.2f}", y=3)
+text.add_paragraph(f"Width: {width_inches:.2f} inches", y=in_(2))
+text.add_paragraph(f"Height: {height_inches:.2f} inches", y=in_(2.5))
+text.add_paragraph(f"Aspect Ratio: {ratio:.2f}", y=in_(3))
 
 custom_pres.save(output_dir / "custom_dimensions.pptx")
 print(f"Created custom dimensions presentation: {output_dir / 'custom_dimensions.pptx'}")
