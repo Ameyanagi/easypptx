@@ -1,0 +1,19 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: ruff lint
+      glob: "*.py"
+      run: uv run ruff check --fix {staged_files}
+      stage_fixed: true
+    - name: ruff format
+      glob: "*.py"
+      run: uv run ruff format {staged_files}
+      stage_fixed: true
+    - name: ty
+      glob: "*.py"
+      run: uv run ty check
+
+pre-push:
+  jobs:
+    - name: tests
+      run: uv run python -m pytest -q

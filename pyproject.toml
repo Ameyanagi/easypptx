@@ -1,6 +1,6 @@
 [project]
 name = "EasyPPTX"
-version = "0.5.6"
+version = "0.6.0"
 description = "A Python library for easily creating and manipulating PowerPoint presentations programmatically with simple APIs."
 authors = [{ name = "Ameyanagi", email = "contact@ameyanagi.com" }]
 readme = "README.md"
@@ -15,13 +15,15 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "matplotlib>=3.9.4",
-    "pandas>=2.2.3",
+    "pillow>=10.0.0",
     "python-pptx>=1.0.2",
-    "seaborn>=0.13.2",
-    "tomli>=2.0.0",
     "tomli-w>=1.0.0",
 ]
+
+[project.optional-dependencies]
+dataframe = ["pandas>=2.2.3"]
+plot = ["matplotlib>=3.9.4"]
+all = ["pandas>=2.2.3", "matplotlib>=3.9.4"]
 
 [project.urls]
 Homepage = "https://Ameyanagi.github.io/EasyPPTX/"
@@ -31,12 +33,13 @@ Documentation = "https://Ameyanagi.github.io/EasyPPTX/"
 [dependency-groups]
 dev = [
     "pytest>=7.2.0",
-    "pre-commit>=2.20.0",
-    "tox-uv>=1.11.3",
-    "deptry>=0.23.0",
-    "mypy>=0.991",
     "pytest-cov>=4.0.0",
+    "deptry>=0.23.0",
     "ruff>=0.11.5",
+    "ty>=0.0.1a5",
+    "lefthook>=1.10.0",
+    "pandas>=2.2.3",
+    "matplotlib>=3.9.4",
     "mkdocs>=1.4.2",
     "mkdocs-material>=8.5.10",
     "mkdocstrings[python]>=0.26.1",
@@ -46,29 +49,12 @@ dev = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/easypptx"]
 
-
-[tool.mypy]
-python_version = "3.12"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = false
-no_implicit_optional = true
-strict_optional = true
-# Allow modern union syntax
-allow_redefinition = true
-
-[[tool.mypy.overrides]]
-module = "tests.*"
-disallow_untyped_defs = false
-check_untyped_defs = false
-
-[[tool.mypy.overrides]]
-module = "*"
-ignore_missing_imports = true
+# Type-check the library; tests rely heavily on MagicMock and are exercised by pytest
+[tool.ty.src]
+include = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -92,6 +78,8 @@ select = [
     "C4",
     # flake8-debugger
     "T10",
+    # flake8-print
+    "T20",
     # flake8-simplify
     "SIM",
     # isort
@@ -121,7 +109,7 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
 "src/*" = ["TRY003", "C901", "TRY300"]
-"examples/*" = ["S311"]
+"examples/*" = ["S311", "T20"]
 
 [tool.ruff.format]
 preview = true
@@ -135,3 +123,10 @@ source = ["src"]
 
 [tool.deptry]
 ignore = ["DEP003"]
+
+[tool.deptry.per_rule_ignores]
+# pandas/matplotlib are optional extras: imported lazily (or duck-typed via
+# sys.modules), so deptry sees them as unused/undeclared.
+DEP001 = ["pandas", "matplotlib"]
+DEP002 = ["pandas", "matplotlib"]
+DEP004 = ["pandas", "matplotlib"]
