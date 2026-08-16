@@ -63,8 +63,11 @@ def test_template_toml_reference_path_resolution():
     """Test that reference_pptx paths in TOML templates are properly resolved."""
     # Create a temporary TOML template file
     with tempfile.NamedTemporaryFile(suffix=".toml", delete=False) as temp_file:
-        # Path to built-in reference PPTX
-        ref_path = "../src/easypptx/reference_16x9.pptx"
+        # Relative path from the TOML file's directory to the built-in reference PPTX
+        import easypptx
+
+        real_ref = os.path.join(os.path.dirname(easypptx.__file__), "reference_16x9.pptx")
+        ref_path = os.path.relpath(real_ref, start=os.path.dirname(temp_file.name))
 
         # Write test template with reference PPTX
         template_data = {
