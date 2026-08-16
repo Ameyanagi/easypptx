@@ -1013,69 +1013,28 @@ class Grid:
         self._expand_grid(add_rows=1)
         return GridCellProxy(self, self.rows - 1, 0)
 
-    def append(self, content_func: Callable) -> None:
-        """Append content to the grid and automatically update the layout.
+    def append(self, content_func: Callable) -> Any:
+        """Append content to the next free cell, growing the grid when full.
 
-        This method adds a new content function to the grid and automatically
-        recalculates the grid layout to accommodate the new content. If needed,
-        it will expand the grid by adding rows.
+        Spanned (merged-over) cells are skipped, and the content function
+        receives the cell's absolute slide position as x/y/width/height
+        keyword arguments (percent strings).
 
         Args:
             content_func: A function that adds content (like add_text, add_image, etc.)
 
         Returns:
-            None
+            The object returned by the content function
 
         Examples:
             ```python
-            # Create a dynamic grid
             grid = Grid(slide, rows=2, cols=3)
-
-            # Append content, grid will expand as needed
             grid.append(lambda **kwargs: slide.add_text("Item 1", **kwargs))
-            grid.append(lambda **kwargs: slide.add_text("Item 2", **kwargs))
             grid.append(lambda **kwargs: slide.add_image("image.png", **kwargs))
             ```
         """
-        # Calculate current grid capacity and total items
-        capacity = self.rows * self.cols
-        cells_used = 0
-
-        # Count used cells
-        for row in range(self.rows):
-            for col in range(self.cols):
-                if self.cells[row][col].content is not None:
-                    cells_used += 1
-
-        # If grid is full, add a new row
-        if cells_used >= capacity:
-            self._expand_grid(add_rows=1, add_cols=0)
-
-        # Find the next available cell
-        target_cell = None
-        for row in range(self.rows):
-            for col in range(self.cols):
-                if self.cells[row][col].content is None:
-                    target_cell = self.cells[row][col]
-                    break
-            if target_cell:
-                break
-
-        # Add content to the target cell
-        if target_cell:
-            row, col = target_cell.row, target_cell.col
-
-            # Calculate position and dimensions for content
-            x = target_cell.x
-            y = target_cell.y
-            width = target_cell.width
-            height = target_cell.height
-
-            # Call the content function with the cell's position and dimensions
-            content = content_func(x=x, y=y, width=width, height=height)
-
-            # Store the content in the cell
-            target_cell.content = content
+        target = self.next()
+        return self.add_to_cell(target.row, target.col, content_func)
 
     def _expand_grid(self, add_rows: int = 0, add_cols: int = 0) -> None:
         """Expand the grid by adding rows and/or columns.
@@ -1117,6 +1076,18 @@ class Grid:
                     new.span_cols = old.span_cols
                     new.is_spanned = old.is_spanned
                     new.pad = old.pad
+
+        # Re-derive merged-origin geometry (rebuilt cells are single-sized)
+        for row in range(min(original_rows, self.rows)):
+            for col in range(min(original_cols, self.cols)):
+                origin = new_cells[row][col]
+                if (origin.span_rows, origin.span_cols) == (1, 1):
+                    continue
+                last = new_cells[row + origin.span_rows - 1][col + origin.span_cols - 1]
+                from easypptx.positioning import parse_percent
+
+                origin.width = pct(parse_percent(last.x) + parse_percent(last.width) - parse_percent(origin.x))
+                origin.height = pct(parse_percent(last.y) + parse_percent(last.height) - parse_percent(origin.y))
 
         # Update cells
         self.cells = new_cells

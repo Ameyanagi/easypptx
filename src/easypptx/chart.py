@@ -319,22 +319,22 @@ class Chart:
 
             if chart_type == "pie":
                 warnings.warn("Axis options are ignored for pie charts", stacklevel=2)
-                return chart
-            try:
-                if x_title:
-                    axis = chart_any.category_axis
-                    axis.has_title = True
-                    axis.axis_title.text_frame.text = x_title
-                if y_title:
-                    axis = chart_any.value_axis
-                    axis.has_title = True
-                    axis.axis_title.text_frame.text = y_title
-                if y_min is not None:
-                    chart_any.value_axis.minimum_scale = y_min
-                if y_max is not None:
-                    chart_any.value_axis.maximum_scale = y_max
-            except ValueError as err:
-                warnings.warn(f"Axis options not supported for chart type {chart_type!r}: {err}", stacklevel=2)
+            else:
+                try:
+                    if x_title:
+                        axis = chart_any.category_axis
+                        axis.has_title = True
+                        axis.axis_title.text_frame.text = x_title
+                    if y_title:
+                        axis = chart_any.value_axis
+                        axis.has_title = True
+                        axis.axis_title.text_frame.text = y_title
+                    if y_min is not None:
+                        chart_any.value_axis.minimum_scale = y_min
+                    if y_max is not None:
+                        chart_any.value_axis.maximum_scale = y_max
+                except ValueError as err:
+                    warnings.warn(f"Axis options not supported for chart type {chart_type!r}: {err}", stacklevel=2)
 
         # Series colors from an explicit palette (e.g. the deck theme)
         if palette:

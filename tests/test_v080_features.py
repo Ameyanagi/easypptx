@@ -336,3 +336,48 @@ class TestCodexReviewRegressions:
                 assert not easypptx.register_pandas_accessor()
         finally:
             pd.DataFrame.pptx = original
+
+
+class TestGreptileReviewRegressions:
+    """Regressions from the Greptile PR-review comments (PRs 3-5)."""
+
+    def test_append_skips_spanned_cells_and_uses_absolute_coords(self):
+        from pptx.util import Emu
+
+        pres = Presentation()
+        slide = pres.add_slide()
+        grid = pres.add_grid(slide=slide, x="50%", y="50%", width="50%", height="50%", rows=2, cols=2, padding=0.0)
+        grid[0, :]  # span the top row -> (0,1) is covered
+        grid.append(lambda **kw: slide.add_text("a", **kw))
+        shape = grid.append(lambda **kw: slide.add_text("b", **kw))
+        assert grid.cells[0][1].content is None  # spanned cell untouched
+        assert grid.cells[1][0].content is not None
+        # Placed with absolute slide coordinates (inside the half-slide grid)
+        assert shape.left >= Emu(int(12192768 * 0.49))
+
+    def test_expand_preserves_merged_geometry(self):
+        from easypptx.positioning import parse_percent
+
+        pres = Presentation()
+        slide = pres.add_slide()
+        grid = pres.add_grid(slide=slide, rows=2, cols=2, padding=0.0)
+        grid[0, :]
+        before = parse_percent(grid.cells[0][0].width)
+        grid._expand_grid(add_rows=1)
+        assert parse_percent(grid.cells[0][0].width) == pytest.approx(before, abs=0.1)
+
+    def test_pie_axis_warning_does_not_skip_palette(self):
+        pres = Presentation()
+        slide = pres.add_slide()
+        with pytest.warns(UserWarning, match="pie"):
+            chart = slide.add_chart(
+                data=[["Q", "V"], ["a", 1]], chart_type="pie", y_title="ignored", palette=[(9, 9, 9)]
+            )
+        point_or_series = chart.plots[0].series[0]
+        assert point_or_series.format.fill.fore_color.rgb == (9, 9, 9)
+
+    def test_list_data_out_of_range_int_column(self):
+        with pytest.raises(ValueError, match="out of range"):
+            normalize_chart_data([["A", "B"], [1, 2]], value_columns=[9])
+        with pytest.raises(ValueError, match="out of range"):
+            normalize_chart_data([["A", "B"], [1, 2]], category_column=7)
