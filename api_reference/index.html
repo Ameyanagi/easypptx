@@ -1,0 +1,2195 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A Python library for easily creating and manipulating PowerPoint presentations programmatically with simple APIs.">
+      
+      
+        <meta name="author" content="Ameyanagi">
+      
+      
+        <link rel="canonical" href="https://Ameyanagi.github.io/EasyPPTX/api_reference/">
+      
+      
+        <link rel="prev" href="../migration/">
+      
+      
+        <link rel="next" href="../modules/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.13">
+    
+    
+      
+        <title>API Reference - EasyPPTX</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="EasyPPTX" class="md-header__button md-logo" aria-label="EasyPPTX" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            EasyPPTX
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Ameyanagi/EasyPPTX" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ameyanagi/EasyPPTX
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="EasyPPTX" class="md-nav__button md-logo" aria-label="EasyPPTX" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    EasyPPTX
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Ameyanagi/EasyPPTX" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ameyanagi/EasyPPTX
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Features
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../percentage_positioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Percentage-Based Positioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deck/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Deck Builder
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../markdown/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Markdown to Presentation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data to Slides
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auto_alignment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Auto-Alignment
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../grid_layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Grid Layout
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Plots
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../styling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Styling and Formatting
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dark_theme/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dark Theme
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PowerPoint Templates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migrating to 0.7.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#presentation-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Presentation Class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#slide-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Slide Class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#text-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Text Class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#position-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      Position Type
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Position Type">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#positioning-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Positioning Helpers
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#styles-and-themes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Styles and Themes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-adapter-easypptxdata" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Adapter (easypptx.data)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pandas-accessor" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pandas Accessor
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constants
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Constants">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aspect-ratios" class="md-nav__link">
+    <span class="md-ellipsis">
+      Aspect Ratios
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Colors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alignments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alignments
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shape-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shape Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#grid-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Grid Class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gridcellproxy-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      GridCellProxy Class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gridcell-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      GridCell Class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gridflatiterator-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      GridFlatIterator Class
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Modules
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#presentation-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Presentation Class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#slide-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Slide Class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#text-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Text Class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#position-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      Position Type
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Position Type">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#positioning-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Positioning Helpers
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#styles-and-themes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Styles and Themes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-adapter-easypptxdata" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Adapter (easypptx.data)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pandas-accessor" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pandas Accessor
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constants
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Constants">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aspect-ratios" class="md-nav__link">
+    <span class="md-ellipsis">
+      Aspect Ratios
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Colors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alignments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alignments
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shape-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shape Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#grid-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Grid Class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gridcellproxy-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      GridCellProxy Class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gridcell-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      GridCell Class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gridflatiterator-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      GridFlatIterator Class
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
+<p>This API reference provides detailed information about the classes and methods in EasyPPTX.</p>
+<h2 id="presentation-class">Presentation Class<a class="headerlink" href="#presentation-class" title="Permanent link">&para;</a></h2>
+<p>The <code>Presentation</code> class is the main entry point for creating and manipulating PowerPoint presentations.</p>
+<pre><code class="language-python">class Presentation:
+    def __init__(self,
+                 aspect_ratio: Optional[str] = &quot;16:9&quot;,
+                 width_inches: Optional[float] = None,
+                 height_inches: Optional[float] = None,
+                 template_path: Optional[str] = None,
+                 reference_pptx: Optional[str] = None,
+                 blank_layout_index: Optional[int] = None,
+                 default_bg_color: Optional[Union[str, Tuple[int, int, int]]] = None,
+                 template_toml: Optional[str] = None,
+                 theme: Union[str, Theme, None] = None) -&gt; None:
+        &quot;&quot;&quot;Initialize a new empty presentation.
+
+        Args:
+            aspect_ratio: Predefined aspect ratio, one of &quot;16:9&quot; (default), &quot;4:3&quot;, &quot;16:10&quot;, &quot;A4&quot;, &quot;LETTER&quot;
+            width_inches: Custom width in inches (overrides aspect_ratio if specified)
+            height_inches: Custom height in inches (overrides aspect_ratio if specified)
+            template_path: Path to a reference PowerPoint template to use for styles (default: None)
+            reference_pptx: Path to a custom reference PPTX file to use (default: None)
+            blank_layout_index: Index of blank layout in the slide_layouts (default: None, auto-detected)
+            default_bg_color: Default background color for slides as string name or RGB tuple (default: None)
+            template_toml: Path to a TOML template used as the default for all new slides (default: None)
+            theme: Built-in theme name (&quot;light&quot;, &quot;dark&quot;, &quot;corporate&quot;) or a Theme instance (default: None)
+
+        Raises:
+            ValueError: If an invalid aspect ratio is specified
+            FileNotFoundError: If the template file doesn't exist
+        &quot;&quot;&quot;
+
+    @classmethod
+    def from_markdown(cls,
+                      source: Union[str, Path],
+                      theme: Union[str, Theme, None] = None,
+                      template_toml: Optional[str] = None,
+                      base_dir: Union[str, Path, None] = None) -&gt; &quot;Presentation&quot;:
+        &quot;&quot;&quot;Build a presentation from markdown text or a markdown file.
+
+        Args:
+            source: Markdown content, or a path to a .md file
+            theme: Theme name or Theme instance; overrides the frontmatter theme (default: None)
+            template_toml: TOML template path; overrides the frontmatter template (default: None)
+            base_dir: Directory for resolving relative image paths (default: the file's directory)
+
+        Returns:
+            A Presentation with one slide per markdown section
+        &quot;&quot;&quot;
+
+    @classmethod
+    def open(cls, file_path: Union[str, Path]) -&gt; &quot;Presentation&quot;:
+        &quot;&quot;&quot;Open an existing PowerPoint presentation.
+
+        Args:
+            file_path: Path to the PowerPoint file to open
+
+        Returns:
+            A new Presentation object with the loaded presentation
+
+        Raises:
+            FileNotFoundError: If the specified file doesn't exist
+            ValueError: If the file is not a valid PowerPoint file
+        &quot;&quot;&quot;
+
+    def add_slide(
+        self,
+        layout_index: Optional[int] = None,
+        bg_color: Optional[Union[str, Tuple[int, int, int]]] = None,
+        title: Optional[str] = None,
+        template_toml: Union[str, Literal[False], None] = None,
+        title_padding: Optional[Union[str, float]] = None,
+        title_x_padding: Optional[Union[str, float]] = &quot;5%&quot;,
+        title_y_padding: Optional[Union[str, float]] = &quot;5%&quot;,
+        title_width: Optional[Union[str, float]] = &quot;90%&quot;,
+        title_height: Optional[Union[str, float]] = &quot;10%&quot;,
+        title_font_size: Optional[int] = None,
+        title_align: Optional[str] = None,
+        title_color: Optional[Union[str, Tuple[int, int, int]]] = None,
+    ) -&gt; Slide:
+        &quot;&quot;&quot;Add a new slide to the presentation.
+
+        Args:
+            layout_index: Index of the slide layout to use (default: None uses blank layout)
+            bg_color: Background color for this slide, overrides default (default: None)
+            title: Optional title text for the slide (default: None)
+            template_toml: Path to a TOML template file for this slide.
+                Pass False to opt out of the presentation's default template;
+                None means &quot;use the default template if one is set&quot; (default: None)
+            title_padding: Padding around the title, applies to both x and y (default: None)
+            title_x_padding: Horizontal padding for the title (default: &quot;5%&quot;)
+            title_y_padding: Vertical padding for the title (default: &quot;5%&quot;)
+            title_width: Width of the title area (default: &quot;90%&quot;)
+            title_height: Height of the title area (default: &quot;10%&quot;)
+            title_font_size: Font size for the title (default: theme title size or 32)
+            title_align: Text alignment for the title (default: theme title align or &quot;center&quot;)
+            title_color: Title color as a name from COLORS or an RGB tuple (default: theme title color or None)
+
+        Returns:
+            A new Slide object
+        &quot;&quot;&quot;
+
+    @property
+    def slides(self) -&gt; List[Slide]:
+        &quot;&quot;&quot;Get a list of all slides in the presentation.
+
+        Returns:
+            List of Slide objects. Repeated access returns the same cached
+            wrapper objects, so state like user_data persists.
+        &quot;&quot;&quot;
+
+    def save(self, file_path: Union[str, Path]) -&gt; None:
+        &quot;&quot;&quot;Save the presentation to a file.
+
+        Args:
+            file_path: Path where the presentation should be saved
+        &quot;&quot;&quot;
+</code></pre>
+<h2 id="slide-class">Slide Class<a class="headerlink" href="#slide-class" title="Permanent link">&para;</a></h2>
+<p>The <code>Slide</code> class represents a slide in a PowerPoint presentation and provides methods for adding content.</p>
+<pre><code class="language-python">class Slide:
+    def __init__(self, pptx_slide: PPTXSlide) -&gt; None:
+        &quot;&quot;&quot;Initialize a Slide object.
+
+        Args:
+            pptx_slide: The python-pptx Slide object
+        &quot;&quot;&quot;
+
+    def add_text(
+        self,
+        text: str,
+        x: Optional[PositionType] = None,
+        y: Optional[PositionType] = None,
+        width: Optional[PositionType] = None,
+        height: Optional[PositionType] = None,
+        font_size: Optional[int] = None,
+        font_bold: Optional[bool] = None,
+        font_italic: Optional[bool] = None,
+        font_name: Optional[str] = None,
+        align: Optional[str] = None,
+        vertical: Optional[str] = None,
+        color: Optional[Union[str, Tuple[int, int, int]]] = None,
+        style: Optional[TextStyle] = None,
+        fit: str = &quot;shrink&quot;,
+    ) -&gt; PPTXShape:
+        &quot;&quot;&quot;Add a text box to the slide.
+
+        Args:
+            text: The text content
+            x: X position as percent (number or &quot;N%&quot;) or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 5)
+            width: Width as percent or in_() length (default: 90)
+            height: Height as percent or in_() length (default: 10)
+            font_size: Font size in points (default: 18)
+            font_bold: Whether text should be bold (default: False)
+            font_italic: Whether text should be italic (default: False)
+            font_name: Font name (default: &quot;Meiryo&quot;)
+            align: Text alignment, one of &quot;left&quot;, &quot;center&quot;, &quot;right&quot; (default: &quot;left&quot;)
+            vertical: Vertical alignment, one of &quot;top&quot;, &quot;middle&quot;, &quot;bottom&quot; (default: &quot;top&quot;)
+            color: Text color as string name from COLORS dict or RGB tuple (default: None)
+            style: A TextStyle filling any formatting left unset (default: None)
+            fit: How text relates to the box (new in 0.8.0): &quot;shrink&quot; reduces
+                the font size so the text fits the box (and sets PowerPoint's
+                autofit flag); &quot;resize&quot; grows the box to fit the text; &quot;none&quot;
+                leaves both alone (default: &quot;shrink&quot;)
+
+        Returns:
+            The created shape object
+
+        Raises:
+            ValueError: If fit is not &quot;shrink&quot;, &quot;resize&quot;, or &quot;none&quot;
+        &quot;&quot;&quot;
+
+    def add_bullets(
+        self,
+        items: List[Union[str, Tuple[str, int]]],
+        x: PositionType = 5,
+        y: PositionType = 20,
+        width: PositionType = 90,
+        height: PositionType = 70,
+        font_size: Optional[int] = None,
+        font_name: Optional[str] = None,
+        font_bold: Optional[bool] = None,
+        font_italic: Optional[bool] = None,
+        color: Optional[Union[str, Tuple[int, int, int]]] = None,
+        align: Optional[str] = None,
+        bullet: bool = True,
+        style: Optional[TextStyle] = None,
+        fit: str = &quot;shrink&quot;,
+    ) -&gt; PPTXShape:
+        &quot;&quot;&quot;Add a bulleted (or plain stacked) list of paragraphs to the slide.
+
+        New in 0.7.0.
+
+        Args:
+            items: List entries; each item is a string (level 0) or a
+                (text, level) tuple for nested bullets (level 0-4)
+            x: X position as percent or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 20)
+            width: Width as percent or in_() length (default: 90)
+            height: Height as percent or in_() length (default: 70)
+            font_size: Font size in points (default: 18)
+            font_name: Font name (default: &quot;Meiryo&quot;)
+            font_bold: Whether text should be bold (default: None)
+            font_italic: Whether text should be italic (default: None)
+            color: Text color name or RGB tuple (default: None)
+            align: Text alignment &quot;left&quot;/&quot;center&quot;/&quot;right&quot; (default: &quot;left&quot;)
+            bullet: Draw bullet characters; False gives plain stacked paragraphs (default: True)
+            style: A TextStyle filling any formatting left unset (default: None)
+            fit: How text relates to the box (new in 0.8.0): &quot;shrink&quot; (default),
+                &quot;resize&quot;, or &quot;none&quot; — same behavior as add_text
+
+        Returns:
+            The created text box shape
+
+        Raises:
+            ValueError: If fit is not &quot;shrink&quot;, &quot;resize&quot;, or &quot;none&quot;
+        &quot;&quot;&quot;
+
+    def add_image(
+        self,
+        image_path: str,
+        x: PositionType = 5,
+        y: PositionType = 5,
+        width: Optional[PositionType] = None,
+        height: Optional[PositionType] = None,
+    ) -&gt; PPTXShape:
+        &quot;&quot;&quot;Add an image to the slide.
+
+        Args:
+            image_path: Path to the image file, or a binary file-like object
+            x: X position as percent or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 5)
+            width: Width as percent or in_() length (default: None, maintains aspect ratio)
+            height: Height as percent or in_() length (default: None, maintains aspect ratio)
+
+        Returns:
+            The created picture shape
+
+        Raises:
+            FileNotFoundError: If the image file doesn't exist
+        &quot;&quot;&quot;
+
+    def add_pyplot(
+        self,
+        figure: Any,
+        x: PositionType = 5,
+        y: PositionType = 15,
+        width: PositionType = 90,
+        height: PositionType = 75,
+        dpi: int = 300,
+        file_format: str = &quot;png&quot;,
+        border: bool = False,
+        border_color: str = &quot;black&quot;,
+        border_width: int = 1,
+        shadow: bool = False,
+        maintain_aspect_ratio: bool = True,
+    ) -&gt; PPTXShape:
+        &quot;&quot;&quot;Add a matplotlib (or seaborn) figure to the slide.
+
+        New in 0.7.0.
+
+        Args:
+            figure: Matplotlib figure object (plt.figure(), plt.gcf(), or a
+                seaborn plot's .figure)
+            x: X position as percent or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 15)
+            width: Width as percent or in_() length (default: 90)
+            height: Height as percent or in_() length (default: 75)
+            dpi: Resolution for the figure (default: 300)
+            file_format: Image format (&quot;png&quot; or &quot;jpg&quot;) (default: &quot;png&quot;)
+            border: Whether to draw a border around the image (default: False)
+            border_color: Border color name or RGB tuple (default: &quot;black&quot;)
+            border_width: Border width in points (default: 1)
+            shadow: Whether to apply a drop shadow (default: False)
+            maintain_aspect_ratio: Whether to keep the figure's aspect ratio (default: True)
+
+        Returns:
+            The created picture shape
+        &quot;&quot;&quot;
+
+    def add_shape(
+        self,
+        shape_type: Union[MSO_SHAPE, str] = MSO_SHAPE.RECTANGLE,
+        x: PositionType = 5,
+        y: PositionType = 5,
+        width: PositionType = 40,
+        height: PositionType = 10,
+        fill_color: Optional[Union[str, Tuple[int, int, int]]] = None,
+    ) -&gt; PPTXShape:
+        &quot;&quot;&quot;Add a shape to the slide.
+
+        Args:
+            shape_type: The shape type, as an MSO_SHAPE value or its name,
+                e.g. &quot;ROUNDED_RECTANGLE&quot; (default: MSO_SHAPE.RECTANGLE)
+            x: X position as percent or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 5)
+            width: Width as percent or in_() length (default: 40)
+            height: Height as percent or in_() length (default: 10)
+            fill_color: Fill color as string name from COLORS dict or RGB tuple (default: None)
+
+        Returns:
+            The created shape object
+
+        Raises:
+            ValueError: If shape_type is a string that is not an MSO_SHAPE name
+        &quot;&quot;&quot;
+
+    def add_table(
+        self,
+        data: Any,
+        x: PositionType = 5,
+        y: PositionType = 20,
+        width: Optional[PositionType] = None,
+        height: Optional[PositionType] = None,
+        has_header: Optional[bool] = None,
+        style: Optional[Union[int, str, dict, TableStyle]] = None,
+        columns: Optional[List[str]] = None,
+        number_format: Optional[Union[str, dict]] = None,
+        shade_columns: Optional[list] = None,
+        shade_color: Union[str, Tuple[int, int, int]] = &quot;blue&quot;,
+    ) -&gt; PPTXTable:
+        &quot;&quot;&quot;Add a table to the slide.
+
+        Args:
+            data: Table data — a pandas or polars DataFrame, pandas Series,
+                numpy array, dict of sequences, or list of lists with a
+                header row (non-list shapes are new in 0.8.0)
+            x: X position as percent or in_() length (default: 5)
+            y: Y position as percent or in_() length (default: 20)
+            width: Total width as percent or in_() length (default: None, auto-sized)
+            height: Total height as percent or in_() length (default: None, auto-sized)
+            has_header: Whether the first row is a header (default: True)
+            style: Table style — a small integer id mapping to a built-in
+                PowerPoint table style (see TABLE_STYLE_GUIDS in
+                easypptx.table), a literal GUID string, a style dict with a
+                &quot;style_id&quot; key, or a TableStyle (default: None)
+            columns: Header names for unlabeled numpy arrays (default: None)
+            number_format: Python format spec applied to numeric cells,
+                e.g. &quot;{:,.1f}&quot;, or a dict mapping column name/index to a
+                format spec (new in 0.8.0) (default: None)
+            shade_columns: Column names/indexes whose cells get a
+                value-scaled background tint — the smallest value stays
+                white, the largest gets the full shade_color, computed from
+                the raw (unformatted) values (new in 0.8.0) (default: None)
+            shade_color: Tint color for shade_columns (default: &quot;blue&quot;)
+
+        Returns:
+            The created table object
+        &quot;&quot;&quot;
+
+    def add_chart(
+        self,
+        data: Any = None,
+        chart_type: Optional[str] = None,
+        x: PositionType = 10,
+        y: PositionType = 20,
+        width: PositionType = 60,
+        height: PositionType = 60,
+        categories: Optional[list] = None,
+        values: Optional[list] = None,
+        category_column: Optional[Union[str, int]] = None,
+        value_columns: Optional[Union[str, List[str], int, List[int]]] = None,
+        title: Optional[str] = None,
+        has_legend: Optional[bool] = None,
+        legend_position: Optional[str] = None,
+        style: Optional[ChartStyle] = None,
+        backend: Optional[str] = None,
+        columns: Optional[List[str]] = None,
+        show_values: bool = False,
+        number_format: Optional[str] = None,
+        x_title: Optional[str] = None,
+        y_title: Optional[str] = None,
+        y_min: Optional[float] = None,
+        y_max: Optional[float] = None,
+        palette: Optional[list] = None,
+    ) -&gt; Union[PPTXChart, PPTXShape]:
+        &quot;&quot;&quot;Add a chart to the slide.
+
+        Either pass explicit categories and values lists, or pass data
+        (a pandas or polars DataFrame, pandas Series, numpy array, dict of
+        sequences, or list of lists with a header row) together with
+        optional category_column / value_columns. Passing several
+        value_columns plots each column as a named series.
+
+        The native chart types render as editable PowerPoint charts;
+        heatmap/histogram/box/violin render via matplotlib (requires
+        easypptx[plot]) and return the placed picture shape instead.
+
+        Args:
+            data: Chart data — DataFrame (pandas/polars), Series, ndarray,
+                dict of sequences, or list of lists (default: None)
+            chart_type: Native types 'column', 'bar', 'line', 'pie', 'area',
+                'scatter', or matplotlib-backed types 'heatmap', 'histogram',
+                'box', 'violin' (new in 0.8.0) (default: &quot;column&quot;)
+            x: X position as percent or in_() length (default: 10)
+            y: Y position as percent or in_() length (default: 20)
+            width: Width as percent or in_() length (default: 60)
+            height: Height as percent or in_() length (default: 60)
+            categories: Explicit list of category labels, used together
+                with values (default: None)
+            values: Explicit list of data values (default: None)
+            category_column: Name or index of the column to use as categories (default: None)
+            value_columns: Name(s) or index(es) of column(s) to use as values;
+                a list creates one series per column (default: None)
+            title: Chart title (default: None)
+            has_legend: Whether to show legend (default: True)
+            legend_position: Legend position (native charts only) (default: &quot;right&quot;)
+            style: A ChartStyle filling any chart options left unset (default: None)
+            backend: &quot;native&quot; or &quot;pyplot&quot;; overrides the automatic routing
+                by chart_type. &quot;native&quot; with a non-native type raises a
+                ValueError (new in 0.8.0) (default: None, auto)
+            columns: Series names for unlabeled numpy arrays (default: None)
+            show_values: Draw data labels on the series (native charts only)
+                (new in 0.8.0) (default: False)
+            number_format: Excel-style number format for data labels, e.g.
+                &quot;#,##0&quot; or &quot;0.0%&quot;; setting it also enables the labels
+                (native charts only) (new in 0.8.0) (default: None)
+            x_title: Category-axis title (new in 0.8.0) (default: None)
+            y_title: Value-axis title (new in 0.8.0) (default: None)
+            y_min: Lower value-axis limit (new in 0.8.0) (default: None)
+            y_max: Upper value-axis limit (new in 0.8.0) (default: None)
+            palette: Series colors as color names or RGB tuples; overrides
+                the deck theme's palette (new in 0.8.0) (default: None)
+
+        Returns:
+            The created chart object (native backend), or the placed
+            picture shape (pyplot backend)
+
+        Raises:
+            ValueError: If neither data nor categories/values are provided,
+                if the chart type is unknown, or if backend=&quot;native&quot; is
+                forced for a non-native chart type
+            ImportError: If a matplotlib-backed chart type is requested but
+                matplotlib is not installed
+        &quot;&quot;&quot;
+
+    @property
+    def notes(self) -&gt; str:
+        &quot;&quot;&quot;The slide's speaker notes (empty string if none exist).
+
+        New in 0.7.0. Assign a string to set the notes:
+        slide.notes = &quot;Talking points for this slide&quot;
+        &quot;&quot;&quot;
+
+    def add_multiple_objects(
+        self,
+        objects_data: List[dict],
+        layout: str = &quot;grid&quot;,
+        padding_percent: float = 5.0,
+        start_x: PositionType = &quot;5%&quot;,
+        start_y: PositionType = &quot;5%&quot;,
+        width: PositionType = &quot;90%&quot;,
+        height: PositionType = &quot;90%&quot;,
+    ) -&gt; List[PPTXShape]:
+        &quot;&quot;&quot;Add multiple objects to the slide with automatic alignment.
+
+        Args:
+            objects_data: List of dictionaries containing object data
+                Each dict should have 'type' ('text', 'image', or 'shape') and type-specific parameters
+            layout: Layout type ('grid', 'horizontal', 'vertical')
+            padding_percent: Padding between objects as percentage of container
+            start_x: Starting X position of container as percent or in_() length
+            start_y: Starting Y position of container as percent or in_() length
+            width: Width of container as percent or in_() length
+            height: Height of container as percent or in_() length
+
+        Returns:
+            List of created shape objects
+        &quot;&quot;&quot;
+
+    def clear(self) -&gt; None:
+        &quot;&quot;&quot;Remove all shapes from the slide.&quot;&quot;&quot;
+
+    @property
+    def title(self) -&gt; Optional[str]:
+        &quot;&quot;&quot;Get the slide title.
+
+        Returns:
+            The slide title if it exists, None otherwise
+        &quot;&quot;&quot;
+
+    @title.setter
+    def title(self, value: str) -&gt; None:
+        &quot;&quot;&quot;Set the slide title.
+
+        Args:
+            value: The title text
+        &quot;&quot;&quot;
+
+    def set_background_color(self, color: Union[str, Tuple[int, int, int]]) -&gt; None:
+        &quot;&quot;&quot;Set the background color of the slide.
+
+        Args:
+            color: Background color as string name from COLORS dict or RGB tuple
+        &quot;&quot;&quot;
+</code></pre>
+<p>Notes:</p>
+<ul>
+<li><code>slide.add_chart</code> accepts <code>value_column</code> (singular) as an alias for <code>value_columns</code>, and <code>chart_title</code> as an alias for <code>title</code>. <code>slide.add_table</code> accepts <code>first_row_header</code> as an alias for <code>has_header</code>.</li>
+<li>Unknown parameters passed to Slide content methods trigger a warning instead of being silently ignored. Out-of-range percentages (e.g. <code>150</code> or <code>"150%"</code>) are clamped with a warning.</li>
+<li><strong>Removed in 0.7.0:</strong> The pass-through variants on <code>Presentation</code> that took a slide as the first argument (<code>pres.add_text(slide, ...)</code>, <code>pres.add_image(slide, ...)</code>, <code>pres.add_shape(slide, ...)</code>, <code>pres.add_table(slide, ...)</code>, <code>pres.add_chart(slide, ...)</code>, <code>pres.add_pyplot(slide, ...)</code>) have been removed; use the <code>Slide</code> methods instead. <code>Presentation.add_matplotlib_slide</code>, <code>add_seaborn_slide</code>, and <code>add_plot</code> have been removed in favor of <code>add_pyplot_slide</code> (or <code>slide.add_pyplot</code>), and <code>add_image_slide</code> in favor of <code>add_image_gen_slide</code>. See <a href="../migration/">Migrating to 0.7.0</a>.</li>
+</ul>
+<h2 id="text-class">Text Class<a class="headerlink" href="#text-class" title="Permanent link">&para;</a></h2>
+<p>The <code>Text</code> class provides methods for adding and formatting text on slides.</p>
+<pre><code class="language-python">class Text:
+    def __init__(self, slide_obj: &quot;Slide&quot;) -&gt; None:
+        &quot;&quot;&quot;Initialize a Text object.
+
+        Args:
+            slide_obj: The Slide object to add text to
+        &quot;&quot;&quot;
+
+    def add_title(
+        self,
+        text: str,
+        font_size: int = 44,
+        font_name: str = &quot;Meiryo&quot;,
+        color: Optional[Union[str, Tuple[int, int, int]]] = &quot;black&quot;,
+        align: str = &quot;center&quot;,
+        x: PositionType = &quot;10%&quot;,
+        y: PositionType = &quot;5%&quot;,
+        width: PositionType = &quot;80%&quot;,
+        height: PositionType = &quot;15%&quot;,
+    ) -&gt; PPTXShape:
+        &quot;&quot;&quot;Add a title to the slide.
+
+        Args:
+            text: The title text
+            font_size: Font size in points (default: 44)
+            font_name: Font name (default: &quot;Meiryo&quot;)
+            color: Text color as string name from COLORS dict or RGB tuple (default: &quot;black&quot;)
+            align: Text alignment, one of &quot;left&quot;, &quot;center&quot;, &quot;right&quot; (default: &quot;center&quot;)
+            x: X position as percent or in_() length (default: &quot;10%&quot;)
+            y: Y position as percent or in_() length (default: &quot;5%&quot;)
+            width: Width as percent or in_() length (default: &quot;80%&quot;)
+            height: Height as percent or in_() length (default: &quot;15%&quot;)
+
+        Returns:
+            The created shape object
+        &quot;&quot;&quot;
+
+    def add_paragraph(
+        self,
+        text: str,
+        x: PositionType = 10,
+        y: PositionType = 20,
+        width: PositionType = 80,
+        height: PositionType = 10,
+        font_size: int = 18,
+        font_bold: bool = False,
+        font_italic: bool = False,
+        font_name: str = &quot;Meiryo&quot;,
+        align: str = &quot;left&quot;,
+        vertical: str = &quot;top&quot;,
+        color: Optional[Union[str, Tuple[int, int, int]]] = &quot;black&quot;,
+    ) -&gt; PPTXShape:
+        &quot;&quot;&quot;Add a paragraph of text to the slide.
+
+        Args:
+            text: The paragraph text
+            x: X position as percent or in_() length (default: 10)
+            y: Y position as percent or in_() length (default: 20)
+            width: Width as percent or in_() length (default: 80)
+            height: Height as percent or in_() length (default: 10)
+            font_size: Font size in points (default: 18)
+            font_bold: Whether text should be bold (default: False)
+            font_italic: Whether text should be italic (default: False)
+            font_name: Font name (default: &quot;Meiryo&quot;)
+            align: Text alignment, one of &quot;left&quot;, &quot;center&quot;, &quot;right&quot; (default: &quot;left&quot;)
+            vertical: Vertical alignment, one of &quot;top&quot;, &quot;middle&quot;, &quot;bottom&quot; (default: &quot;top&quot;)
+            color: Text color as string name from COLORS dict or RGB tuple (default: &quot;black&quot;)
+
+        Returns:
+            The created shape object
+        &quot;&quot;&quot;
+
+    @staticmethod
+    def format_text_frame(
+        text_frame: TextFrame,
+        font_size: Optional[int] = None,
+        font_bold: Optional[bool] = None,
+        font_italic: Optional[bool] = None,
+        font_name: Optional[str] = None,
+        color: Optional[Union[str, Tuple[int, int, int]]] = None,
+        align: Optional[str] = None,
+        vertical: Optional[str] = None,
+    ) -&gt; None:
+        &quot;&quot;&quot;Format an existing text frame.
+
+        Args:
+            text_frame: The text frame to format
+            font_size: Font size in points (default: None)
+            font_bold: Whether text should be bold (default: None)
+            font_italic: Whether text should be italic (default: None)
+            font_name: Font name (default: None)
+            color: Text color as string name from COLORS dict or RGB tuple (default: None)
+            align: Text alignment, one of &quot;left&quot;, &quot;center&quot;, &quot;right&quot; (default: None)
+            vertical: Vertical alignment, one of &quot;top&quot;, &quot;middle&quot;, &quot;bottom&quot; (default: None)
+        &quot;&quot;&quot;
+</code></pre>
+<h2 id="position-type">Position Type<a class="headerlink" href="#position-type" title="Permanent link">&para;</a></h2>
+<p>EasyPPTX uses a special type for position parameters. <strong>Changed in 0.7.0:</strong> bare numbers are percentages of the slide dimension; absolute inches use the <code>in_()</code> helper (floats no longer mean inches):</p>
+<pre><code class="language-python"># Type for position parameters
+PositionType = Union[float, str, Length]
+
+# Examples:
+from easypptx import in_
+
+x = 50        # 50% of slide width (percentage)
+x = &quot;50%&quot;     # 50% of slide width (percentage string)
+x = in_(1.5)  # 1.5 inches (absolute Length)
+</code></pre>
+<p>Percentages outside 0-100 are clamped with a warning; <code>in_()</code> lengths are not clamped.</p>
+<h3 id="positioning-helpers">Positioning Helpers<a class="headerlink" href="#positioning-helpers" title="Permanent link">&para;</a></h3>
+<p>The <code>easypptx.positioning</code> module provides the <code>in_()</code> helper and percent/inch conversion functions used throughout the library:</p>
+<pre><code class="language-python">from easypptx import in_         # in_(1.5) -&gt; absolute length of 1.5 inches
+
+from easypptx.positioning import (
+    is_percent,             # True if a value is a percentage string like &quot;50%&quot;
+    parse_percent,          # &quot;50%&quot; -&gt; 50.0 (bare numbers pass through)
+    pct,                    # 50.0 -&gt; &quot;50.00%&quot;
+    to_percent,             # Convert a position value to a percentage of a dimension
+    to_inches,              # Convert a position value to inches
+    shift_band,             # Shift a position band (e.g. below a title area)
+    resolve_padding,        # Resolve combined/x/y padding values
+    apply_content_padding,  # Apply padding to a content area
+)
+</code></pre>
+<h2 id="styles-and-themes">Styles and Themes<a class="headerlink" href="#styles-and-themes" title="Permanent link">&para;</a></h2>
+<p>New in 0.7.0. The <code>easypptx.styles</code> module (re-exported from <code>easypptx</code>) provides reusable style dataclasses and presentation-wide themes. See <a href="../styling/">Styling and Formatting</a> for usage.</p>
+<pre><code class="language-python">@dataclass
+class TextStyle:
+    &quot;&quot;&quot;Formatting for text content (add_text, add_bullets, titles).&quot;&quot;&quot;
+    font_name: Optional[str] = None
+    font_size: Optional[int] = None
+    font_bold: Optional[bool] = None
+    font_italic: Optional[bool] = None
+    color: Optional[Union[str, Tuple[int, int, int]]] = None
+    align: Optional[str] = None
+    vertical: Optional[str] = None
+
+@dataclass
+class TableStyle:
+    &quot;&quot;&quot;Formatting for tables.&quot;&quot;&quot;
+    has_header: Optional[bool] = None
+    style_id: Optional[int] = None
+
+@dataclass
+class ChartStyle:
+    &quot;&quot;&quot;Formatting for charts.&quot;&quot;&quot;
+    chart_type: Optional[str] = None
+    has_legend: Optional[bool] = None
+    legend_position: Optional[str] = None
+
+@dataclass
+class Theme:
+    &quot;&quot;&quot;A presentation-wide look: background, title style, and body style.
+
+    Built-in presets are available by name: Presentation(theme=&quot;dark&quot;).
+    Presets: &quot;light&quot;, &quot;dark&quot;, &quot;corporate&quot;.
+    &quot;&quot;&quot;
+    name: str = &quot;custom&quot;
+    bg_color: Optional[Union[str, Tuple[int, int, int]]] = None
+    title: TextStyle = field(default_factory=TextStyle)
+    body: TextStyle = field(default_factory=TextStyle)
+    accent_color: Optional[Union[str, Tuple[int, int, int]]] = None
+    palette: Optional[List[Union[str, Tuple[int, int, int]]]] = None  # New in 0.8.0
+</code></pre>
+<p>Style objects are passed via the <code>style=</code> parameter of <code>add_text</code>, <code>add_bullets</code>, <code>add_table</code>, and <code>add_chart</code>; explicit keyword arguments always beat the style object. Themes set the default slide background, cascade body text styling via template defaults, and style <code>add_slide</code> titles.</p>
+<p><em>New in 0.8.0</em>, the <code>palette</code> field lists series colors for native PowerPoint charts. A themed presentation colors native chart series from the palette automatically (cycling if needed); an explicit <code>palette=</code> argument on <code>add_chart</code> wins. The built-in <code>light</code>, <code>dark</code>, and <code>corporate</code> presets all ship palettes. See <a href="../styling/#theme-palettes">Theme Palettes</a>.</p>
+<h2 id="data-adapter-easypptxdata">Data Adapter (easypptx.data)<a class="headerlink" href="#data-adapter-easypptxdata" title="Permanent link">&para;</a></h2>
+<p>New in 0.8.0. One adapter normalizes every data shape the chart and table APIs accept: pandas DataFrame/Series, polars DataFrame, numpy 1D/2D arrays, dicts of sequences, and lists of lists with a header row. pandas, polars, and numpy are detected through <code>sys.modules</code>, so none of them become dependencies. These functions are used internally by <code>add_chart</code> / <code>add_table</code> and are also usable directly:</p>
+<pre><code class="language-python">def normalize_chart_data(
+    data: Any,
+    category_column: Any = None,
+    value_columns: Any = None,
+    categories: Optional[list] = None,
+    columns: Optional[List[str]] = None,
+) -&gt; Tuple[list, Dict[str, list]]:
+    &quot;&quot;&quot;Normalize any supported data shape to (categories, {name: values}).
+
+    Args:
+        data: DataFrame (pandas or polars), Series, ndarray, dict of
+            sequences, or list of lists with a header row
+        category_column: Name or index of the category column, for tabular
+            inputs (default: first column)
+        value_columns: Name(s)/index(es) of value column(s); a list plots
+            one series per entry (default: the second column)
+        categories: Explicit category labels, for inputs that carry none
+            (ndarray, dict) (default: positional labels)
+        columns: Column names for unlabeled 2D arrays (default: &quot;Series N&quot;)
+
+    Returns:
+        (categories, series) where series maps series name -&gt; list of values
+
+    Raises:
+        ValueError: If a named column is missing or the data is unusable
+    &quot;&quot;&quot;
+
+def normalize_table_rows(data: Any, columns: Optional[List[str]] = None) -&gt; List[list]:
+    &quot;&quot;&quot;Normalize any supported data shape to table rows with a header row.
+
+    Args:
+        data: DataFrame (pandas or polars), Series, ndarray, dict of
+            sequences, or list of lists (assumed to already include a header)
+        columns: Header names for unlabeled 2D arrays (default: &quot;Column N&quot;)
+
+    Returns:
+        List of rows; the first row is the header (except for plain
+        list-of-lists input, which is passed through unchanged)
+
+    Raises:
+        ValueError: If the data shape is unsupported
+    &quot;&quot;&quot;
+
+# Duck-typing predicates (never import the library they test for):
+def is_dataframe(obj: Any) -&gt; bool: ...  # pandas DataFrame
+def is_series(obj: Any) -&gt; bool: ...     # pandas Series
+def is_polars(obj: Any) -&gt; bool: ...     # polars DataFrame
+def is_ndarray(obj: Any) -&gt; bool: ...    # numpy ndarray
+</code></pre>
+<h2 id="pandas-accessor">Pandas Accessor<a class="headerlink" href="#pandas-accessor" title="Permanent link">&para;</a></h2>
+<p>New in 0.8.0. When pandas is available, DataFrames gain a <code>df.pptx</code> accessor:</p>
+<pre><code class="language-python">df.pptx.table(slide, **kwargs)              # -&gt; slide.add_table(df, **kwargs)
+df.pptx.chart(slide, kind=None, **kwargs)   # -&gt; slide.add_chart(data=df, chart_type=kind, **kwargs)
+</code></pre>
+<p>The accessor registers automatically when pandas is already imported at <code>import easypptx</code> time, and again whenever a <code>Presentation</code> is created. For manual registration (e.g. pandas was imported after easypptx):</p>
+<pre><code class="language-python">def register_pandas_accessor() -&gt; bool:
+    &quot;&quot;&quot;Register the df.pptx accessor on pandas DataFrames.
+
+    Importable as easypptx.register_pandas_accessor.
+
+    Returns:
+        True if the accessor is registered (or already was), False when
+        pandas is not importable.
+    &quot;&quot;&quot;
+</code></pre>
+<p>See <a href="../data/#the-dfpptx-pandas-accessor">Data to Slides</a> for usage.</p>
+<h2 id="constants">Constants<a class="headerlink" href="#constants" title="Permanent link">&para;</a></h2>
+<h3 id="aspect-ratios">Aspect Ratios<a class="headerlink" href="#aspect-ratios" title="Permanent link">&para;</a></h3>
+<p>The <code>Presentation</code> class defines standard aspect ratios:</p>
+<pre><code class="language-python">ASPECT_RATIOS = {
+    &quot;16:9&quot;: (13.33, 7.5),    # Widescreen (default)
+    &quot;4:3&quot;: (10, 7.5),        # Standard
+    &quot;16:10&quot;: (13.33, 8.33),  # Widescreen alternative
+    &quot;A4&quot;: (11.69, 8.27),     # A4 paper size
+    &quot;LETTER&quot;: (11, 8.5),     # US Letter paper size
+}
+</code></pre>
+<h3 id="colors">Colors<a class="headerlink" href="#colors" title="Permanent link">&para;</a></h3>
+<p>Shared constants (<code>COLORS</code>, <code>ALIGN</code>, <code>VERTICAL</code>, <code>DEFAULT_FONT</code>) live in the <code>easypptx.common</code> module. They were previously documented as attributes of <code>Presentation</code>; those attributes (e.g. <code>Presentation.COLORS</code>) still work as aliases.</p>
+<p>The color palette:</p>
+<pre><code class="language-python">COLORS = {
+    &quot;black&quot;: RGBColor(0x10, 0x10, 0x10),
+    &quot;darkgray&quot;: RGBColor(0x40, 0x40, 0x40),
+    &quot;gray&quot;: RGBColor(0x80, 0x80, 0x80),
+    &quot;lightgray&quot;: RGBColor(0xD0, 0xD0, 0xD0),
+    &quot;red&quot;: RGBColor(0xFF, 0x40, 0x40),
+    &quot;green&quot;: RGBColor(0x40, 0xFF, 0x40),
+    &quot;blue&quot;: RGBColor(0x40, 0x40, 0xFF),
+    &quot;white&quot;: RGBColor(0xFF, 0xFF, 0xFF),
+    &quot;yellow&quot;: RGBColor(0xFF, 0xD7, 0x00),
+    &quot;cyan&quot;: RGBColor(0x00, 0xE5, 0xFF),
+    &quot;magenta&quot;: RGBColor(0xFF, 0x00, 0xFF),
+    &quot;orange&quot;: RGBColor(0xFF, 0xA5, 0x00)
+}
+</code></pre>
+<h3 id="alignments">Alignments<a class="headerlink" href="#alignments" title="Permanent link">&para;</a></h3>
+<p>The <code>easypptx.common</code> module defines alignment options:</p>
+<pre><code class="language-python"># Text alignment
+ALIGN = {
+    &quot;left&quot;: PP_ALIGN.LEFT,
+    &quot;center&quot;: PP_ALIGN.CENTER,
+    &quot;right&quot;: PP_ALIGN.RIGHT
+}
+
+# Vertical alignment
+VERTICAL = {
+    &quot;top&quot;: MSO_ANCHOR.TOP,
+    &quot;middle&quot;: MSO_ANCHOR.MIDDLE,
+    &quot;bottom&quot;: MSO_ANCHOR.BOTTOM
+}
+</code></pre>
+<h2 id="shape-types">Shape Types<a class="headerlink" href="#shape-types" title="Permanent link">&para;</a></h2>
+<p>EasyPPTX uses the <code>MSO_SHAPE</code> enum from python-pptx for shape types. <code>Slide.add_shape</code> and <code>Presentation.add_shape</code> also accept the shape's name as a string:</p>
+<pre><code class="language-python">from pptx.enum.shapes import MSO_SHAPE
+
+# Enum values:
+MSO_SHAPE.RECTANGLE
+MSO_SHAPE.OVAL
+MSO_SHAPE.ROUNDED_RECTANGLE
+MSO_SHAPE.ACTION_BUTTON_HOME
+
+# Equivalent string names:
+slide.add_shape(shape_type=&quot;ROUNDED_RECTANGLE&quot;)
+</code></pre>
+<p>For a complete list of shape types, refer to the <a href="https://python-pptx.readthedocs.io/en/latest/api/enum/MsoAutoShapeType.html">python-pptx documentation</a>.</p>
+<h2 id="grid-class">Grid Class<a class="headerlink" href="#grid-class" title="Permanent link">&para;</a></h2>
+<p>The <code>Grid</code> class provides a powerful layout system for organizing content on slides.</p>
+<pre><code class="language-python">class Grid:
+    def __init__(self,
+                 parent: Any,
+                 x: PositionType = &quot;0%&quot;,
+                 y: PositionType = &quot;0%&quot;,
+                 width: PositionType = &quot;100%&quot;,
+                 height: PositionType = &quot;100%&quot;,
+                 rows: Union[int, List[float]] = 1,
+                 cols: Union[int, List[float]] = 1,
+                 padding: float = 5.0) -&gt; None:
+        &quot;&quot;&quot;Initialize a Grid layout.
+
+        Args:
+            parent: The parent Slide or Grid object
+            x: X position of the grid (default: &quot;0%&quot;)
+            y: Y position of the grid (default: &quot;0%&quot;)
+            width: Width of the grid (default: &quot;100%&quot;)
+            height: Height of the grid (default: &quot;100%&quot;)
+            rows: Number of rows, or a list of relative row weights,
+                e.g. [2, 1] for a top region twice as tall (default: 1)
+            cols: Number of columns, or a list of relative column weights (default: 1)
+            padding: Padding between cells as percentage of cell size (default: 5.0)
+        &quot;&quot;&quot;
+
+    def get_cell(self, row: int, col: int) -&gt; GridCell:
+        &quot;&quot;&quot;Get a cell at the specified row and column.
+
+        Args:
+            row: Row index (0-based)
+            col: Column index (0-based)
+
+        Returns:
+            The GridCell at the specified position
+
+        Raises:
+            OutOfBoundsError: If row or column is out of bounds
+        &quot;&quot;&quot;
+
+    def merge_cells(self, start_row: int, start_col: int, end_row: int, end_col: int) -&gt; GridCell:
+        &quot;&quot;&quot;Merge cells in the specified range.
+
+        Args:
+            start_row: Starting row index (0-based)
+            start_col: Starting column index (0-based)
+            end_row: Ending row index (0-based, inclusive)
+            end_col: Ending column index (0-based, inclusive)
+
+        Returns:
+            The merged cell
+
+        Raises:
+            OutOfBoundsError: If any row or column is out of bounds
+            CellMergeError: If the merged area overlaps with an existing merged cell
+        &quot;&quot;&quot;
+
+    def add_to_cell(self, row: int, col: int, content_func: Callable, **kwargs) -&gt; Any:
+        &quot;&quot;&quot;Add content to a specific cell in the grid.
+
+        Args:
+            row: Row index (0-based)
+            col: Column index (0-based)
+            content_func: Function to call to add content (e.g., slide.add_text)
+            **kwargs: Additional arguments to pass to the content function
+
+        Returns:
+            The object returned by the content function
+
+        Raises:
+            OutOfBoundsError: If row or column is out of bounds
+            CellMergeError: If the cell is part of a merged cell
+        &quot;&quot;&quot;
+
+    def add_grid_to_cell(self, row: int, col: int, rows: int = 1, cols: int = 1, padding: float = 5.0) -&gt; &quot;Grid&quot;:
+        &quot;&quot;&quot;Add a nested grid to a specific cell.
+
+        Args:
+            row: Row index (0-based)
+            col: Column index (0-based)
+            rows: Number of rows in the nested grid (default: 1)
+            cols: Number of columns in the nested grid (default: 1)
+            padding: Padding between cells as percentage of cell size (default: 5.0)
+
+        Returns:
+            The nested Grid object
+
+        Raises:
+            OutOfBoundsError: If row or column is out of bounds
+            CellMergeError: If the cell is part of a merged cell
+        &quot;&quot;&quot;
+
+    def __iter__(self):
+        &quot;&quot;&quot;Make Grid iterable to loop through all cells.
+
+        Returns:
+            Iterator over all grid cells
+        &quot;&quot;&quot;
+
+    def __getitem__(self, key):
+        &quot;&quot;&quot;Access a cell (or span of cells) using indexing.
+
+        Supports grid[row, col], flat access grid[index], and — new in
+        0.7.0 — slice spans such as grid[1, :] (the whole second row) or
+        grid[0:2, 1] (two rows of one column). A slice span merges the
+        region and returns its GridCellProxy; step slices are rejected
+        with a ValueError.
+
+        Args:
+            key: A tuple of (row, col) — either may be a slice — or a
+                single int for flattened access
+
+        Returns:
+            A GridCellProxy for the requested cell or merged span
+
+        Raises:
+            OutOfBoundsError: If the requested cell is out of bounds
+            TypeError: If the key is not in the right format
+        &quot;&quot;&quot;
+
+    def next(self) -&gt; &quot;GridCellProxy&quot;:
+        &quot;&quot;&quot;Return a proxy for the next free cell, growing the grid if needed.
+
+        New in 0.7.0. Cells fill in row-major order; when every cell has
+        content, a new row is appended automatically.
+
+        Example:
+            grid.next().add_text(&quot;First free cell&quot;)
+        &quot;&quot;&quot;
+
+    @property
+    def flat(self):
+        &quot;&quot;&quot;Flat iterator for this grid, similar to matplotlib's subplot.flat.
+
+        Returns:
+            A flat iterator over all cells in the grid
+        &quot;&quot;&quot;
+
+    @classmethod
+    def autogrid(cls, parent: Any, content_funcs: list, rows: int | None = None, cols: int | None = None,
+                x: PositionType = &quot;5%&quot;, y: PositionType = &quot;5%&quot;, width: PositionType = &quot;90%&quot;,
+                height: PositionType = &quot;90%&quot;, padding: float = 5.0, title: str | None = None,
+                title_height: PositionType = &quot;10%&quot;) -&gt; &quot;Grid&quot;:
+        &quot;&quot;&quot;Create a grid and automatically place content into cells.
+
+        Args:
+            parent: The parent Slide object
+            content_funcs: List of content functions to place in grid cells
+            rows: Number of rows (if None, calculated automatically)
+            cols: Number of columns (if None, calculated automatically)
+            x: X position of the grid (default: &quot;5%&quot;)
+            y: Y position of the grid (default: &quot;5%&quot;)
+            width: Width of the grid (default: &quot;90%&quot;)
+            height: Height of the grid (default: &quot;90%&quot;)
+            padding: Padding between cells (default: 5.0)
+            title: Optional title for the grid (default: None)
+            title_height: Height of the title area (default: &quot;10%&quot;)
+
+        Returns:
+            The created Grid object
+        &quot;&quot;&quot;
+
+    @classmethod
+    def autogrid_pyplot(cls, parent: Any, figures: list, rows: int | None = None, cols: int | None = None,
+                       x: PositionType = &quot;5%&quot;, y: PositionType = &quot;5%&quot;, width: PositionType = &quot;90%&quot;,
+                       height: PositionType = &quot;90%&quot;, padding: float = 5.0, title: str | None = None,
+                       title_height: PositionType = &quot;10%&quot;, dpi: int = 300, file_format: str = &quot;png&quot;) -&gt; &quot;Grid&quot;:
+        &quot;&quot;&quot;Create a grid and automatically place matplotlib figures into cells.
+
+        Args:
+            parent: The parent Slide object
+            figures: List of matplotlib figures to place in grid cells
+            rows: Number of rows (if None, calculated automatically)
+            cols: Number of columns (if None, calculated automatically)
+            x: X position of the grid (default: &quot;5%&quot;)
+            y: Y position of the grid (default: &quot;5%&quot;)
+            width: Width of the grid (default: &quot;90%&quot;)
+            height: Height of the grid (default: &quot;90%&quot;)
+            padding: Padding between cells (default: 5.0)
+            title: Optional title for the grid (default: None)
+            title_height: Height of the title area (default: &quot;10%&quot;)
+            dpi: Resolution for saved figures (default: 300)
+            file_format: Image format for saved figures (default: &quot;png&quot;)
+
+        Returns:
+            The created Grid object
+        &quot;&quot;&quot;
+</code></pre>
+<h2 id="gridcellproxy-class">GridCellProxy Class<a class="headerlink" href="#gridcellproxy-class" title="Permanent link">&para;</a></h2>
+<p><code>grid[row, col]</code> (and <code>grid.next()</code>) return a <code>GridCellProxy</code> with content methods (<code>add_text</code>, <code>add_image</code>, <code>add_pyplot</code>, <code>add_table</code>, <code>add_grid</code>) that size and position content to the cell. New in 0.7.0, the proxy also supports cell styling:</p>
+<pre><code class="language-python">class GridCellProxy:
+    def style(self,
+              fill: Optional[Union[str, Tuple[int, int, int]]] = None,
+              border_color: Optional[Union[str, Tuple[int, int, int]]] = None,
+              border_width: float = 1.0,
+              padding: Optional[Union[float, str]] = None) -&gt; &quot;GridCellProxy&quot;:
+        &quot;&quot;&quot;Style this cell: background fill, border, and content padding.
+
+        Draws a background rectangle covering the full cell and optionally
+        sets padding that shrinks the area used by content added afterwards.
+        Returns the proxy so calls can be chained.
+
+        Args:
+            fill: Background color name or RGB tuple (default: None, no fill)
+            border_color: Border color name or RGB tuple (default: None, no border)
+            border_width: Border width in points (default: 1.0)
+            padding: Extra content padding as percent of the slide (default: None)
+
+        Example:
+            grid[0, 0].style(fill=&quot;lightgray&quot;, border_color=&quot;gray&quot;,
+                             border_width=1, padding=2).add_text(&quot;Card&quot;)
+        &quot;&quot;&quot;
+</code></pre>
+<h2 id="gridcell-class">GridCell Class<a class="headerlink" href="#gridcell-class" title="Permanent link">&para;</a></h2>
+<p>The <code>GridCell</code> class represents a cell in a grid layout.</p>
+<pre><code class="language-python">class GridCell:
+    def __init__(self, row: int, col: int, x: str, y: str, width: str, height: str) -&gt; None:
+        &quot;&quot;&quot;Initialize a GridCell.
+
+        Args:
+            row: Row index of the cell
+            col: Column index of the cell
+            x: X position as percentage
+            y: Y position as percentage
+            width: Width as percentage
+            height: Height as percentage
+        &quot;&quot;&quot;
+</code></pre>
+<h2 id="gridflatiterator-class">GridFlatIterator Class<a class="headerlink" href="#gridflatiterator-class" title="Permanent link">&para;</a></h2>
+<p>The <code>GridFlatIterator</code> class provides a way to iterate through grid cells in a flattened manner, similar to matplotlib's subplot.flat.</p>
+<pre><code class="language-python">class GridFlatIterator:
+    def __init__(self, grid: Grid):
+        &quot;&quot;&quot;Initialize a flat iterator for the grid.
+
+        Args:
+            grid: The Grid object to iterate over
+        &quot;&quot;&quot;
+
+    def __iter__(self):
+        &quot;&quot;&quot;Return the iterator itself.&quot;&quot;&quot;
+
+    def __next__(self):
+        &quot;&quot;&quot;Get the next cell in the flattened grid.
+
+        Returns:
+            The next GridCell object
+
+        Raises:
+            StopIteration: When all cells have been iterated through
+        &quot;&quot;&quot;
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Maintained by <a href="https://Ameyanagi.com">Ameyanagi</a>.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/Ameyanagi/EasyPPTX" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/EasyPPTX" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 404c11.1 0 20.1 9.1 20.1 20.3 0 11.3-9 20.4-20.1 20.4-11 0-20.1-9.2-20.1-20.4.1-11.3 9.1-20.3 20.1-20.3M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.7-142.6c-11.1 0-20.1-9.1-20.1-20.3.1-11.3 9-20.4 20.1-20.4 11 0 20.1 9.2 20.1 20.4s-9 20.3-20.1 20.3"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  </body>
+</html>

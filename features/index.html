@@ -1,0 +1,1659 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A Python library for easily creating and manipulating PowerPoint presentations programmatically with simple APIs.">
+      
+      
+        <meta name="author" content="Ameyanagi">
+      
+      
+        <link rel="canonical" href="https://Ameyanagi.github.io/EasyPPTX/features/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../percentage_positioning/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.13">
+    
+    
+      
+        <title>Features - EasyPPTX</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#easypptx-features" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="EasyPPTX" class="md-header__button md-logo" aria-label="EasyPPTX" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            EasyPPTX
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Features
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Ameyanagi/EasyPPTX" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ameyanagi/EasyPPTX
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="EasyPPTX" class="md-nav__button md-logo" aria-label="EasyPPTX" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    EasyPPTX
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Ameyanagi/EasyPPTX" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ameyanagi/EasyPPTX
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Features
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Features
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#core-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Features
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-presentations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating Presentations
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#working-with-slides" class="md-nav__link">
+    <span class="md-ellipsis">
+      Working with Slides
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#text-manipulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Text Manipulation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#working-with-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      Working with Images
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating Tables
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-charts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating Charts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#direct-object-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Direct Object APIs
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Features
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#markdown-to-presentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Markdown to Presentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#styles-and-themes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Styles and Themes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grid-layout-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      Grid Layout System
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#percentage-based-positioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Percentage-Based Positioning
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dark-theme-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dark Theme Support
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auto-alignment-of-multiple-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Auto-Alignment of Multiple Objects
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-styling-and-formatting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Styling and Formatting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#powerpoint-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      PowerPoint Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aspect-ratio-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Aspect Ratio Options
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../percentage_positioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Percentage-Based Positioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deck/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Deck Builder
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../markdown/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Markdown to Presentation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data to Slides
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auto_alignment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Auto-Alignment
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../grid_layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Grid Layout
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Plots
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../styling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Styling and Formatting
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dark_theme/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dark Theme
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PowerPoint Templates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migrating to 0.7.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Modules
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#core-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Features
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-presentations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating Presentations
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#working-with-slides" class="md-nav__link">
+    <span class="md-ellipsis">
+      Working with Slides
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#text-manipulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Text Manipulation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#working-with-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      Working with Images
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating Tables
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-charts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating Charts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#direct-object-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Direct Object APIs
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Features
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#markdown-to-presentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Markdown to Presentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#styles-and-themes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Styles and Themes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grid-layout-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      Grid Layout System
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#percentage-based-positioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Percentage-Based Positioning
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dark-theme-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dark Theme Support
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auto-alignment-of-multiple-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Auto-Alignment of Multiple Objects
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-styling-and-formatting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Styling and Formatting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#powerpoint-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      PowerPoint Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aspect-ratio-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Aspect Ratio Options
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="easypptx-features">EasyPPTX Features<a class="headerlink" href="#easypptx-features" title="Permanent link">&para;</a></h1>
+<p>EasyPPTX provides a comprehensive set of features for creating and manipulating PowerPoint presentations programmatically. This guide provides an overview of all available features.</p>
+<h2 id="core-features">Core Features<a class="headerlink" href="#core-features" title="Permanent link">&para;</a></h2>
+<h3 id="creating-presentations">Creating Presentations<a class="headerlink" href="#creating-presentations" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from easypptx import Presentation
+
+# Create a new presentation with default 16:9 aspect ratio
+pres = Presentation()
+
+# Create a presentation with 4:3 aspect ratio
+pres = Presentation(aspect_ratio=&quot;4:3&quot;)
+
+# Create a presentation with custom dimensions
+pres = Presentation(width_inches=12, height_inches=9)
+
+# Create a presentation from a template
+pres = Presentation(template_path=&quot;template.pptx&quot;)
+
+# Open an existing presentation
+pres = Presentation.open(&quot;existing.pptx&quot;)
+
+# Save a presentation
+pres.save(&quot;output.pptx&quot;)
+</code></pre>
+<h3 id="working-with-slides">Working with Slides<a class="headerlink" href="#working-with-slides" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from easypptx import Presentation
+
+# Create a presentation
+pres = Presentation()
+
+# Add a slide
+slide = pres.add_slide()
+
+# Add a slide with a specific layout
+slide = pres.add_slide(layout_index=1)  # Content layout
+
+# Add a slide with a title (title_color sets the title color)
+slide = pres.add_slide(title=&quot;Section Title&quot;, title_color=&quot;blue&quot;)
+
+# Opt a single slide out of the presentation's default TOML template
+slide = pres.add_slide(template_toml=False)
+
+# Get all slides
+slides = pres.slides
+
+# Clear a slide (remove all shapes)
+slide.clear()
+
+# Get or set the slide title
+title = slide.title
+slide.title = &quot;New Title&quot;
+</code></pre>
+<h2 id="text-manipulation">Text Manipulation<a class="headerlink" href="#text-manipulation" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">from easypptx import Presentation, Text
+
+# Create a presentation
+pres = Presentation()
+slide = pres.add_slide()
+text = Text(slide)
+
+# Add a title
+text.add_title(&quot;Presentation Title&quot;)
+
+# Add a paragraph
+text.add_paragraph(&quot;This is a paragraph of text&quot;)
+
+# Add formatted text
+text.add_paragraph(
+    &quot;Formatted text&quot;,
+    font_size=24,
+    font_bold=True,
+    font_italic=True,
+    font_name=&quot;Meiryo&quot;,
+    color=&quot;blue&quot;,
+    align=&quot;center&quot;,
+    vertical=&quot;middle&quot;
+)
+</code></pre>
+<h2 id="working-with-images">Working with Images<a class="headerlink" href="#working-with-images" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">from easypptx import Presentation, Image
+
+# Create a presentation
+pres = Presentation()
+slide = pres.add_slide()
+img = Image(slide)
+
+# Add an image (bare numbers are percentages of the slide)
+img.add(&quot;image.png&quot;, x=10, y=20, width=40)
+
+# Add an image with maintenance of aspect ratio
+img.add(&quot;image.png&quot;, x=10, y=20, width=40)  # Height calculated automatically
+
+# Add an image with specific dimensions
+img.add(&quot;image.png&quot;, x=10, y=20, width=40, height=30)
+
+# Absolute positioning in inches uses the in_() helper
+from easypptx import in_
+img.add(&quot;image.png&quot;, x=in_(1), y=in_(2), width=in_(4))
+</code></pre>
+<h2 id="creating-tables">Creating Tables<a class="headerlink" href="#creating-tables" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>pandas DataFrame support requires the optional extra: <code>pip install "easypptx[dataframe]"</code>.</p>
+</blockquote>
+<pre><code class="language-python">from easypptx import Presentation
+
+# Create a presentation
+pres = Presentation()
+slide = pres.add_slide()
+
+# Add a simple table (positions are percentages of the slide)
+data = [[&quot;Header 1&quot;, &quot;Header 2&quot;], [&quot;Cell A1&quot;, &quot;Cell A2&quot;], [&quot;Cell B1&quot;, &quot;Cell B2&quot;]]
+slide.add_table(data, x=10, y=10, width=40, height=25)
+
+# Add a table from a pandas DataFrame
+import pandas as pd
+df = pd.DataFrame({&quot;Name&quot;: [&quot;John&quot;, &quot;Jane&quot;], &quot;Score&quot;: [85, 92]})
+slide.add_table(df, x=10, y=40, width=40, height=25)
+
+# Include the DataFrame index as the first column
+from easypptx import Table
+Table(slide).from_dataframe(df, x=55, y=10, include_index=True)
+
+# Add a table with a header row and style
+slide.add_table(
+    data,
+    x=55,
+    y=40,
+    width=40,
+    height=25,
+    has_header=True,
+    style=5
+)
+</code></pre>
+<p><em>New in 0.8.0</em>, <code>data</code> accepts more shapes — polars DataFrames, pandas Series, numpy arrays (label the header with <code>columns=</code>), and dicts of sequences — and tables gained formatting options:</p>
+<pre><code class="language-python">import numpy as np
+
+# Python format specs for numeric cells: one spec for all columns...
+slide.add_table(df, number_format=&quot;{:,.1f}&quot;)
+
+# ...or a per-column dict (keys are column names or indexes)
+slide.add_table(df, number_format={&quot;Score&quot;: &quot;{:,.0f}&quot;})
+
+# Value-scaled background shading: the smallest value stays white,
+# the largest gets the full shade_color, computed from the raw values
+slide.add_table(df, shade_columns=[&quot;Score&quot;], shade_color=&quot;blue&quot;)
+
+# numpy arrays carry no labels; columns= names the header
+slide.add_table(np.array([[1, 2], [3, 4]]), columns=[&quot;Alpha&quot;, &quot;Beta&quot;])
+
+# style= maps small ints to built-in PowerPoint table styles
+# (see TABLE_STYLE_GUIDS in easypptx.table) and also accepts a GUID string
+slide.add_table(data, style=1)
+slide.add_table(data, style=&quot;{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}&quot;)
+</code></pre>
+<p>See <a href="../data/">Data to Slides</a> for the full list of accepted data shapes.</p>
+<h2 id="creating-charts">Creating Charts<a class="headerlink" href="#creating-charts" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">from easypptx import Presentation
+
+# Create a presentation
+pres = Presentation()
+slide = pres.add_slide()
+
+# Add a simple chart from explicit categories and values
+slide.add_chart(
+    chart_type=&quot;pie&quot;,
+    categories=[&quot;A&quot;, &quot;B&quot;, &quot;C&quot;],
+    values=[10, 20, 30],
+    x=5, y=10, width=40, height=40,
+    title=&quot;Chart Title&quot;
+)
+
+# Add a chart from a pandas DataFrame
+import pandas as pd
+df = pd.DataFrame({&quot;Category&quot;: [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;], &quot;Value&quot;: [10, 20, 30]})
+slide.add_chart(
+    data=df,
+    chart_type=&quot;column&quot;,
+    category_column=&quot;Category&quot;,
+    value_columns=&quot;Value&quot;,
+    x=50,
+    y=10,
+    title=&quot;DataFrame Chart&quot;
+)
+
+# Multi-series chart: each value column becomes a named series
+df2 = pd.DataFrame({
+    &quot;Quarter&quot;: [&quot;Q1&quot;, &quot;Q2&quot;, &quot;Q3&quot;],
+    &quot;Revenue&quot;: [100, 120, 140],
+    &quot;Cost&quot;: [80, 85, 90],
+})
+slide.add_chart(
+    data=df2,
+    chart_type=&quot;line&quot;,
+    category_column=&quot;Quarter&quot;,
+    value_columns=[&quot;Revenue&quot;, &quot;Cost&quot;],
+    x=10, y=55, width=60, height=40,
+)
+</code></pre>
+<p><em>New in 0.8.0:</em></p>
+<ul>
+<li><code>data</code> also accepts pandas Series, polars DataFrames, numpy arrays, and dicts of sequences — see <a href="../data/#accepted-data-shapes">Data to Slides</a>.</li>
+<li>The native chart types (<code>column</code>, <code>bar</code>, <code>line</code>, <code>pie</code>, <code>area</code>, <code>scatter</code>) stay editable PowerPoint charts; <code>chart_type="heatmap"</code>, <code>"histogram"</code>, <code>"box"</code>, and <code>"violin"</code> render via matplotlib (requires <code>easypptx[plot]</code>) into the same slide region. <code>backend="pyplot"</code> forces matplotlib for any type. See <a href="../plots/#chart-backend-routing">Chart Backend Routing</a>.</li>
+<li>Native charts gained styling options — data labels, axis titles and limits, and series colors:</li>
+</ul>
+<pre><code class="language-python">slide.add_chart(
+    data=df2,
+    chart_type=&quot;column&quot;,
+    show_values=True,
+    number_format=&quot;#,##0&quot;,
+    x_title=&quot;Quarter&quot;,
+    y_title=&quot;Amount&quot;,
+    y_min=0,
+    palette=[&quot;blue&quot;, &quot;orange&quot;],
+)
+</code></pre>
+<p>When the presentation has a theme, native chart series are colored by the theme's palette automatically; an explicit <code>palette=</code> wins. DataFrames can also send themselves to a slide via the <code>df.pptx</code> accessor: <code>df.pptx.chart(slide, kind="column")</code> and <code>df.pptx.table(slide)</code> — see <a href="../data/#the-dfpptx-pandas-accessor">Data to Slides</a>.</p>
+<h2 id="direct-object-apis">Direct Object APIs<a class="headerlink" href="#direct-object-apis" title="Permanent link">&para;</a></h2>
+<p>EasyPPTX provides a set of content methods on the Slide class to manipulate slide content without creating separate object instances.</p>
+<blockquote>
+<p><strong>Removed in 0.7.0:</strong> The pass-through variants on <code>Presentation</code> that took a slide as the first argument (<code>pres.add_text(slide, ...)</code>, <code>pres.add_image(slide, ...)</code>, <code>pres.add_shape(slide, ...)</code>, <code>pres.add_table(slide, ...)</code>, <code>pres.add_chart(slide, ...)</code>, <code>pres.add_pyplot(slide, ...)</code>) have been removed. Use the <code>Slide</code> methods shown below instead — see <a href="../migration/">Migrating to 0.7.0</a>.</p>
+</blockquote>
+<pre><code class="language-python">from easypptx import Presentation
+
+# Create a presentation
+pres = Presentation()
+slide = pres.add_slide()
+
+# Add text directly
+slide.add_text(
+    text=&quot;Hello World&quot;,
+    x=&quot;10%&quot;,
+    y=&quot;20%&quot;,
+    font_size=24,
+    font_bold=True,
+    color=&quot;blue&quot;
+)
+
+# Add an image directly
+slide.add_image(
+    image_path=&quot;image.png&quot;,
+    x=&quot;10%&quot;,
+    y=&quot;30%&quot;,
+    width=&quot;30%&quot;
+)
+
+# Add a shape directly (string shape names work in addition to MSO_SHAPE enums)
+slide.add_shape(
+    shape_type=&quot;ROUNDED_RECTANGLE&quot;,
+    x=&quot;50%&quot;,
+    y=&quot;30%&quot;,
+    width=&quot;40%&quot;,
+    height=&quot;15%&quot;,
+    fill_color=&quot;blue&quot;
+)
+
+# Add a table directly
+data = [[&quot;Name&quot;, &quot;Value&quot;], [&quot;Item 1&quot;, 100], [&quot;Item 2&quot;, 200]]
+slide.add_table(
+    data=data,
+    x=&quot;10%&quot;,
+    y=&quot;50%&quot;,
+    width=&quot;80%&quot;,
+    height=&quot;20%&quot;
+)
+
+# Add a chart directly
+import pandas as pd
+df = pd.DataFrame({&quot;Category&quot;: [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;], &quot;Value&quot;: [10, 20, 30]})
+slide.add_chart(
+    data=df,
+    chart_type=&quot;column&quot;,
+    x=&quot;10%&quot;,
+    y=&quot;75%&quot;,
+    width=&quot;80%&quot;,
+    height=&quot;20%&quot;,
+    category_column=&quot;Category&quot;,
+    value_columns=&quot;Value&quot;
+)
+
+# Add a bulleted list (items are strings or (text, level) tuples)
+slide.add_bullets(
+    [
+        &quot;Revenue up 12%&quot;,
+        (&quot;EMEA strongest region&quot;, 1),
+        &quot;Costs down 3%&quot;,
+    ],
+    x=&quot;10%&quot;,
+    y=&quot;60%&quot;,
+    width=&quot;40%&quot;,
+    height=&quot;20%&quot;,
+)
+
+# Get or set speaker notes
+slide.notes = &quot;Remember to mention the EMEA numbers.&quot;
+print(slide.notes)
+
+# Add a matplotlib figure (embedded via an in-memory stream, no temp files)
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(10, 6))
+plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
+plt.title('Sample Plot')
+
+slide.add_pyplot(
+    plt.gcf(),
+    x=&quot;60%&quot;,
+    y=&quot;50%&quot;,
+    width=&quot;30%&quot;,
+    height=&quot;20%&quot;,
+)
+</code></pre>
+<p>Unknown parameters passed to these methods now trigger a warning instead of being silently ignored. Out-of-range percentages (e.g. <code>"150%"</code>) are clamped with a warning.</p>
+<p><em>New in 0.8.0</em>, <code>add_text</code> and <code>add_bullets</code> fit text to the box by default: the <code>fit=</code> parameter takes <code>"shrink"</code> (default, reduce the font size until the text fits), <code>"resize"</code> (grow the box to fit the text), or <code>"none"</code>. See <a href="../styling/#text-fitting">Text Fitting</a>.</p>
+<h2 id="advanced-features">Advanced Features<a class="headerlink" href="#advanced-features" title="Permanent link">&para;</a></h2>
+<h3 id="markdown-to-presentation">Markdown to Presentation<a class="headerlink" href="#markdown-to-presentation" title="Permanent link">&para;</a></h3>
+<p><em>New in 0.7.0.</em> Build a whole deck from a markdown document:</p>
+<pre><code class="language-python">from easypptx import Presentation
+
+pres = Presentation.from_markdown(&quot;deck.md&quot;)
+pres.save(&quot;deck.pptx&quot;)
+</code></pre>
+<p>Headings become slides, lists become bullets, GFM tables become tables, and <code>&lt;!-- notes: ... --&gt;</code> comments become speaker notes. See <a href="../markdown/">Markdown to Presentation</a> for the full syntax.</p>
+<h3 id="styles-and-themes">Styles and Themes<a class="headerlink" href="#styles-and-themes" title="Permanent link">&para;</a></h3>
+<p><em>New in 0.7.0.</em> Reusable style objects and presentation-wide themes:</p>
+<pre><code class="language-python">from easypptx import Presentation, TextStyle
+
+# Built-in theme presets: &quot;light&quot;, &quot;dark&quot;, &quot;corporate&quot;
+pres = Presentation(theme=&quot;dark&quot;)
+slide = pres.add_slide(title=&quot;Themed Slide&quot;)
+
+# Reusable styles via the style= parameter
+heading = TextStyle(font_size=28, font_bold=True, color=&quot;cyan&quot;)
+slide.add_text(&quot;Results&quot;, y=25, style=heading)
+</code></pre>
+<p>See <a href="../styling/">Styling and Formatting</a> for details.</p>
+<h3 id="grid-layout-system">Grid Layout System<a class="headerlink" href="#grid-layout-system" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from easypptx import Presentation
+
+# Create a presentation
+pres = Presentation()
+
+# Create a slide with a 2x2 grid in one step
+slide, grid = pres.add_grid_slide(
+    rows=2,
+    cols=2,
+    title=&quot;Grid Example&quot;,
+    padding=5.0
+)
+
+# Add content to a cell using grid[row, col] syntax
+grid[0, 0].add_text(
+    text=&quot;Top Left Cell&quot;,
+    font_size=24,
+    align=&quot;center&quot;,
+    vertical=&quot;middle&quot;
+)
+
+grid[0, 1].add_image(image_path=&quot;image.png&quot;)
+
+grid[1, 0].add_table(data=[[&quot;A&quot;, &quot;B&quot;], [1, 2]])
+
+grid[1, 1].add_text(
+    text=&quot;Bottom Right Cell&quot;,
+    font_size=24,
+    align=&quot;center&quot;,
+    vertical=&quot;middle&quot;
+)
+</code></pre>
+<p>See <a href="../grid_layout/">Grid Layout</a> for more details.</p>
+<h3 id="percentage-based-positioning">Percentage-Based Positioning<a class="headerlink" href="#percentage-based-positioning" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from easypptx import Presentation, Text
+
+pres = Presentation()
+slide = pres.add_slide()
+text = Text(slide)
+
+text.add_title(&quot;Percentage Positioning&quot;, x=&quot;10%&quot;, y=&quot;5%&quot;, width=&quot;80%&quot;, height=&quot;15%&quot;)
+text.add_paragraph(&quot;Positioned using percentages&quot;, x=&quot;20%&quot;, y=&quot;30%&quot;, width=&quot;60%&quot;, height=&quot;10%&quot;)
+</code></pre>
+<p>See <a href="../percentage_positioning/">Percentage-Based Positioning</a> for more details.</p>
+<h3 id="dark-theme-support">Dark Theme Support<a class="headerlink" href="#dark-theme-support" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from easypptx import Presentation, Text
+
+# The built-in dark theme sets the background and text colors in one step
+pres = Presentation(theme=&quot;dark&quot;)
+
+# Or set just a background color manually
+pres = Presentation(default_bg_color=&quot;black&quot;)
+slide = pres.add_slide()
+text = Text(slide)
+
+# Add high-contrast text
+text.add_title(&quot;Dark Theme Presentation&quot;, color=&quot;cyan&quot;)
+text.add_paragraph(&quot;High contrast text for readability&quot;, color=&quot;white&quot;)
+
+# Add a slide with custom background
+slide2 = pres.add_slide(bg_color=(0, 20, 40))  # Dark blue
+</code></pre>
+<p>See <a href="../dark_theme/">Dark Theme</a> for more details.</p>
+<h3 id="auto-alignment-of-multiple-objects">Auto-Alignment of Multiple Objects<a class="headerlink" href="#auto-alignment-of-multiple-objects" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from easypptx import Presentation
+from pptx.enum.shapes import MSO_SHAPE
+
+pres = Presentation()
+slide = pres.add_slide()
+
+objects = [
+    {&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: &quot;Item 1&quot;, &quot;color&quot;: &quot;black&quot;},
+    {&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: &quot;Item 2&quot;, &quot;color&quot;: &quot;red&quot;},
+    {&quot;type&quot;: &quot;shape&quot;, &quot;shape_type&quot;: MSO_SHAPE.RECTANGLE, &quot;fill_color&quot;: &quot;green&quot;}
+]
+
+slide.add_multiple_objects(
+    objects_data=objects,
+    layout=&quot;grid&quot;,
+    padding_percent=5.0,
+    start_x=&quot;10%&quot;,
+    start_y=&quot;20%&quot;,
+    width=&quot;80%&quot;,
+    height=&quot;60%&quot;
+)
+</code></pre>
+<p>See <a href="../auto_alignment/">Auto-Alignment of Multiple Objects</a> for more details.</p>
+<h3 id="custom-styling-and-formatting">Custom Styling and Formatting<a class="headerlink" href="#custom-styling-and-formatting" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from easypptx import Presentation, Text
+
+pres = Presentation()
+slide = pres.add_slide()
+text = Text(slide)
+
+text.add_title(&quot;Styled Title&quot;, font_name=&quot;Meiryo&quot;, color=&quot;blue&quot;, align=&quot;center&quot;)
+</code></pre>
+<p>See <a href="../styling/">Styling and Formatting</a> for more details.</p>
+<h3 id="powerpoint-templates">PowerPoint Templates<a class="headerlink" href="#powerpoint-templates" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from easypptx import Presentation
+
+pres = Presentation(template_path=&quot;template.pptx&quot;)
+slide = pres.add_slide()
+</code></pre>
+<p>See <a href="../templates/">Using PowerPoint Templates</a> for more details.</p>
+<h3 id="aspect-ratio-options">Aspect Ratio Options<a class="headerlink" href="#aspect-ratio-options" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from easypptx import Presentation
+
+# Default 16:9 widescreen
+pres = Presentation()
+
+# 4:3 standard
+pres = Presentation(aspect_ratio=&quot;4:3&quot;)
+
+# 16:10 widescreen alternative
+pres = Presentation(aspect_ratio=&quot;16:10&quot;)
+
+# A4 paper size
+pres = Presentation(aspect_ratio=&quot;A4&quot;)
+
+# US Letter paper size
+pres = Presentation(aspect_ratio=&quot;LETTER&quot;)
+
+# Custom dimensions
+pres = Presentation(width_inches=12, height_inches=9)
+</code></pre>
+<h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
+<p>EasyPPTX comes with several example scripts demonstrating various features:</p>
+<ul>
+<li><strong>quick_start.py</strong>: Basic introduction to EasyPPTX</li>
+<li><strong>basic_demo.py</strong>: Introduction to basic features</li>
+<li><strong>comprehensive_example.py</strong>: Full-featured business presentation</li>
+<li><strong>aspect_ratio_example.py</strong>: Demonstration of aspect ratio options</li>
+<li><strong>extended_features_example.py</strong>: Showcase of percentage-based positioning and auto-alignment</li>
+<li><strong>plot_example.py</strong>: Examples of using matplotlib and seaborn plots</li>
+<li><strong>object_api_example.py</strong>: Demonstrates the direct object APIs for slide manipulation</li>
+<li><strong>Grid Examples</strong>:</li>
+<li><strong>001_basic_grid.py</strong>: Basic grid creation and usage</li>
+<li><strong>002_grid_indexing.py</strong>: Grid indexing and iteration features</li>
+<li><strong>003_nested_grid.py</strong>: Nested grids and cell merging</li>
+<li><strong>004_autogrid.py</strong>: Automatic grid layout features</li>
+</ul>
+<p>See the <a href="https://github.com/Ameyanagi/EasyPPTX/tree/main/examples">Examples</a> directory for the full source code.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Maintained by <a href="https://Ameyanagi.com">Ameyanagi</a>.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/Ameyanagi/EasyPPTX" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/EasyPPTX" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 404c11.1 0 20.1 9.1 20.1 20.3 0 11.3-9 20.4-20.1 20.4-11 0-20.1-9.2-20.1-20.4.1-11.3 9.1-20.3 20.1-20.3M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.7-142.6c-11.1 0-20.1-9.1-20.1-20.3.1-11.3 9-20.4 20.1-20.4 11 0 20.1 9.2 20.1 20.4s-9 20.3-20.1 20.3"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  </body>
+</html>

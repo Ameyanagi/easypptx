@@ -1,0 +1,2495 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A Python library for easily creating and manipulating PowerPoint presentations programmatically with simple APIs.">
+      
+      
+        <meta name="author" content="Ameyanagi">
+      
+      
+        <link rel="canonical" href="https://Ameyanagi.github.io/EasyPPTX/templates/">
+      
+      
+        <link rel="prev" href="../dark_theme/">
+      
+      
+        <link rel="next" href="../migration/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.13">
+    
+    
+      
+        <title>PowerPoint Templates - EasyPPTX</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#easypptx-template-system" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="EasyPPTX" class="md-header__button md-logo" aria-label="EasyPPTX" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            EasyPPTX
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PowerPoint Templates
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Ameyanagi/EasyPPTX" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ameyanagi/EasyPPTX
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="EasyPPTX" class="md-nav__button md-logo" aria-label="EasyPPTX" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    EasyPPTX
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Ameyanagi/EasyPPTX" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ameyanagi/EasyPPTX
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Features
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../percentage_positioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Percentage-Based Positioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deck/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Deck Builder
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../markdown/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Markdown to Presentation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data to Slides
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auto_alignment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Auto-Alignment
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../grid_layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Grid Layout
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Plots
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../styling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Styling and Formatting
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dark_theme/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dark Theme
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    PowerPoint Templates
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    PowerPoint Templates
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#part-1-reference-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Part 1: Reference Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Part 1: Reference Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#built-in-reference-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-in Reference Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-template-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Automatic Template Selection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-reference-templates-are-not-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      When Reference Templates Are Not Used
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#part-2-file-based-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Part 2: File-based Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Part 2: File-based Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slide-layouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Slide Layouts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits-of-using-file-based-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Benefits of Using File-based Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accessing-slide-layouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Accessing Slide Layouts
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#part-3-template-presets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Part 3: Template Presets
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Part 3: Template Presets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#built-in-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-in Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#styling-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Styling Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Styling Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#image-styling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Image Styling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#table-styling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table Styling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chart-styling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chart Styling
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-template-presets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using Template Presets
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using Template Presets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-convenience-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Convenience Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-using-template-directly" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Using Template Directly
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Template Structure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#percentage-based-positioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Percentage-based Positioning
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combining-multiple-template-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      Combining Multiple Template Systems
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-template-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Template Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Template Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quote-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quote Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bullets-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bullets Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dashboard-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dashboard Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeline-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Timeline Slide
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-templates-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Templates Details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Templates Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quote-slide_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quote Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bullets-slide_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bullets Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agenda-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Agenda Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#team-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Team Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#statement-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Statement Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dashboard-slide_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dashboard Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeline-slide_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Timeline Slide
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#part-4-tomljson-template-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Part 4: TOML/JSON Template Files
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Part 4: TOML/JSON Template Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#templatemanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      TemplateManager
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#saving-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Saving Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Loading Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#default-templates-and-per-slide-overrides" class="md-nav__link">
+    <span class="md-ellipsis">
+      Default Templates and Per-Slide Overrides
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-loading-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      Template Loading Behavior
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits-of-tomljson-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Benefits of TOML/JSON Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toml-vs-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      TOML vs JSON
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rgb-color-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      RGB Color Handling
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      See Also
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migrating to 0.7.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Modules
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#part-1-reference-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Part 1: Reference Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Part 1: Reference Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#built-in-reference-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-in Reference Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-template-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Automatic Template Selection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-reference-templates-are-not-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      When Reference Templates Are Not Used
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#part-2-file-based-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Part 2: File-based Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Part 2: File-based Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slide-layouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Slide Layouts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits-of-using-file-based-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Benefits of Using File-based Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accessing-slide-layouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Accessing Slide Layouts
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#part-3-template-presets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Part 3: Template Presets
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Part 3: Template Presets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#built-in-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-in Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#styling-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Styling Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Styling Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#image-styling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Image Styling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#table-styling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table Styling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chart-styling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chart Styling
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-template-presets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using Template Presets
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using Template Presets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-convenience-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Convenience Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-using-template-directly" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Using Template Directly
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Template Structure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#percentage-based-positioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Percentage-based Positioning
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combining-multiple-template-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      Combining Multiple Template Systems
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-template-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Template Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Template Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quote-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quote Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bullets-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bullets Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dashboard-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dashboard Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeline-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Timeline Slide
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-templates-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Templates Details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Templates Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quote-slide_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quote Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bullets-slide_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bullets Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agenda-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Agenda Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#team-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Team Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#statement-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Statement Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dashboard-slide_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dashboard Slide
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeline-slide_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Timeline Slide
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#part-4-tomljson-template-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Part 4: TOML/JSON Template Files
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Part 4: TOML/JSON Template Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#templatemanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      TemplateManager
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#saving-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Saving Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Loading Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#default-templates-and-per-slide-overrides" class="md-nav__link">
+    <span class="md-ellipsis">
+      Default Templates and Per-Slide Overrides
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-loading-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      Template Loading Behavior
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits-of-tomljson-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Benefits of TOML/JSON Templates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toml-vs-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      TOML vs JSON
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rgb-color-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      RGB Color Handling
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      See Also
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="easypptx-template-system">EasyPPTX Template System<a class="headerlink" href="#easypptx-template-system" title="Permanent link">&para;</a></h1>
+<p>EasyPPTX provides several ways to work with templates:</p>
+<ol>
+<li><strong>Reference Templates</strong>: Automatic built-in templates based on aspect ratio</li>
+<li><strong>File-based templates</strong>: Using existing PowerPoint files as templates</li>
+<li><strong>Template Presets</strong>: Using the built-in template system with predefined slide layouts</li>
+<li><strong>TOML/JSON Template Files</strong>: Saving and loading templates as TOML or JSON files</li>
+</ol>
+<h2 id="part-1-reference-templates">Part 1: Reference Templates<a class="headerlink" href="#part-1-reference-templates" title="Permanent link">&para;</a></h2>
+<p>EasyPPTX automatically uses built-in reference templates for standard aspect ratios, ensuring your presentations have a consistent, professional look without requiring any additional configuration.</p>
+<h3 id="built-in-reference-templates">Built-in Reference Templates<a class="headerlink" href="#built-in-reference-templates" title="Permanent link">&para;</a></h3>
+<p>The library includes the following reference templates:</p>
+<ul>
+<li><code>reference_16x9.pptx</code>: Used automatically for 16:9 (widescreen) presentations</li>
+<li><code>reference_4x3.pptx</code>: Used automatically for 4:3 (standard) presentations</li>
+</ul>
+<p>These templates provide well-designed slide masters, layouts, and theme elements appropriate for each aspect ratio.</p>
+<h3 id="automatic-template-selection">Automatic Template Selection<a class="headerlink" href="#automatic-template-selection" title="Permanent link">&para;</a></h3>
+<p>The reference templates are automatically applied based on the aspect ratio:</p>
+<pre><code class="language-python">from easypptx import Presentation
+
+# Creates a presentation with 16:9 aspect ratio
+# Automatically uses reference_16x9.pptx as the template
+presentation = Presentation()  # Default is 16:9
+
+# Creates a presentation with 4:3 aspect ratio
+# Automatically uses reference_4x3.pptx as the template
+presentation = Presentation(aspect_ratio=&quot;4:3&quot;)
+</code></pre>
+<h3 id="when-reference-templates-are-not-used">When Reference Templates Are Not Used<a class="headerlink" href="#when-reference-templates-are-not-used" title="Permanent link">&para;</a></h3>
+<p>In certain cases, the reference templates will not be applied:</p>
+<ol>
+<li>
+<p>When a custom template is specified:
+   <code>python
+   presentation = Presentation(template_path="custom_template.pptx")</code></p>
+</li>
+<li>
+<p>When custom dimensions are provided:
+   <code>python
+   presentation = Presentation(width_inches=13.33, height_inches=7.5)</code></p>
+</li>
+<li>
+<p>For aspect ratios without reference templates:
+   <code>python
+   presentation = Presentation(aspect_ratio="16:10")
+   presentation = Presentation(aspect_ratio="A4")</code></p>
+</li>
+</ol>
+<p>In these cases, EasyPPTX will create a blank presentation and apply the specified dimensions or use the custom template.</p>
+<h2 id="part-2-file-based-templates">Part 2: File-based Templates<a class="headerlink" href="#part-2-file-based-templates" title="Permanent link">&para;</a></h2>
+<p>EasyPPTX supports using existing PowerPoint files as templates for your presentations. This allows you to leverage pre-designed slides, themes, master layouts, and styles.</p>
+<h3 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h3>
+<p>To create a presentation based on an existing template:</p>
+<pre><code class="language-python">from easypptx import Presentation, Text
+
+# Create a presentation using an existing template
+pres = Presentation(template_path=&quot;template.pptx&quot;)
+
+# Add a new slide (uses blank layout by default)
+slide = pres.add_slide()
+
+# Add content to the slide
+text = Text(slide)
+text.add_title(&quot;Slide Using Template&quot;)
+text.add_paragraph(&quot;This presentation is based on a template file&quot;)
+
+# Save the presentation with a new name
+pres.save(&quot;template_based_presentation.pptx&quot;)
+</code></pre>
+<h3 id="slide-layouts">Slide Layouts<a class="headerlink" href="#slide-layouts" title="Permanent link">&para;</a></h3>
+<p>By default, EasyPPTX uses the blank slide layout (typically index 6) for new slides. You can specify a different layout by using the <code>layout_index</code> parameter:</p>
+<pre><code class="language-python"># Add a slide with title layout (usually index 0)
+title_slide = pres.add_slide(layout_index=0)
+
+# Add a slide with title and content layout (usually index 1)
+content_slide = pres.add_slide(layout_index=1)
+
+# Add a blank slide explicitly
+blank_slide = pres.add_slide(layout_index=6)
+
+# Add a blank slide (default behavior when layout_index is not specified)
+default_slide = pres.add_slide()
+</code></pre>
+<h3 id="benefits-of-using-file-based-templates">Benefits of Using File-based Templates<a class="headerlink" href="#benefits-of-using-file-based-templates" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Consistent branding</strong>: Use corporate templates with logos, color schemes, and layouts</li>
+<li><strong>Professional design</strong>: Leverage professionally designed templates</li>
+<li><strong>Time-saving</strong>: Avoid recreating complex designs from scratch</li>
+<li><strong>Theme consistency</strong>: Maintain consistent fonts, colors, and styles</li>
+</ol>
+<h3 id="accessing-slide-layouts">Accessing Slide Layouts<a class="headerlink" href="#accessing-slide-layouts" title="Permanent link">&para;</a></h3>
+<p>When using a template, you can access different slide layouts by index:</p>
+<pre><code class="language-python"># Create a presentation from a template
+pres = Presentation(template_path=&quot;template.pptx&quot;)
+
+# Add a slide using the first layout (usually the title slide)
+title_slide = pres.add_slide(layout_index=0)
+
+# Add a slide using the second layout (usually a content slide)
+content_slide = pres.add_slide(layout_index=1)
+
+# Add a slide using the third layout
+third_layout_slide = pres.add_slide(layout_index=2)
+</code></pre>
+<p>The available layouts depend on the template file. Most PowerPoint templates include:</p>
+<ul>
+<li>Title slide layout (index 0)</li>
+<li>Title and content layout (index 1)</li>
+<li>Section header layout (index 2)</li>
+<li>Two-content layout (index 3)</li>
+<li>Comparison layout (index 4)</li>
+<li>Title only layout (index 5)</li>
+<li>Blank layout (index 6)</li>
+</ul>
+<h2 id="part-3-template-presets">Part 3: Template Presets<a class="headerlink" href="#part-3-template-presets" title="Permanent link">&para;</a></h2>
+<p>The EasyPPTX template preset system allows you to create consistent and professional-looking presentations with minimal code. It provides pre-defined templates for common slide types and layouts that can be customized to your needs.</p>
+<h3 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h3>
+<p>Template presets in EasyPPTX are defined as dictionaries that specify:
+- Slide background colors
+- Text elements (title, subtitle, content) with their positioning, fonts, and colors
+- Decorative elements like horizontal bars with gradient colors
+- Areas for content, images, tables, and charts</p>
+<h3 id="built-in-templates">Built-in Templates<a class="headerlink" href="#built-in-templates" title="Permanent link">&para;</a></h3>
+<p>EasyPPTX includes the following built-in templates:</p>
+<h3 id="basic-templates">Basic Templates<a class="headerlink" href="#basic-templates" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>title_slide</code>: For presentation title slides with title and subtitle</li>
+<li><code>content_slide</code>: For general content with title and horizontal gradient bar</li>
+<li><code>section_slide</code>: For section dividers with full-screen title on colored background</li>
+<li><code>comparison_slide</code>: For comparing two items side by side</li>
+<li><code>image_slide</code>: For displaying images with title and optional caption</li>
+<li><code>table_slide</code>: For displaying data tables with title</li>
+<li><code>chart_slide</code>: For charts and graphs with title</li>
+<li><code>thank_you_slide</code>: For ending the presentation</li>
+</ul>
+<h3 id="advanced-templates">Advanced Templates<a class="headerlink" href="#advanced-templates" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>quote_slide</code>: For displaying quotes with author attribution and stylized quotation marks</li>
+<li><code>bullets_slide</code>: For displaying bullet points with a title</li>
+<li><code>agenda_slide</code>: For showing a meeting or presentation agenda with optional image</li>
+<li><code>team_slide</code>: For introducing team members with photos and titles</li>
+<li><code>statement_slide</code>: For emphasizing important statements with a colored background</li>
+<li><code>dashboard_slide</code>: For creating dashboards with multiple charts and visualizations</li>
+<li><code>timeline_slide</code>: For displaying project timelines or roadmaps with connected steps</li>
+</ul>
+<h3 id="styling-options">Styling Options<a class="headerlink" href="#styling-options" title="Permanent link">&para;</a></h3>
+<p>EasyPPTX templates provide extensive styling options for different types of slide elements:</p>
+<h4 id="image-styling">Image Styling<a class="headerlink" href="#image-styling" title="Permanent link">&para;</a></h4>
+<p>You can customize how images appear in your presentations:</p>
+<pre><code class="language-python"># Add an image slide with custom styling
+slide, picture = pres.add_image_gen_slide(
+    image_path=&quot;example.jpg&quot;,
+    title=&quot;Styled Image&quot;,
+    label=&quot;Beautiful scenery&quot;,
+    border=True,
+    border_color=&quot;blue&quot;,
+    shadow=True,
+    maintain_aspect_ratio=True
+)
+</code></pre>
+<blockquote>
+<p><strong>Removed in 0.7.0:</strong> <code>pres.add_image_slide(...)</code> has been removed. Use <code>pres.add_image_gen_slide(...)</code> instead — see <a href="../migration/">Migrating to 0.7.0</a>.</p>
+</blockquote>
+<p>Available image style options:
+- <code>border</code>: Whether to show a border around the image (Boolean)
+- <code>border_color</code>: Color name or RGB tuple for the border
+- <code>border_width</code>: Width of the border in points
+- <code>shadow</code>: Whether to apply a shadow effect (Boolean)
+- <code>rounded_corners</code>: Whether to apply rounded corners (Boolean)
+- <code>maintain_aspect_ratio</code>: Whether to maintain the image's aspect ratio (Boolean)
+- <code>center</code>: Whether to center the image in its container (Boolean)
+- <code>brightness</code>: Brightness adjustment from -1.0 to 1.0
+- <code>contrast</code>: Contrast adjustment from -1.0 to 1.0</p>
+<h4 id="table-styling">Table Styling<a class="headerlink" href="#table-styling" title="Permanent link">&para;</a></h4>
+<p>Tables can be styled with headers, borders, and alternating rows:</p>
+<pre><code class="language-python"># Add a table slide with custom styling
+slide = pres.add_table_slide(
+    title=&quot;Styled Table&quot;,
+    data=my_data,
+    has_header=True,
+    custom_style={
+        &quot;first_row&quot;: {
+            &quot;bold&quot;: True,
+            &quot;bg_color&quot;: &quot;darkblue&quot;,
+            &quot;text_color&quot;: &quot;white&quot;
+        },
+        &quot;banded_rows&quot;: True,
+        &quot;band_color&quot;: &quot;lightgray&quot;,
+        &quot;border_width&quot;: 1,
+        &quot;header_border_width&quot;: 2
+    }
+)
+</code></pre>
+<p>Available table style options:
+- <code>first_row</code>: Dictionary of styling for the header row
+  - <code>bold</code>: Whether header text is bold (Boolean)
+  - <code>bg_color</code>: Background color for header row
+  - <code>text_color</code>: Text color for header row
+- <code>banded_rows</code>: Whether to use alternating row colors (Boolean)
+- <code>band_color</code>: Color for alternating rows
+- <code>border_color</code>: Color for table borders
+- <code>border_width</code>: Width of regular cell borders
+- <code>header_border_width</code>: Width of header row borders
+- <code>text_align</code>: Text alignment in cells ("left", "center", "right")
+- <code>header_align</code>: Text alignment in header cells
+- <code>font_name</code>: Font name for table text
+- <code>font_size</code>: Font size for regular cells
+- <code>header_font_size</code>: Font size for header cells</p>
+<h4 id="chart-styling">Chart Styling<a class="headerlink" href="#chart-styling" title="Permanent link">&para;</a></h4>
+<p>Charts can be styled with custom colors, legends, and labels:</p>
+<pre><code class="language-python"># Add a chart slide with custom styling
+slide = pres.add_chart_slide(
+    title=&quot;Styled Chart&quot;,
+    data=my_data,
+    chart_type=&quot;pie&quot;,
+    custom_style={
+        &quot;has_legend&quot;: True,
+        &quot;legend_position&quot;: &quot;right&quot;,
+        &quot;has_data_labels&quot;: True,
+        &quot;palette&quot;: [
+            (0x5B, 0x9B, 0xD5),  # Blue
+            (0xED, 0x7D, 0x31),  # Orange
+            (0xA5, 0xA5, 0xA5),  # Gray
+        ]
+    }
+)
+</code></pre>
+<p>Available chart style options:
+- <code>chart_type</code>: Type of chart ("column", "bar", "line", "pie", "scatter", "area")
+- <code>has_legend</code>: Whether to show a legend (Boolean)
+- <code>legend_position</code>: Where to place the legend ("top", "bottom", "left", "right")
+- <code>has_title</code>: Whether to show a chart title (Boolean)
+- <code>title_font_size</code>: Font size for the chart title
+- <code>palette</code>: List of RGB tuples or color names for data series
+- <code>has_data_labels</code>: Whether to show data labels (Boolean)
+- <code>gridlines</code>: Whether to show gridlines (Boolean)
+- <code>has_border</code>: Whether to show a border around the chart (Boolean)
+- <code>border_color</code>: Color for the chart border</p>
+<h3 id="using-template-presets">Using Template Presets<a class="headerlink" href="#using-template-presets" title="Permanent link">&para;</a></h3>
+<p>There are two ways to use template presets:</p>
+<h4 id="1-convenience-methods">1. Convenience Methods<a class="headerlink" href="#1-convenience-methods" title="Permanent link">&para;</a></h4>
+<p>EasyPPTX provides convenience methods for creating slides from templates:</p>
+<pre><code class="language-python">from easypptx import Presentation
+
+pres = Presentation()
+
+# Add a title slide
+title_slide = pres.add_title_slide(
+    title=&quot;My Presentation&quot;,
+    subtitle=&quot;Created with EasyPPTX&quot;
+)
+
+# Add a content slide with bullet points
+content_slide = pres.add_content_slide(title=&quot;Key Points&quot;)
+content_slide.add_text(
+    text=&quot;• Point 1\n• Point 2\n• Point 3&quot;,
+    x=&quot;10%&quot;, y=&quot;15%&quot;, width=&quot;80%&quot;, height=&quot;70%&quot;
+)
+
+# Add a section slide
+section_slide = pres.add_section_slide(
+    title=&quot;New Section&quot;,
+    bg_color=&quot;blue&quot;
+)
+
+# Add an image slide with caption
+image_slide, picture = pres.add_image_gen_slide(
+    image_path=&quot;path/to/image.jpg&quot;,
+    title=&quot;Image Example&quot;,
+    label=&quot;This is a caption for the image&quot;
+)
+
+# Add a comparison slide
+comparison_slide = pres.add_comparison_slide(
+    title=&quot;Comparison&quot;,
+    content_texts=[&quot;Left side content&quot;, &quot;Right side content&quot;]
+)
+
+# Add a table slide
+table_slide = pres.add_table_slide(
+    title=&quot;Data Table&quot;,
+    data=my_dataframe,  # Or list of lists
+    has_header=True
+)
+</code></pre>
+<h4 id="2-using-template-directly">2. Using Template Directly<a class="headerlink" href="#2-using-template-directly" title="Permanent link">&para;</a></h4>
+<p>You can also use the template system directly:</p>
+<pre><code class="language-python">from easypptx import Presentation
+
+pres = Presentation()
+
+# Create slide using a built-in template
+slide = pres.add_slide_from_template(&quot;title_slide&quot;)
+
+# Update text in the slide
+title_shapes = [shape for shape in slide.shapes if shape.has_text_frame]
+if title_shapes:
+    title_shapes[0].text_frame.text = &quot;My Custom Title&quot;
+</code></pre>
+<h3 id="custom-templates">Custom Templates<a class="headerlink" href="#custom-templates" title="Permanent link">&para;</a></h3>
+<p>You can create custom templates by defining a dictionary with the template properties:</p>
+<pre><code class="language-python">custom_template = {
+    &quot;bg_color&quot;: &quot;orange&quot;,
+    &quot;title&quot;: {
+        &quot;text&quot;: &quot;Custom Template&quot;,
+        &quot;position&quot;: {&quot;x&quot;: &quot;5%&quot;, &quot;y&quot;: &quot;5%&quot;, &quot;width&quot;: &quot;90%&quot;, &quot;height&quot;: &quot;15%&quot;},
+        &quot;font&quot;: {&quot;name&quot;: &quot;Meiryo&quot;, &quot;size&quot;: 36, &quot;bold&quot;: True},
+        &quot;align&quot;: &quot;center&quot;,
+        &quot;vertical&quot;: &quot;middle&quot;,
+        &quot;color&quot;: &quot;white&quot;
+    },
+    &quot;content_area&quot;: {
+        &quot;position&quot;: {&quot;x&quot;: &quot;10%&quot;, &quot;y&quot;: &quot;30%&quot;, &quot;width&quot;: &quot;80%&quot;, &quot;height&quot;: &quot;60%&quot;}
+    }
+}
+
+custom_slide = pres.add_slide_from_template(custom_template)
+</code></pre>
+<h3 id="template-structure">Template Structure<a class="headerlink" href="#template-structure" title="Permanent link">&para;</a></h3>
+<p>A template is a dictionary with the following structure:</p>
+<pre><code class="language-python">{
+    &quot;bg_color&quot;: &quot;color_name_or_rgb_tuple&quot;,  # Optional background color
+
+    &quot;title&quot;: {  # Optional title element
+        &quot;text&quot;: &quot;Default title text&quot;,
+        &quot;position&quot;: {&quot;x&quot;: &quot;10%&quot;, &quot;y&quot;: &quot;5%&quot;, &quot;width&quot;: &quot;80%&quot;, &quot;height&quot;: &quot;10%&quot;},
+        &quot;font&quot;: {&quot;name&quot;: &quot;Font name&quot;, &quot;size&quot;: 32, &quot;bold&quot;: True},
+        &quot;align&quot;: &quot;center&quot;,  # &quot;left&quot;, &quot;center&quot;, or &quot;right&quot;
+        &quot;vertical&quot;: &quot;middle&quot;,  # &quot;top&quot;, &quot;middle&quot;, or &quot;bottom&quot;
+        &quot;color&quot;: &quot;black&quot;
+    },
+
+    &quot;subtitle&quot;: {  # Optional subtitle element (similar to title)
+        # Same properties as title
+    },
+
+    &quot;bar&quot;: {  # Optional decorative bar
+        &quot;position&quot;: {&quot;x&quot;: &quot;0%&quot;, &quot;y&quot;: &quot;10%&quot;, &quot;width&quot;: &quot;100%&quot;, &quot;height&quot;: &quot;2%&quot;},
+        &quot;gradient&quot;: {  # Optional gradient fill
+            &quot;start_color&quot;: RGBColor(0xE0, 0xE5, 0xF7),
+            &quot;end_color&quot;: RGBColor(0x95, 0xAB, 0xEA),
+            &quot;angle&quot;: 0  # 0 for horizontal, 90 for vertical
+        }
+    },
+
+    &quot;content_area&quot;: {  # Optional content area
+        &quot;position&quot;: {&quot;x&quot;: &quot;5%&quot;, &quot;y&quot;: &quot;15%&quot;, &quot;width&quot;: &quot;90%&quot;, &quot;height&quot;: &quot;80%&quot;}
+    },
+
+    # Styling for images
+    &quot;image_style&quot;: {
+        &quot;border&quot;: True,  # Whether the image should have a border
+        &quot;border_color&quot;: &quot;gray&quot;,  # Color of the border
+        &quot;border_width&quot;: 1,  # Width of the border
+        &quot;shadow&quot;: True,  # Whether the image should have a shadow
+        &quot;rounded_corners&quot;: False,  # Whether the image should have rounded corners
+        &quot;maintain_aspect_ratio&quot;: True,  # Whether to maintain the image aspect ratio
+        &quot;center&quot;: True,  # Whether to center the image in its container
+        &quot;brightness&quot;: 0,  # Brightness adjustment (-1.0 to 1.0)
+        &quot;contrast&quot;: 0  # Contrast adjustment (-1.0 to 1.0)
+    },
+
+    # Styling for tables
+    &quot;table_style&quot;: {
+        &quot;first_row&quot;: {  # Styling for the header row
+            &quot;bold&quot;: True,
+            &quot;bg_color&quot;: &quot;blue&quot;,
+            &quot;text_color&quot;: &quot;white&quot;
+        },
+        &quot;banded_rows&quot;: True,  # Whether to use alternating row colors
+        &quot;band_color&quot;: &quot;lightgray&quot;,  # Color for alternate rows
+        &quot;border_color&quot;: &quot;black&quot;,  # Color for table borders
+        &quot;border_width&quot;: 1,  # Width of table borders
+        &quot;header_border_width&quot;: 2,  # Width of header row border
+        &quot;text_align&quot;: &quot;center&quot;,  # Alignment for cell text
+        &quot;header_align&quot;: &quot;center&quot;,  # Alignment for header text
+        &quot;font_name&quot;: &quot;Meiryo&quot;,  # Font for table text
+        &quot;font_size&quot;: 12,  # Font size for table text
+        &quot;header_font_size&quot;: 14  # Font size for header text
+    },
+
+    # Styling for charts
+    &quot;chart_style&quot;: {
+        &quot;chart_type&quot;: &quot;column&quot;,  # Type of chart (column, bar, line, pie, scatter, area)
+        &quot;has_legend&quot;: True,  # Whether to show a legend
+        &quot;legend_position&quot;: &quot;bottom&quot;,  # Position of the legend (top, bottom, left, right)
+        &quot;has_title&quot;: True,  # Whether to show a chart title
+        &quot;title_font_size&quot;: 14,  # Font size for the chart title
+        &quot;palette&quot;: [  # Custom colors for chart series
+            RGBColor(0x5B, 0x9B, 0xD5),  # Blue
+            RGBColor(0xED, 0x7D, 0x31),  # Orange
+            RGBColor(0xA5, 0xA5, 0xA5),  # Gray
+            RGBColor(0xFF, 0xC0, 0x00),  # Yellow
+            RGBColor(0x4C, 0xAF, 0x50),  # Green
+            RGBColor(0x9C, 0x27, 0xB0)   # Purple
+        ],
+        &quot;has_data_labels&quot;: False,  # Whether to show data labels
+        &quot;gridlines&quot;: True,  # Whether to show gridlines
+        &quot;has_border&quot;: True,  # Whether to show chart border
+        &quot;border_color&quot;: &quot;black&quot;  # Color of chart border
+    },
+
+    # Other optional elements like image_area, table_area, chart_area,
+    # left_content, right_content, etc.
+}
+</code></pre>
+<h3 id="percentage-based-positioning">Percentage-based Positioning<a class="headerlink" href="#percentage-based-positioning" title="Permanent link">&para;</a></h3>
+<p>All positioning in templates uses percentages of the slide dimensions, making the templates responsive to different slide sizes and aspect ratios:</p>
+<pre><code class="language-python">position = {&quot;x&quot;: &quot;10%&quot;, &quot;y&quot;: &quot;20%&quot;, &quot;width&quot;: &quot;80%&quot;, &quot;height&quot;: &quot;60%&quot;}
+</code></pre>
+<h2 id="combining-multiple-template-systems">Combining Multiple Template Systems<a class="headerlink" href="#combining-multiple-template-systems" title="Permanent link">&para;</a></h2>
+<p>You can combine multiple template systems for maximum flexibility:</p>
+<ol>
+<li>Starting with a reference template for your chosen aspect ratio</li>
+<li>Using a custom PowerPoint template file for specific design needs</li>
+<li>Adding slides using template presets for consistent layout and content</li>
+<li>Saving your custom templates as TOML/JSON files for reuse</li>
+</ol>
+<pre><code class="language-python">from easypptx import Presentation
+
+# Create presentation from a file-based template
+pres = Presentation(template_path=&quot;corporate_template.pptx&quot;)
+
+# Add slides using template presets
+title_slide = pres.add_title_slide(
+    title=&quot;Quarterly Report&quot;,
+    subtitle=&quot;Q1 2023&quot;
+)
+
+content_slide = pres.add_content_slide(&quot;Key Highlights&quot;)
+content_slide.add_text(
+    text=&quot;• Revenue increased by 15%\n• New product launch successful\n• Expansion to 3 new markets&quot;,
+    x=&quot;10%&quot;, y=&quot;15%&quot;, width=&quot;80%&quot;, height=&quot;70%&quot;
+)
+
+pres.save(&quot;combined_template_approach.pptx&quot;)
+</code></pre>
+<h2 id="advanced-template-examples">Advanced Template Examples<a class="headerlink" href="#advanced-template-examples" title="Permanent link">&para;</a></h2>
+<p>Let's look at some examples of the advanced templates:</p>
+<h3 id="quote-slide">Quote Slide<a class="headerlink" href="#quote-slide" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from easypptx import Presentation
+
+pres = Presentation()
+
+# Add a quote slide
+quote_slide = pres.add_slide_from_template(&quot;quote_slide&quot;)
+
+# Update the quote elements (find text frames and update text)
+quote_shapes = [shape for shape in quote_slide.shapes if shape.has_text_frame]
+for shape in quote_shapes:
+    if &quot;Your quote goes here&quot; in shape.text_frame.text:
+        shape.text_frame.text = &quot;The best way to predict the future is to create it.&quot;
+    elif &quot;Author Name&quot; in shape.text_frame.text:
+        shape.text_frame.text = &quot;Abraham Lincoln&quot;
+</code></pre>
+<h3 id="bullets-slide">Bullets Slide<a class="headerlink" href="#bullets-slide" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python"># Add a bullets slide
+bullets_slide = pres.add_slide_from_template(&quot;bullets_slide&quot;)
+
+# Update the title and bullet points
+bullet_shapes = [shape for shape in bullets_slide.shapes if shape.has_text_frame]
+for shape in bullet_shapes:
+    if &quot;Key Points&quot; in shape.text_frame.text:
+        shape.text_frame.text = &quot;Key Benefits&quot;
+    elif &quot;Point&quot; in shape.text_frame.text:
+        shape.text_frame.text = &quot;&quot;&quot;• Professional-looking presentations
+• Percentage-based positioning
+• Customizable templates
+• Support for matplotlib visualizations&quot;&quot;&quot;
+</code></pre>
+<h3 id="dashboard-slide">Dashboard Slide<a class="headerlink" href="#dashboard-slide" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from easypptx import Presentation, Pyplot
+import pandas as pd
+import matplotlib.pyplot as plt
+
+pres = Presentation()
+
+# Add a dashboard slide
+dashboard_slide = pres.add_slide_from_template(&quot;dashboard_slide&quot;)
+
+# Get the chart positions from the template
+template = pres.template.get_preset(&quot;dashboard_slide&quot;)
+chart_positions = template[&quot;charts&quot;]
+
+# Create sample data for a chart
+data = pd.DataFrame({
+    'Quarter': ['Q1', 'Q2', 'Q3', 'Q4'],
+    'Revenue': [100, 120, 135, 150]
+})
+
+# Add a chart to the top left position
+pos = chart_positions[&quot;top_left&quot;][&quot;position&quot;]
+dashboard_slide.add_chart(
+    data=data,
+    chart_type=&quot;column&quot;,
+    x=pos[&quot;x&quot;],
+    y=pos[&quot;y&quot;],
+    width=pos[&quot;width&quot;],
+    height=pos[&quot;height&quot;],
+    category_column=&quot;Quarter&quot;,
+    value_columns=&quot;Revenue&quot;,
+    title=&quot;Quarterly Revenue&quot;
+)
+
+# Add a matplotlib plot to another position
+plt.figure()
+plt.plot([1, 2, 3, 4], [10, 20, 15, 25])
+plt.title('Sample Trend')
+
+Pyplot.add(
+    slide=dashboard_slide,
+    figure=plt.gcf(),
+    position=chart_positions[&quot;top_right&quot;][&quot;position&quot;]
+)
+</code></pre>
+<h3 id="timeline-slide">Timeline Slide<a class="headerlink" href="#timeline-slide" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from easypptx import Presentation, Text
+
+pres = Presentation()
+
+# Add a timeline slide
+timeline_slide = pres.add_slide_from_template(&quot;timeline_slide&quot;)
+
+# Update the title
+timeline_title = [shape for shape in timeline_slide.shapes if shape.has_text_frame][0]
+timeline_title.text_frame.text = &quot;Project Timeline&quot;
+
+# Create timeline steps (simplified example)
+step_box1 = timeline_slide.add_shape(
+    shape_type=&quot;RECTANGLE&quot;,  # String shape names work in addition to MSO_SHAPE enums
+    x=&quot;5%&quot;,
+    y=&quot;20%&quot;,
+    width=&quot;15%&quot;,
+    height=&quot;15%&quot;,
+    fill_color=&quot;blue&quot;
+)
+
+Text.add(
+    slide=timeline_slide,
+    text=&quot;Step 1: Planning&quot;,
+    position={&quot;x&quot;: &quot;5%&quot;, &quot;y&quot;: &quot;20%&quot;, &quot;width&quot;: &quot;15%&quot;, &quot;height&quot;: &quot;15%&quot;},
+    font_bold=True,
+    align=&quot;center&quot;,
+    vertical_align=&quot;middle&quot;,
+    color=&quot;white&quot;
+)
+
+# Add more steps and connectors as needed
+</code></pre>
+<h2 id="advanced-templates-details">Advanced Templates Details<a class="headerlink" href="#advanced-templates-details" title="Permanent link">&para;</a></h2>
+<p>Each advanced template comes with specific elements designed for its purpose:</p>
+<h3 id="quote-slide_1">Quote Slide<a class="headerlink" href="#quote-slide_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>quote</code>: The main quote text</li>
+<li><code>author</code>: Attribution for the quote</li>
+<li><code>quotation_marks</code>: Large decorative quotation mark</li>
+</ul>
+<h3 id="bullets-slide_1">Bullets Slide<a class="headerlink" href="#bullets-slide_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>title</code>: The slide title</li>
+<li><code>bullet_points</code>: Text area for bullet points</li>
+</ul>
+<h3 id="agenda-slide">Agenda Slide<a class="headerlink" href="#agenda-slide" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>title</code>: The agenda title</li>
+<li><code>agenda_items</code>: Text area for agenda items</li>
+<li><code>image_area</code>: Optional area for an image</li>
+</ul>
+<h3 id="team-slide">Team Slide<a class="headerlink" href="#team-slide" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>title</code>: The team section title</li>
+<li><code>members_area</code>: Area for team member profiles</li>
+<li><code>member_image_style</code>: Styling for member photos</li>
+</ul>
+<h3 id="statement-slide">Statement Slide<a class="headerlink" href="#statement-slide" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>bg_color</code>: Background color (default: blue)</li>
+<li><code>statement</code>: Large prominent text</li>
+</ul>
+<h3 id="dashboard-slide_1">Dashboard Slide<a class="headerlink" href="#dashboard-slide_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>title</code>: Dashboard title</li>
+<li><code>charts</code>: Positions for four charts (top_left, top_right, bottom_left, bottom_right)</li>
+<li><code>chart_style</code>: Default styling for charts</li>
+</ul>
+<h3 id="timeline-slide_1">Timeline Slide<a class="headerlink" href="#timeline-slide_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>title</code>: Timeline title</li>
+<li><code>timeline_area</code>: Area for the timeline</li>
+<li><code>step_colors</code>: List of colors for timeline steps</li>
+<li><code>connector_color</code>: Color for connecting lines</li>
+</ul>
+<h2 id="part-4-tomljson-template-files">Part 4: TOML/JSON Template Files<a class="headerlink" href="#part-4-tomljson-template-files" title="Permanent link">&para;</a></h2>
+<p>EasyPPTX allows you to save and load templates as TOML or JSON files. TOML (Tom's Obvious Minimal Language) is a user-friendly configuration file format that is more readable than JSON, while maintaining full compatibility with the template system.</p>
+<h3 id="templatemanager">TemplateManager<a class="headerlink" href="#templatemanager" title="Permanent link">&para;</a></h3>
+<p>The <code>TemplateManager</code> class handles saving and loading templates:</p>
+<pre><code class="language-python">from easypptx import Presentation, TemplateManager
+
+# Create a template manager (default saves in ~/.easypptx/templates)
+tm = TemplateManager()
+
+# Or specify a custom directory
+tm = TemplateManager(template_dir=&quot;/path/to/templates&quot;)
+</code></pre>
+<h3 id="saving-templates">Saving Templates<a class="headerlink" href="#saving-templates" title="Permanent link">&para;</a></h3>
+<p>You can save any template (built-in or custom) to TOML or JSON format:</p>
+<pre><code class="language-python"># Create a presentation and template manager
+pres = Presentation()
+tm = TemplateManager()
+
+# Save a built-in template to TOML
+toml_path = tm.save(&quot;title_slide&quot;, format=&quot;toml&quot;)
+print(f&quot;Template saved to: {toml_path}&quot;)
+
+# Save a built-in template to JSON
+json_path = tm.save(&quot;content_slide&quot;, format=&quot;json&quot;)
+print(f&quot;Template saved to: {json_path}&quot;)
+
+# Create and save a custom template
+custom_template = {
+    &quot;bg_color&quot;: &quot;green&quot;,
+    &quot;title&quot;: {
+        &quot;text&quot;: &quot;My Custom Template&quot;,
+        &quot;position&quot;: {&quot;x&quot;: &quot;10%&quot;, &quot;y&quot;: &quot;5%&quot;, &quot;width&quot;: &quot;80%&quot;, &quot;height&quot;: &quot;10%&quot;},
+        &quot;font&quot;: {&quot;name&quot;: &quot;Arial&quot;, &quot;size&quot;: 36, &quot;bold&quot;: True},
+        &quot;align&quot;: &quot;center&quot;,
+        &quot;vertical&quot;: &quot;middle&quot;,
+        &quot;color&quot;: &quot;white&quot;
+    },
+    &quot;content_area&quot;: {
+        &quot;position&quot;: {&quot;x&quot;: &quot;10%&quot;, &quot;y&quot;: &quot;20%&quot;, &quot;width&quot;: &quot;80%&quot;, &quot;height&quot;: &quot;70%&quot;}
+    }
+}
+
+# Register the custom template
+tm.register(&quot;my_custom&quot;, custom_template)
+
+# Save to TOML with a specific path
+custom_path = tm.save(&quot;my_custom&quot;, file_path=&quot;templates/my_custom.toml&quot;)
+</code></pre>
+<h3 id="loading-templates">Loading Templates<a class="headerlink" href="#loading-templates" title="Permanent link">&para;</a></h3>
+<p>You can load templates from TOML or JSON files:</p>
+<pre><code class="language-python"># Load a template from a TOML file
+template_name = tm.load(&quot;templates/my_custom.toml&quot;)
+
+# The template is now registered and can be used
+slide = pres.add_slide_from_template(template_name)
+
+# Load with a custom name
+custom_name = tm.load(&quot;templates/my_custom.toml&quot;, template_name=&quot;renamed_template&quot;)
+slide = pres.add_slide_from_template(custom_name)
+</code></pre>
+<h3 id="default-templates-and-per-slide-overrides">Default Templates and Per-Slide Overrides<a class="headerlink" href="#default-templates-and-per-slide-overrides" title="Permanent link">&para;</a></h3>
+<p>A presentation can register a default TOML template that applies to every new slide. Individual slides can override or opt out of it:</p>
+<pre><code class="language-python">from easypptx import Presentation
+
+# Register a default template for all slides
+pres = Presentation(template_toml=&quot;templates/my_default.toml&quot;)
+
+# Uses the default template
+slide1 = pres.add_slide(title=&quot;Uses the default template&quot;)
+
+# Uses a different template for this slide only
+slide2 = pres.add_slide(template_toml=&quot;templates/special.toml&quot;)
+
+# Opts this slide out of the default template entirely
+slide3 = pres.add_slide(template_toml=False)
+</code></pre>
+<p><code>template_toml=None</code> (the default) means "use the presentation's default template if one is set". <code>template_toml=False</code> means "use no template for this slide".</p>
+<h3 id="template-loading-behavior">Template Loading Behavior<a class="headerlink" href="#template-loading-behavior" title="Permanent link">&para;</a></h3>
+<ul>
+<li>TOML templates are cached by path and modification time, so repeated loads of an unchanged file are fast.</li>
+<li>Invalid template files raise an error instead of printing a warning.</li>
+<li><code>add_slide_from_template</code> raises <code>ValueError</code> if a template's <code>reference_pptx</code> would replace a presentation that already has slides.</li>
+</ul>
+<h3 id="benefits-of-tomljson-templates">Benefits of TOML/JSON Templates<a class="headerlink" href="#benefits-of-tomljson-templates" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Sharing</strong>: Templates can be easily shared between projects and users</li>
+<li><strong>Version Control</strong>: Templates can be stored in version control systems</li>
+<li><strong>Readability</strong>: TOML format is more readable than JSON and easier to edit by hand</li>
+<li><strong>Portability</strong>: Templates are independent of the PowerPoint format</li>
+<li><strong>Flexibility</strong>: Templates can be modified with text editors or programmatically</li>
+</ol>
+<h3 id="toml-vs-json">TOML vs JSON<a class="headerlink" href="#toml-vs-json" title="Permanent link">&para;</a></h3>
+<p>EasyPPTX supports both formats, each with its advantages:</p>
+<ul>
+<li><strong>TOML</strong>: More readable, better for manual editing</li>
+<li><strong>JSON</strong>: More widely used, better for programmatic generation</li>
+</ul>
+<h3 id="rgb-color-handling">RGB Color Handling<a class="headerlink" href="#rgb-color-handling" title="Permanent link">&para;</a></h3>
+<p>EasyPPTX automatically handles the serialization and deserialization of <code>RGBColor</code> objects in templates:</p>
+<pre><code class="language-python"># Templates with RGB colors serialize/deserialize correctly
+template_with_colors = {
+    &quot;bg_color&quot;: RGBColor(240, 240, 240),
+    &quot;title&quot;: {
+        &quot;color&quot;: RGBColor(10, 20, 30)
+    }
+}
+
+# Register and save to TOML
+tm.register(&quot;with_colors&quot;, template_with_colors)
+tm.save(&quot;with_colors&quot;, format=&quot;toml&quot;)
+
+# Load back and the RGB colors are preserved
+loaded_name = tm.load(&quot;~/.easypptx/templates/with_colors.toml&quot;)
+loaded_template = tm.get(loaded_name)
+
+# RGB colors are reconstructed correctly
+assert isinstance(loaded_template[&quot;bg_color&quot;], RGBColor)
+assert loaded_template[&quot;bg_color&quot;][0] == 240
+</code></pre>
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<p>Check out these example files for demonstrations of the template system:
+- <code>examples/template_example.py</code> - Basic templates
+- <code>examples/advanced_templates_example.py</code> - Advanced templates
+- <code>examples/template_manager_example.py</code> - Template management
+- <code>examples/template_toml_example.py</code> - TOML/JSON template export and import</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Maintained by <a href="https://Ameyanagi.com">Ameyanagi</a>.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/Ameyanagi/EasyPPTX" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/EasyPPTX" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 404c11.1 0 20.1 9.1 20.1 20.3 0 11.3-9 20.4-20.1 20.4-11 0-20.1-9.2-20.1-20.4.1-11.3 9.1-20.3 20.1-20.3M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.7-142.6c-11.1 0-20.1-9.1-20.1-20.3.1-11.3 9-20.4 20.1-20.4 11 0 20.1 9.2 20.1 20.4s-9 20.3-20.1 20.3"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  </body>
+</html>
