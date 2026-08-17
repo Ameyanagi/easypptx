@@ -11,6 +11,8 @@ A Python library for easily creating and manipulating PowerPoint presentations p
 - **Github repository**: <https://github.com/Ameyanagi/EasyPPTX/>
 - **Documentation** <https://Ameyanagi.github.io/EasyPPTX/>
 
+https://github.com/user-attachments/assets/84bd2754-854c-41f9-a21c-9e096971a6d4
+
 ## Features
 
 - Simple, intuitive API for PowerPoint manipulation
