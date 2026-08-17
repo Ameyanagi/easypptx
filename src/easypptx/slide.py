@@ -418,7 +418,35 @@ class Slide:
             width: Total width (default: None, auto-sized)
             height: Total height (default: None, auto-sized)
             has_header: Whether the first row is a header (default: True)
-            style: Table style id / GUID, style dict, or TableStyle (default: None)
+            style: One of (default: None):
+                - a preset name: "publication" (academic booktabs rules,
+                  no fills), "minimal" (hairline separators), "striped"
+                  (blue header + banding — the default look), "dark"
+                  (near-black header), "colorful" (per-column accent
+                  colors with a gray row-label column)
+                - a dict of styling overrides (header_fill, header_color,
+                  band_fills, body_color, font_size, header_font_size,
+                  header_bold, fill="none", borders, border_color,
+                  column_accents, label_fill, band_blend, style_id) merged
+                  over the theme/default spec
+                - a built-in PowerPoint style id (int) or GUID string
+                - a TableStyle
+
+                Examples:
+
+                ```python
+                # Academic journal look, like a LaTeX booktabs table
+                slide.add_table(df, style="publication")
+
+                # Column-accented comparison table
+                slide.add_table(rows, style="colorful")
+
+                # One-off tweak on top of the default look
+                slide.add_table(rows, style={"header_fill": "#1F2430"})
+
+                # A preset with a tweak: pass the preset's keys directly
+                slide.add_table(rows, style={"fill": "none", "borders": {"top": 1.5, "header": 0.75, "bottom": 1.5}, "font_name": "Georgia"})
+                ```
             columns: Header names for unlabeled numpy arrays (default: None)
             number_format: Python format spec applied to numeric cells,
                 e.g. "{:,.1f}", or a dict mapping column name/index to a
@@ -439,12 +467,22 @@ class Slide:
             has_header = kwargs.pop("first_row_header")
         warn_ignored_kwargs("Slide.add_table", kwargs)
 
+        spec_overrides: dict[str, Any] = {}
+        preset_spec: dict[str, Any] | None = None
         if isinstance(style, TableStyle):
             if has_header is None:
                 has_header = style.has_header
             style_id = style.style_id
         elif isinstance(style, dict):
             style_id = style.get("style_id")
+            spec_overrides = {k: v for k, v in style.items() if k != "style_id"}
+        elif isinstance(style, str) and not style.startswith("{"):
+            from easypptx.styles import TABLE_PRESETS
+
+            if style not in TABLE_PRESETS:
+                raise ValueError(f"Unknown table preset {style!r}. Available presets: {sorted(TABLE_PRESETS)}")
+            preset_spec = dict(TABLE_PRESETS[style])
+            style_id = None
         else:
             style_id = style
         if has_header is None:
@@ -467,8 +505,19 @@ class Slide:
             style=style_id,
         )
 
-        # Theme table styling (header fill, banding, fonts, numeric alignment)
-        theme_spec = self.template_defaults.get("table", {})
+        # Table styling. A named preset replaces the theme spec entirely;
+        # otherwise use the theme's spec, falling back to the light theme so
+        # plain tables still look designed. A dict passed as `style`
+        # overrides individual spec keys on top of that.
+        if preset_spec is not None:
+            theme_spec = preset_spec
+        else:
+            theme_spec = dict(self.template_defaults.get("table", {}))
+            if not theme_spec and style_id is None:
+                from easypptx.styles import THEMES
+
+                theme_spec = dict(THEMES["light"].table or {})
+        theme_spec.update(spec_overrides)
         if theme_spec:
             apply_table_theme(table, theme_spec, has_header=has_header)
 

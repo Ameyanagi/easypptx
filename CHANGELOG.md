@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-08-17
+
+Table styling release: designed defaults, named presets, and per-call overrides. Render-verified through LibreOffice and PowerPoint.
+
+### Added
+- **Named table presets**: `add_table(data, style="publication")` — an academic booktabs look (no fills, horizontal rules only, regular-weight header). Also `"minimal"` (hairline separators), `"striped"` (the default light look), `"dark"` (near-black header), and `"colorful"` (per-column accent colors with a gray row-label column). Unknown preset names raise with the available list
+- **Per-call table styling**: pass a dict as `style` to override spec keys on top of the theme/default spec — `header_fill`, `header_color`, `band_fills`, `body_color`, `font_size`, `header_font_size`, `header_bold`, `fill="none"`, `borders`, `border_color`, `column_accents`, `label_fill`, `band_blend`, `style_id`
+- **Table rules**: booktabs-style horizontal borders via the `borders` spec key (`{"top": 1.5, "header": 0.75, "rows": 0.5, "bottom": 1.5}`, widths in points); interior rules are written to both sides of the cell boundary so every renderer draws them
+- **Hex colors**: `"#1F2430"` / `"#fff"` now work anywhere colors are accepted; invalid hex raises a clear `ValueError`
+
+### Changed
+- **Plain tables look designed**: without a theme or explicit style, tables use the light theme's spec (styled header, subtle banding, middle-anchored cells, right-aligned numeric columns) instead of the bare python-pptx default
+- **Table rows hug their content**: row heights are capped (0.5" header, 0.42" body) instead of stretching to fill the bounding height; PowerPoint treats row heights as minimums, so text never clips
+- **Grid cells center their content**: `grid[r, c].add_text(...)` defaults to `align="center"` / `vertical="middle"`, and tables are vertically centered within their cell
+
 ## [0.10.0] - 2026-08-16
 
 ### Added

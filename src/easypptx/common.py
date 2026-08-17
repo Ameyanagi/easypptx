@@ -65,9 +65,19 @@ def normalize_color(
 
 
 def resolve_color(color: str | tuple[int, int, int] | list[int] | None) -> RGBColor | None:
-    """Resolve a color name or RGB tuple/list to an RGBColor, or None."""
+    """Resolve a color name, hex string ("#1F2430"), or RGB tuple/list to an RGBColor, or None."""
     color = normalize_color(color)
     if isinstance(color, str):
+        if color.startswith("#"):
+            hex_str = color[1:]
+            if len(hex_str) == 3:
+                hex_str = "".join(ch * 2 for ch in hex_str)
+            if len(hex_str) != 6:
+                raise ValueError(f"Invalid hex color: {color!r}")
+            try:
+                return RGBColor.from_string(hex_str)
+            except ValueError as exc:
+                raise ValueError(f"Invalid hex color: {color!r}") from exc
         return COLORS.get(color)
     if isinstance(color, tuple) and len(color) == 3:
         return RGBColor(*color)

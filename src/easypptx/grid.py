@@ -817,6 +817,10 @@ class Grid:
         # that the text method does not accept (e.g. slide-factory defaults)
         merged_kwargs = filter_to_signature(self.parent.add_text, self.merge_with_defaults("text", kwargs), kwargs)
 
+        # Grid cells center their content unless told otherwise
+        merged_kwargs.setdefault("align", "center")
+        merged_kwargs.setdefault("vertical", "middle")
+
         # Convert list colors to tuples if needed
         if "color" in merged_kwargs and isinstance(merged_kwargs["color"], list) and len(merged_kwargs["color"]) == 3:
             merged_kwargs["color"] = tuple(merged_kwargs["color"])
@@ -947,6 +951,19 @@ class Grid:
 
         x, y, width, height = self._cell_area(cell)
         table = self.parent.add_table(data, x=x, y=y, width=width, height=height, **merged_kwargs)
+
+        # Rows hug their content, so center the table vertically in the cell
+        frame = getattr(table, "_graphic_frame", None)
+        if frame is not None:
+            from pptx.util import Inches
+
+            slide_height = self.parent._get_slide_height()
+            cell_top = Inches(self.parent._convert_position(y, slide_height))
+            cell_height = Inches(self.parent._convert_position(height, slide_height))
+            content_height = sum(row.height for row in table.rows)
+            if content_height < cell_height:
+                frame.top = cell_top + (cell_height - content_height) // 2
+
         cell.content = table
         return table
 

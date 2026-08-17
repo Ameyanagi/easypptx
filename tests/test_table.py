@@ -222,3 +222,82 @@ class TestTable:
             assert call_args["height"] == 4.0
             assert call_args["first_row_header"] is False
             assert call_args["style"] == 3
+
+
+def test_add_table_style_dict_overrides():
+    """A dict passed as `style` overrides spec keys over the default styling."""
+    from pptx.dml.color import RGBColor
+
+    from easypptx import Presentation
+
+    pres = Presentation()
+    slide = pres.add_slide()
+    table = slide.add_table(
+        [["Region", "Sales"], ["East", 120]],
+        style={"header_fill": (0x1F, 0x24, 0x30), "header_color": "white"},
+    )
+    header = table.cell(0, 0)
+    assert header.fill.fore_color.rgb == RGBColor(0x1F, 0x24, 0x30)
+    assert header.text_frame.paragraphs[0].font.color.rgb == RGBColor(0xFF, 0xFF, 0xFF)
+
+
+def test_resolve_color_hex():
+    """resolve_color parses #RRGGBB and #RGB hex strings."""
+    from pptx.dml.color import RGBColor
+
+    from easypptx.common import resolve_color
+
+    assert resolve_color("#1F2430") == RGBColor(0x1F, 0x24, 0x30)
+    assert resolve_color("#fff") == RGBColor(0xFF, 0xFF, 0xFF)
+    with pytest.raises(ValueError, match="Invalid hex color"):
+        resolve_color("#12345")
+
+
+def test_add_table_preset_publication():
+    """The publication preset: transparent cells, rules, regular-weight header."""
+    from pptx.enum.dml import MSO_FILL
+    from pptx.oxml.ns import qn
+
+    from easypptx import Presentation
+
+    pres = Presentation()
+    slide = pres.add_slide()
+    table = slide.add_table(
+        [["Group", "1981-84", "1985-88"], ["Joint custody", 20.9, 27.4], ["Sole custody", 66.3, 60.7]],
+        style="publication",
+    )
+    header = table.cell(0, 0)
+    assert header.fill.type == MSO_FILL.BACKGROUND
+    assert header.text_frame.paragraphs[0].font.bold is False
+    tcPr = header._tc.get_or_add_tcPr()
+    assert tcPr.find(qn("a:lnT")) is not None  # top rule
+    assert tcPr.find(qn("a:lnB")) is not None  # header rule
+    last = table.cell(2, 0)._tc.get_or_add_tcPr()
+    assert last.find(qn("a:lnB")) is not None  # bottom rule
+
+
+def test_add_table_preset_colorful():
+    """The colorful preset: accent headers, tinted bodies, gray label column."""
+    from pptx.dml.color import RGBColor
+
+    from easypptx import Presentation
+    from easypptx.styles import TABLE_PRESETS
+
+    pres = Presentation()
+    slide = pres.add_slide()
+    table = slide.add_table(
+        [["", "2019", "2020"], ["Row A", 10, 20], ["Row B", 30, 40]],
+        style="colorful",
+    )
+    accent0 = TABLE_PRESETS["colorful"]["column_accents"][0]
+    assert table.cell(0, 1).fill.fore_color.rgb == RGBColor.from_string(accent0.lstrip("#"))
+    assert table.cell(1, 0).fill.fore_color.rgb == RGBColor(0xE2, 0xE2, 0xE2)
+
+
+def test_add_table_unknown_preset():
+    from easypptx import Presentation
+
+    pres = Presentation()
+    slide = pres.add_slide()
+    with pytest.raises(ValueError, match="Unknown table preset"):
+        slide.add_table([["A"], [1]], style="nope")

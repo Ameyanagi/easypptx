@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pptx.table import Table as PPTXTable
 from pptx.util import Inches, Pt
@@ -170,6 +170,29 @@ def shade_cells_by_value(
             cell.fill.fore_color.rgb = blended
 
 
+_BORDER_TAGS = ("a:lnL", "a:lnR", "a:lnT", "a:lnB")
+
+
+def _set_cell_border(cell: Any, edge: str, color: Any, width_pt: float) -> None:
+    """Set one solid cell border; edge is 'L', 'R', 'T', or 'B'."""
+    from pptx.oxml.ns import qn
+
+    tag = f"a:ln{edge}"
+    tcPr = cell._tc.get_or_add_tcPr()
+    for existing in tcPr.findall(qn(tag)):
+        tcPr.remove(existing)
+    ln = tcPr.makeelement(qn(tag), {"w": str(int(Pt(width_pt))), "cap": "flat"})
+    solid = ln.makeelement(qn("a:solidFill"), {})
+    clr = solid.makeelement(qn("a:srgbClr"), {"val": str(color)})
+    solid.append(clr)
+    ln.append(solid)
+    # Schema order: ln elements come first, in L, R, T, B order
+    border_qnames = [qn(t) for t in _BORDER_TAGS]
+    lower = border_qnames[: _BORDER_TAGS.index(tag)]
+    idx = sum(1 for child in tcPr if child.tag in lower)
+    tcPr.insert(idx, ln)
+
+
 def _looks_numeric(text: str) -> bool:
     """True for cell text that reads as a number (with separators/percent)."""
     cleaned = text.strip().replace(",", "").replace("%", "").replace("\u00a5", "").replace("$", "")
@@ -183,19 +206,31 @@ def _looks_numeric(text: str) -> bool:
 
 
 def apply_table_theme(table: PPTXTable, spec: dict, has_header: bool = True) -> None:
-    """Apply a theme's table styling: header fill, banding, alignment, fonts.
+    """Apply a table styling spec: fills, banding, borders, alignment, fonts.
 
     Args:
         table: The rendered python-pptx table
-        spec: Theme table spec with optional keys header_fill, header_color,
-            band_fills (list of two fills), body_color, font_name,
-            font_size, header_font_size
+        spec: Styling spec with optional keys:
+            header_fill / header_color / band_fills / body_color — colors
+            font_name / font_size / header_font_size — typography
+            header_bold — force header weight (True/False)
+            fill — "none" makes every cell transparent (e.g. "publication")
+            borders — dict of rule widths in points: {"top": 1.5,
+                "header": 0.75, "rows": 0.5, "bottom": 1.5}
+            border_color — color for the rules (default: black)
+            column_accents — list of colors cycled across columns; header
+                cells get the full color, body cells a light tint
+            label_fill — fill for column 0 (the row-label column), which is
+                then excluded from column_accents
+            band_blend — two tint factors toward white for accented body
+                rows (default: [0.82, 0.66])
         has_header: Whether row 0 is a header row (default: True)
     """
+    from pptx.dml.color import RGBColor
     from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
     from pptx.util import Inches, Pt
 
-    from easypptx.common import resolve_color
+    from easypptx.common import blend_colors, resolve_color
 
     header_fill = resolve_color(spec.get("header_fill"))
     header_color = resolve_color(spec.get("header_color"))
@@ -204,6 +239,13 @@ def apply_table_theme(table: PPTXTable, spec: dict, has_header: bool = True) -> 
     font_name = spec.get("font_name")
     font_size = spec.get("font_size")
     header_font_size = spec.get("header_font_size", font_size)
+    header_bold = spec.get("header_bold")
+    no_fill = str(spec.get("fill", "")).lower() == "none"
+    column_accents = [resolve_color(c) for c in spec.get("column_accents", [])]
+    label_fill = resolve_color(spec.get("label_fill"))
+    band_blend = spec.get("band_blend", [0.82, 0.66])
+    borders = spec.get("borders") or {}
+    border_color = resolve_color(spec.get("border_color")) or RGBColor(0, 0, 0)
 
     n_rows = len(table.rows)
     n_cols = len(table.columns)
@@ -219,8 +261,25 @@ def apply_table_theme(table: PPTXTable, spec: dict, has_header: bool = True) -> 
             cell.margin_top = Inches(0.03)
             cell.margin_bottom = Inches(0.03)
 
-            # Fills: header color, then subtle banding
-            if is_header and header_fill is not None:
+            is_label = label_fill is not None and c == 0
+            accent = None
+            if column_accents and not is_label:
+                accent = column_accents[(c - (1 if label_fill is not None else 0)) % len(column_accents)]
+
+            # Fills: transparent, label column, column accents, header, banding
+            if no_fill:
+                cell.fill.background()
+            elif is_label:
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = label_fill
+            elif accent is not None:
+                cell.fill.solid()
+                if is_header:
+                    cell.fill.fore_color.rgb = accent
+                else:
+                    t = band_blend[(r - body_start) % len(band_blend)]
+                    cell.fill.fore_color.rgb = RGBColor(*blend_colors(tuple(accent), (255, 255, 255), t))
+            elif is_header and header_fill is not None:
                 cell.fill.solid()
                 cell.fill.fore_color.rgb = header_fill
             elif not is_header and band_fills and all(band_fills):
@@ -233,7 +292,9 @@ def apply_table_theme(table: PPTXTable, spec: dict, has_header: bool = True) -> 
                 size = header_font_size if is_header else font_size
                 if size:
                     paragraph.font.size = Pt(size)
-                color = header_color if is_header else body_color
+                if is_header and header_bold is not None:
+                    paragraph.font.bold = header_bold
+                color = header_color if (is_header and not is_label) else body_color
                 if color is not None:
                     paragraph.font.color.rgb = color
                 # Numbers right-align for easy scanning; header follows body
@@ -241,6 +302,24 @@ def apply_table_theme(table: PPTXTable, spec: dict, has_header: bool = True) -> 
                     is_header and n_rows > body_start and _looks_numeric(table.cell(body_start, c).text)
                 ):
                     paragraph.alignment = PP_ALIGN.RIGHT
+
+    # Horizontal rules (booktabs-style); widths in points
+    if borders:
+        last = n_rows - 1
+        for c in range(n_cols):
+            if "top" in borders:
+                _set_cell_border(table.cell(0, c), "T", border_color, borders["top"])
+            # Interior rules go on both sides of the boundary — some renderers
+            # resolve shared edges in favor of the neighboring cell
+            if "rows" in borders:
+                for r in range(body_start, last):
+                    _set_cell_border(table.cell(r, c), "B", border_color, borders["rows"])
+                    _set_cell_border(table.cell(r + 1, c), "T", border_color, borders["rows"])
+            if "header" in borders and has_header and n_rows > 1:
+                _set_cell_border(table.cell(0, c), "B", border_color, borders["header"])
+                _set_cell_border(table.cell(1, c), "T", border_color, borders["header"])
+            if "bottom" in borders:
+                _set_cell_border(table.cell(last, c), "B", border_color, borders["bottom"])
 
 
 class Table:
@@ -341,6 +420,14 @@ class Table:
                     for paragraph in cell.text_frame.paragraphs:
                         paragraph.font.bold = True
                         paragraph.font.size = Pt(14)
+
+        # python-pptx spreads the frame height evenly across rows; cap each
+        # row so the table hugs its content instead of stretching. PowerPoint
+        # treats row heights as minimums, so text never gets clipped.
+        for i, row in enumerate(table.rows):
+            target = Inches(0.5) if (first_row_header and i == 0) else Inches(0.42)
+            if row.height > target:
+                row.height = target
 
         # Apply table style if specified
         if style is not None:

@@ -110,6 +110,60 @@ class Theme:
         return template
 
 
+# Named table style presets, usable as `slide.add_table(data, style="publication")`.
+# Keys are specs consumed by easypptx.table.apply_table_theme.
+TABLE_PRESETS: dict[str, dict[str, Any]] = {
+    # Academic-journal (booktabs) look: no fills, horizontal rules only
+    "publication": {
+        "fill": "none",
+        "font_size": 12,
+        "header_font_size": 12,
+        "header_bold": False,
+        "header_color": (0x00, 0x00, 0x00),
+        "body_color": (0x00, 0x00, 0x00),
+        "border_color": (0x00, 0x00, 0x00),
+        "borders": {"top": 1.5, "header": 0.75, "bottom": 1.5},
+    },
+    # Quiet spreadsheet: no fills, hairline row separators
+    "minimal": {
+        "fill": "none",
+        "header_bold": True,
+        "header_color": (0x1A, 0x1A, 0x1A),
+        "body_color": (0x33, 0x33, 0x33),
+        "border_color": (0xB5, 0xB5, 0xB5),
+        "borders": {"header": 1.0, "rows": 0.5, "bottom": 1.0},
+    },
+    # The default light look, addressable by name
+    "striped": {
+        "header_fill": (0x2E, 0x75, 0xB6),
+        "header_color": (0xFF, 0xFF, 0xFF),
+        "band_fills": [(0xFF, 0xFF, 0xFF), (0xF2, 0xF5, 0xF9)],
+        "body_color": (0x33, 0x33, 0x33),
+        "font_size": 12,
+        "header_font_size": 12,
+    },
+    # Near-black header with subtle banding
+    "dark": {
+        "header_fill": (0x1F, 0x24, 0x30),
+        "header_color": (0xFF, 0xFF, 0xFF),
+        "band_fills": [(0xFF, 0xFF, 0xFF), (0xF1, 0xF3, 0xF6)],
+        "body_color": (0x1E, 0x1D, 0x1A),
+        "font_size": 12,
+        "header_font_size": 12,
+    },
+    # Per-column accent colors with a gray row-label column
+    "colorful": {
+        "column_accents": ["#54B8AE", "#F2A63B", "#3D7EBB", "#E87A2E", "#8FA3AD"],
+        "label_fill": (0xE2, 0xE2, 0xE2),
+        "header_color": (0xFF, 0xFF, 0xFF),
+        "body_color": (0x33, 0x33, 0x33),
+        "band_blend": [0.82, 0.66],
+        "font_size": 12,
+        "header_font_size": 12,
+    },
+}
+
+
 # Built-in theme presets
 THEMES: dict[str, Theme] = {
     "light": Theme(
